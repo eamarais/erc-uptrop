@@ -1,13 +1,11 @@
 #!/usr/bin/python
 
 # Import relevant packages:
-import sys
 import numpy as np
 
-from constants import AVOGADRO as na
-from constants import G as g
-from constants import MW_AIR as mmair
-from constants import R_GAS_UNIV as rgas
+from uptrop.constants import G as g
+from uptrop.constants import MW_AIR as mmair
+from uptrop.constants import R_GAS_UNIV as rgas
 
 def alt2pres(height):
 

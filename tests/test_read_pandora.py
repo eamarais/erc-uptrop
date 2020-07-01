@@ -1,5 +1,4 @@
 import read_pandora
-import os
 
 test_file_path = "test_data/Pandora101s1_Izana_L2Tot_rnvs1p1-7.txt"
 

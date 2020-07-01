@@ -1,9 +1,6 @@
 #!/usr/bin/python
 
 # Import relevant packages:
-import glob
-import sys
-import os
 import numpy as np
 from bootstrap import rma
 

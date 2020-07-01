@@ -16,8 +16,6 @@
 
 # Import relevant packages:
 import glob
-import sys
-import os
 import numpy as np
 from netCDF4 import Dataset
 from scipy import stats
