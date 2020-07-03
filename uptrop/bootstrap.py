@@ -1,4 +1,3 @@
-#!/usr/bin/python
 
 '''
 Description: uses jackknife resampling to estimate the reduced major axis

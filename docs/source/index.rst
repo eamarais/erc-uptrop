@@ -25,12 +25,13 @@ I think. [ELOISE, CAN YOU PUT SOME SCIENCE HERE PLEASE I DONT REALLY KNOW WHAT T
 
 Requirements
 ------------
-Python >= 3.6
-Numpy
-NetCDF4
-Dateutil
-Matplotlib
-Basemap
+- Python >= 3.6
+- Numpy
+- NetCDF4
+- Dateutil
+- Matplotlib
+- Basemap
+
 
 If you are using Conda, an environment.yml file is provided.
 
@@ -41,8 +42,28 @@ Example of use
 
    python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder
 
+For more calling details
+
 
 Scripts
 -------
 
-.. automodule:: ut_no2_gc_test
+``ut_no2_gc_test``
+
+.. automodule:: uptrop.ut_no2_gc_test
+
+``cloud_slice_ut_no2``
+
+.. automodule:: uptrop.cloud_slice_ut_no2
+
+``compare_tropomi_pandora``
+
+.. automodule:: uptrop.compare_tropomi_pandora
+
+``fresco_cld_err``
+
+.. automodule:: uptrop.fresco_cld_err
+
+``tropomi_ut_no2``
+
+.. automodule:: uptrop.tropomi_ut_no2

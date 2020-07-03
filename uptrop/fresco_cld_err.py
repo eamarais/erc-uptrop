@@ -21,10 +21,17 @@ from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import argparse
+import sys
+import os
 from os import path
 
-from uptrop.gamap_colormap import WhGrYlRd
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
 
+from uptrop.gamap_colormap import WhGrYlRd
 from uptrop.convert_height_to_press import alt2pres
 
 # Turn off warnings:

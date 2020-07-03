@@ -1,8 +1,14 @@
 #!/usr/bin/python
 
-# Import relevant packages:
+import os
+import sys
 import numpy as np
 
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
 from uptrop.constants import G as g
 from uptrop.constants import MW_AIR as mmair
 from uptrop.constants import R_GAS_UNIV as rgas

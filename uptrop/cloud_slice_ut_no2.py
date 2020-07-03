@@ -1,12 +1,20 @@
 #!/usr/bin/python
 
 # Import relevant packages:
+import sys
+import os
 import numpy as np
-from bootstrap import rma
 
-from constants import AVOGADRO as na
-from constants import G as g
-from constants import MW_AIR as mmair
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
+
+from uptrop.bootstrap import rma
+from uptrop.constants import AVOGADRO as na
+from uptrop.constants import G as g
+from uptrop.constants import MW_AIR as mmair
 
 CLOUD_SLICE_ERROR_ENUM = {
     1: "too_few_points",
