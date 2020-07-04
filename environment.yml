@@ -1,0 +1,7 @@
+name: uptrop_env
+dependencies:
+  - Numpy
+  - NetCDF4
+  - Dateutil
+  - Matplotlib
+  - Basemap

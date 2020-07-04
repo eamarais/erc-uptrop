@@ -16,8 +16,6 @@
 
 # Import relevant packages:
 import glob
-import sys
-import os
 import numpy as np
 from netCDF4 import Dataset
 from scipy import stats
@@ -25,13 +23,20 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import argparse
 from sklearn.linear_model import LinearRegression
+import sys
+import os
 
-from constants import AVOGADRO
-from constants import G
-from constants import MW_AIR
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
 
-from bootstrap import rma
-from cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
+from uptrop.constants import AVOGADRO
+from uptrop.constants import G
+from uptrop.constants import MW_AIR
+from uptrop.bootstrap import rma
+from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
 
 
 # Turn off warnings:

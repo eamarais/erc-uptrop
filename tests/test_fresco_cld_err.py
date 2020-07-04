@@ -1,4 +1,4 @@
-from fresco_cld_err import process_file, CloudVariableStore, MAX_LAT, MAX_LON, MIN_LAT, MIN_LON, DELTA_LAT, DELTA_LON
+from uptrop.fresco_cld_err import process_file, CloudVariableStore, MAX_LAT, MAX_LON, MIN_LAT, MIN_LON, DELTA_LAT, DELTA_LON
 import numpy as np
 
 # I don't like having these here, but they're stuck until I refactor the last bit of fresco_cld_err

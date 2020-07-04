@@ -9,26 +9,30 @@
     (180-450 hPa).
 
     (1) Initial version created on 15 March 2020 by Eloise Marais
-        (eloise.marais@le.ac.uk).
+        (eloise.marais@le.ac.uk). Reworked by John Roberts June 2020
+        (jfr10@le.ac.uk)
 
 '''
 
 # Import relevant packages:
 import glob
-import os
 import numpy as np
-import netCDF4
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import argparse
+import sys
+import os
 from os import path
 
-from gamap_colormap import WhGrYlRd
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
 
-import pdb
-
-from convert_height_to_press import alt2pres
+from uptrop.gamap_colormap import WhGrYlRd
+from uptrop.convert_height_to_press import alt2pres
 
 # Turn off warnings:
 # np.warnings.filterwarnings('ignore')
