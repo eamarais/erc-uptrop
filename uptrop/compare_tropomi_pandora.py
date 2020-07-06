@@ -151,7 +151,19 @@ class DataCollector:
         self.nhrs = len(self.hhsite)
 
     def add_pandora_data_to_day(self, date, hour, diff_hh, pandora_data):
-        """"""
+        """Adds pandora-measured NO2 and error on date at hour to collector
+        Pandora flag threshold selected is from https://www.atmos-meas-tech.net/13/205/2020/amt-13-205-2020.pdf
+        NO2 and error are converted from DU to molec/cm2
+
+        :param date: The date to search in the pandora data for
+        :type date: DateTime
+        :param hour: The hour of the Tropomi overpass
+        :type hour: float
+        :param diff_hh: The range around hour to sample
+        :type diff_hh: float
+        :param pandora_data: The PandoraData object containing the data for date and hour
+        :type pandora_data: PandoraData
+        """
         # Find relevant Pandora data for this year, month and day:
         # Pandora flag threshold selected is from https://www.atmos-meas-tech.net/13/205/2020/amt-13-205-2020.pdf
         panind = np.argwhere((pandora_data.panyy == date.year)
@@ -179,6 +191,7 @@ class DataCollector:
             self.pan_cnt[day_of_year] += len(panind)
 
     def apply_weight_to_means(self):
+        """Applies weighting to every aggregated varaibles. Call at end of processing."""
         # Get daily error-weighted means:
         self.pan_no2 = self.pan_no2 / self.pan_wgt
         self.pan_wgt = np.divide(1, np.sqrt(self.pan_wgt))
@@ -192,6 +205,7 @@ class DataCollector:
               np.nanmax(np.divide(self.s5p_wgt, self.s5p_ml)))
 
     def plot_data(self):
+        """Plots all aggregated variables on a world map"""
         # Plot time series:
         plt.figure(1, figsize=(10, 5))
         x = np.arange(0, self.n_days, 1)
@@ -248,6 +262,7 @@ class DataCollector:
         plt.show()
 
     def write_to_netcdf(self, file):
+        """Saves aggregated data to netcdf"""
         # Save the data to NetCDF:
         ncout = Dataset(file, mode='w', format='NETCDF4')
         # Set array sizes:
@@ -294,7 +309,19 @@ class DataCollector:
 
 
 class TropomiData:
+    """A class for reading, preprocessing and cloud-masking Tropomi data files"""
     def __init__(self, filepath, apply_bias_correction, no2_col):
+        """Returns a new instance of TropomiData containing the data from filepath.
+        You can also choose whether to apply bias correction and whethere you want the total or troposphere only
+        column of this data
+        :param filepath: The path to the Tropomi netcdf file
+        :type filepath: str
+        :param apply_bias_correction: Whether to apply bias correction
+        :type apply_bias_correction: bool
+        :param no2_col: Whether to use all atmospheric data or just the troposphere
+        :type no2_col: str (can be 'Tot' or 'Trop')
+        :return: Returns a new TropomiData instance.
+        :rtype: TropomiData"""
         # Read file:
         fh = Dataset(filepath, mode='r')
         self.apply_bias = apply_bias_correction
@@ -397,6 +424,9 @@ class TropomiData:
 
 
     def preprocess(self):
+        """Prepares the Tropomi data for use.
+        REFERNCE HERE
+        """
         # Calculate the geometric AMF:
         self.tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
@@ -445,13 +475,13 @@ class TropomiData:
             # NO2 VCDs:
             self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
 
-    def apply_cloud_filter(self, no2col, cloud_product):
+    def apply_cloud_filter(self, cloud_product):
 
         # Select which NO2 data to use based on NO2_COL selection:
-        if (no2col == 'Tot'):
+        if (self.no2_col == 'Tot'):
             self.tno2val = self.tgeototvcd
             self.tno2err = self.ttotvcd_geo_err
-        elif (no2col == 'Trop'):
+        elif (self.no2_col == 'Trop'):
             self.tno2val = self.tgeotropvcd
             self.tno2err = self.ttropvcd_geo_err
             stratcol = self.tstratno2
@@ -493,7 +523,7 @@ class TropomiData:
         self.cldfrac = cloud_product.tcldfrac[~np.isnan(self.tno2val)]
         self.cldpres = cloud_product.tcldpres[~np.isnan(self.tno2val)]
         self.no2val = self.tno2val[~np.isnan(self.tno2val)]
-        if (no2col == 'Trop'):
+        if (self.no2_col == 'Trop'):
             self.stratcol = stratcol[~np.isnan(self.tno2val)]
             self.totcol = totcol[~np.isnan(self.tno2val)]
         # Combine hour and minute into xx.xx format:
@@ -760,7 +790,7 @@ if __name__ == "__main__":
                     trop_data = TropomiData(tomi_file_on_day, args.apply_bias_correction, args.no2_col)
                     trop_data.preprocess()
                     cloud_data = CloudData(cloud_file_on_day, args.cloud_product, trop_data)
-                    trop_data.apply_cloud_filter(args.no2_col, cloud_data)
+                    trop_data.apply_cloud_filter(cloud_data)
                     data_aggregator.set_trop_ind_for_day(processing_day, DIFF_DEG, trop_data, pandora_data)
                     data_aggregator.add_trop_data_to_day(processing_day, trop_data)
                     for hour in range(data_aggregator.nhrs):
