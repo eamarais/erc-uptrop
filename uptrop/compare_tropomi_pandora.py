@@ -84,7 +84,8 @@ class DataCollector:
 
     def add_trop_data_to_day(self, date, trop_data):
         """Adds the tropomi no2, no2 error, cloud pressure and cloud fraction to a date in this object
-        :param date: The date to add the data to
+        Call set_trop_ind_for_day before this function
+        :param date: The date to add the data to.
         :type date: DateTime
         :param trop_data: The tropomi data on a day
         :type trop_date: TropomiData
@@ -101,7 +102,16 @@ class DataCollector:
         self.s5p_cnt[day_index] += len(tomiind)
 
     def set_trop_ind_for_day(self, date, diff_deg, trop_data, pandora_data):
-        """Finds the relevent """
+        """Sets tomiind (the index for processing) for a date and area around a pandora site
+        :param date: The date of data to find
+        :type date: DateTime
+        :param diff_deg: The size of the grid square over the Pandora site to extract Tropomi data from
+        :type grid_square: float
+        :param trop_data: The TropomiData object containing tropomi data
+        :type trop_data: TropomiData
+        :param pandora_data: The PandoraData object containining Pandora data for date
+        :type pandora_data: PandoraData
+        :raises NoDataException: Raised if there is no tropomi data for date"""
         # Find coincident data for this file:
         self.difflon = abs(np.subtract(trop_data.lons, pandora_data.panlon))
         self.difflat = abs(np.subtract(trop_data.lats, pandora_data.panlat))
@@ -140,7 +150,8 @@ class DataCollector:
             self.hhsite = [mintime, maxtime]
         self.nhrs = len(self.hhsite)
 
-    def add_pandora_data_to_day(self, date, hour, pandora_data):
+    def add_pandora_data_to_day(self, date, hour, diff_hh, pandora_data):
+        """"""
         # Find relevant Pandora data for this year, month and day:
         # Pandora flag threshold selected is from https://www.atmos-meas-tech.net/13/205/2020/amt-13-205-2020.pdf
         panind = np.argwhere((pandora_data.panyy == date.year)
@@ -149,8 +160,8 @@ class DataCollector:
                              & (pandora_data.panno2 > -8e99)
                              & (pandora_data.panqaflag <= 11)
                              & (pandora_data.panqaflag != 2)
-                             & (pandora_data.pan_hhmm >= self.hhsite[hour] - DIFF_HH)
-                             & (pandora_data.pan_hhmm <= self.hhsite[hour] + DIFF_HH))
+                             & (pandora_data.pan_hhmm >= self.hhsite[hour] - diff_hh)
+                             & (pandora_data.pan_hhmm <= self.hhsite[hour] + diff_hh))
         # Proceed if there are Pandora data points:
         if len(panind) == 0:
             print("No pandora data for day {}".format(date))
@@ -753,7 +764,7 @@ if __name__ == "__main__":
                     data_aggregator.set_trop_ind_for_day(processing_day, DIFF_DEG, trop_data, pandora_data)
                     data_aggregator.add_trop_data_to_day(processing_day, trop_data)
                     for hour in range(data_aggregator.nhrs):
-                        data_aggregator.add_pandora_data_to_day(processing_day, hour, pandora_data)
+                        data_aggregator.add_pandora_data_to_day(processing_day, hour, DIFF_HH, pandora_data)
                 except NoDataException:
                     continue
                 except NoPandoraException:
