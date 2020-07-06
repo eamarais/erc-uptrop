@@ -60,7 +60,14 @@ class NoPandoraException(Exception):
 
 
 class DataCollector:
+    """Collates tropomi and pandora data for a region around a Pandora site"""
     def __init__(self, start_date, end_date):
+        """Creates a collator between two dates.
+        :param start_date: The start date (inclusive)
+        :type start_date: DateTime
+        :param end_date: The end date (inclusive)
+        :type end_date: DateTime
+        """
         # Define final array of coincident data for each day at Pandora site:
         self.start_date = start_date
         self.end_date = end_date
@@ -76,6 +83,12 @@ class DataCollector:
         self.n_days = nvals
 
     def add_trop_data_to_day(self, date, trop_data):
+        """Adds the tropomi no2, no2 error, cloud pressure and cloud fraction to a date in this object
+        :param date: The date to add the data to
+        :type date: DateTime
+        :param trop_data: The tropomi data on a day
+        :type trop_date: TropomiData
+        """
 
         tomiind = self.tomiind
         day_index = get_days_since_data_start(date, self.start_date)
@@ -87,7 +100,8 @@ class DataCollector:
         self.s5p_cf[day_index] += sum(trop_data.cldfrac[tomiind])
         self.s5p_cnt[day_index] += len(tomiind)
 
-    def set_trop_ind_for_day(self, date, trop_data, pandora_data):
+    def set_trop_ind_for_day(self, date, diff_deg, trop_data, pandora_data):
+        """Finds the relevent """
         # Find coincident data for this file:
         self.difflon = abs(np.subtract(trop_data.lons, pandora_data.panlon))
         self.difflat = abs(np.subtract(trop_data.lats, pandora_data.panlat))
@@ -97,13 +111,13 @@ class DataCollector:
         # For Pandora 'Trop' data, only consider TROPOMI scenes where the
         # total column exceeds the stratospheric column:
         if (trop_data.no2_col == 'Tot'):
-            tomiind = np.argwhere((self.difflon <= DIFF_DEG)
-                                  & (self.difflat <= DIFF_DEG)
+            tomiind = np.argwhere((self.difflon <= diff_deg)
+                                  & (self.difflat <= diff_deg)
                                   & (trop_data.no2val != np.nan)
                                   & (trop_data.omi_dd == date.day))
         if (trop_data.no2_col == 'Trop'):
-            tomiind = np.argwhere((self.difflon <= DIFF_DEG)
-                                  & (self.difflat <= DIFF_DEG)
+            tomiind = np.argwhere((self.difflon <= diff_deg)
+                                  & (self.difflat <= diff_deg)
                                   & (trop_data.no2val != np.nan)
                                   & (trop_data.omi_dd == date.day)
                                   & (trop_data.stratcol < trop_data.totcol))
@@ -736,7 +750,7 @@ if __name__ == "__main__":
                     trop_data.preprocess()
                     cloud_data = CloudData(cloud_file_on_day, args.cloud_product, trop_data)
                     trop_data.apply_cloud_filter(args.no2_col, cloud_data)
-                    data_aggregator.set_trop_ind_for_day(processing_day, trop_data, pandora_data)
+                    data_aggregator.set_trop_ind_for_day(processing_day, DIFF_DEG, trop_data, pandora_data)
                     data_aggregator.add_trop_data_to_day(processing_day, trop_data)
                     for hour in range(data_aggregator.nhrs):
                         data_aggregator.add_pandora_data_to_day(processing_day, hour, pandora_data)
