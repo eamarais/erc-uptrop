@@ -14,13 +14,11 @@ from uptrop.constants import MW_AIR as mmair
 from uptrop.constants import R_GAS_UNIV as rgas
 
 def alt2pres(height):
+    """Convert altitude provided in m to pressure in Pa.
 
-    """ 
-    Convert altitude provided in m to pressure in Pa.
+    :param height: Height in m.
 
-    INPUT: Height in m.
-
-    OUTPUT: Pressure in Pa.
+    :return: Pressure in Pa.
     """
 
     # Define additional constants:

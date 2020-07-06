@@ -424,7 +424,7 @@ class TropomiData:
 
 
     def preprocess(self):
-        """Prepares the Tropomi data for use.
+        """Prepares the Tropomi data for use. Applies bias correction if needed here.
         REFERNCE HERE
         """
         # Calculate the geometric AMF:
@@ -476,7 +476,11 @@ class TropomiData:
             self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
 
     def apply_cloud_filter(self, cloud_product):
-
+        """Applies a cloud filter and finishes preprocessing.
+        :param cloud_product: An instance of CloudData for filtering with
+        :type cloud_product: CloudData
+        :raises BadCloudShapeException: Raised if  the cloud_product is not the same shape as the Tropomi slice
+        """
         # Select which NO2 data to use based on NO2_COL selection:
         if (self.no2_col == 'Tot'):
             self.tno2val = self.tgeototvcd
@@ -487,6 +491,7 @@ class TropomiData:
             stratcol = self.tstratno2
             totcol = self.tgeototvcd
         else:
+            # This should be unreachable, so is undocumented. Bet we'll regret that later.
             raise BadNo2ColException
 
         # Check that data shapes are equal:
@@ -531,13 +536,25 @@ class TropomiData:
 
 
 class CloudData:
+    """A class containing cloud data extracted from either tropomi data or ocra data.
+    """
     def __init__(self, filepath, product_type, tropomi_data=None):
+        """Returns an instance of the cloud data needed from filtering. This can come from either a freco cloud product
+        (part of Tropomi) or a dlr-ocra file
+        :param filepath: Path to the file
+        :type filepath: str
+        :param product_type: Can be 'dlr-ocra' or 'fresco'
+        :type product_type: str
+        :param tropomi_data: An instance of TropomiData. Required if type is 'fresco'
+        :type tropomi_data: TropomiData"""
+
         if product_type == "dlr-ocra":
             self.read_ocra_data(filepath)
         elif product_type == "fresco":
             self.read_fresco_data(filepath, tropomi_data)
 
     def read_ocra_data(self, filepath):
+        """Reads ocra data"""
         # Read data:
         fh = Dataset(filepath, mode='r')
         # TODO: Watch out for those string indexes. Change when format is understood.
@@ -570,6 +587,7 @@ class CloudData:
         fh.close()
 
     def read_fresco_data(self, filepath, tropomi_data):
+        """Reads fresco data. Uses tropomi_data to filter for misclassified snow."""
         # FRESCO product is in NO2 file
         fh = Dataset(filepath, mode='r')
         # Cloud input data (cldfrac, cldalb, cldpres):
@@ -607,9 +625,16 @@ class CloudData:
 
 
 class PandoraData:
-    def __init__(self, panfile,col_type):
+    """Extracts and preprocesses pandora data from a pandora datafile. See docs for read_pandora for file details"""
+    def __init__(self, file_path, col_type):
+        """Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to no2 and no2_err
+        to bring the product up to 'pseudo 1.8'. Also applies corrections for Manua Loa if needed
+        :param file_path: Path to the pandora file
+        :type file_path: str
+        :param col_type: Can be 'Tot' or 'Trop'
+        :type col_type: str"""
         # Read Pandora data from external function:
-        p = readpandora(panfile,col_type)
+        p = readpandora(file_path, col_type)
         # Extract latitude and longitude:
         loc = p[0]
         self.panlat = loc['lat']
@@ -647,29 +672,45 @@ class PandoraData:
         # Get data length (i.e., length of each row):
         npanpnts = len(df)
         # Confirm processing correct site:
-        print('Pandora Site: ', panfile)
+        print('Pandora Site: ', file_path)
 
 
-def get_tropomi_files_on_day(tomidir, date):
+def get_tropomi_files_on_day(tropomi_dir, date):
+    """Gets a sorted list of tropomi files in tropomi_dir on date
+    :param tropomi_dir: The directory containing tropomi files
+    :type tropomi_dir: str
+    :param date: The date to search for
+    :type date: DateTime
+    :return: A list of filepaths to tropomi files
+    :rtype: list of str
+    """
     # Converts the python date object to a set string representation of time
     # In this case, zero-padded year, month and a datestamp of the Sentinel format
     # See https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
-    tomi_glob_string = os.path.join(tomidir, 'NO2_OFFL', year, month,'S5P_OFFL_L2__NO2____'+ datestamp + '*')
+    tomi_glob_string = os.path.join(tropomi_dir, 'NO2_OFFL', year, month, 'S5P_OFFL_L2__NO2____' + datestamp + '*')
     tomi_files_on_day = glob.glob(tomi_glob_string)
     print('Found {} tropomi files for {}: '.format(len(tomi_files_on_day), date))
     tomi_files_on_day = sorted(tomi_files_on_day)
     return tomi_files_on_day
 
 
-def get_ocra_files_on_day(tomidir,date):
+def get_ocra_files_on_day(tropomi_dir, date):
+    """Gets a sorted list of tropomi files in tropomi_dir on date
+    :param tropomi_dir: The directory containing tropomi files
+    :type tropomi_dir: str
+    :param date: The date to search for
+    :type date: DateTime
+    :return: A list of filepaths to ocra files in the tropomi dir
+    :rtype: list of str
+    """
     # Get string of day:
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
-    cld_glob_string = os.path.join(tomidir, "CLOUD_OFFL", year, month,
+    cld_glob_string = os.path.join(tropomi_dir, "CLOUD_OFFL", year, month,
                                    'S5P_OFFL_L2__CLOUD__' + datestamp + '*')
     cldfile = glob.glob(cld_glob_string)[0]
     # Order the files:
@@ -678,12 +719,14 @@ def get_ocra_files_on_day(tomidir,date):
 
 
 def get_pandora_file(pandir, pandora_site, site_num, c_site, no2_col, fv):
+    """Gets the pandora file for the given set of parameters"""
     pandora_glob_string = os.path.join(pandir, pandora_site,
                          'Pandora' + site_num + 's1_' + c_site + '_L2' + no2_col + '_' + fv + '.txt')
     return glob.glob(pandora_glob_string)[0]
 
 
 def get_days_since_data_start(date, data_start = None):
+    """Returns the number of days since the start date. If no start date is given, assumed 01/05/2019"""
     if not data_start:
         data_start = dt.datetime(year=2019, month=5, day=1)
     delta = date - data_start
