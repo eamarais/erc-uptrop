@@ -12,7 +12,6 @@
 import glob
 import sys
 import os
-import netCDF4 as nc4
 from netCDF4 import Dataset
 import numpy as np
 import argparse
@@ -20,7 +19,6 @@ import datetime as dt
 from dateutil import rrule as rr
 from dateutil.relativedelta import relativedelta as rd
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from scipy import stats
 
 # Silly import hack for ALICE
