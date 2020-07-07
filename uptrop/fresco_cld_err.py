@@ -328,7 +328,7 @@ class CloudVariableStore:
 
         :param plot_dir: The directory that will contain the plots
         :type plot_dir: str"""
-        # TODO: Get MMName and StrYY from filename instead of the global at the bottom of the script
+        # TODO: Get MMName and StrYY from file_path instead of the global at the bottom of the script
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
                     llcrnrlon=MIN_LON, llcrnrlat=-70,
@@ -420,7 +420,7 @@ class CloudComparisonData:
         :return: A filtered and sanity-checked cloud comparison
         :rtype: CloudComparisonData
         """
-        # TODO: Ask E which number in the filename is the orbit
+        # TODO: Ask E which number in the file_path is the orbit
         self.forb = path.basename(tf_file_path)[104:109]
         self.dorb = path.basename(td_file_path)[106:111]
         # Check orbit/swath is the same. If not, skip this iteration:
@@ -643,7 +643,7 @@ def process_file(tdfile, tffile, running_total_container):
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
     """Gets fresco an
     For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every DLR and Fresco
-    filepath. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
+    file_path. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
 
     :param sen_5_p_dir: The directory containing the DLR and Fresco files
     :type sen_5_p_dir: str
@@ -686,7 +686,7 @@ def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
         strdd[cnt] = '0' + str(d) if d < 10 else str(d)
         cnt = cnt + 1
 
-    # dir structure specific to HPC, filename from TROPOMI
+    # dir structure specific to HPC, file_path from TROPOMI
     # Get DLR data file names:
     td_file_list = glob.glob(
         path.join(sen_5_p_dir,

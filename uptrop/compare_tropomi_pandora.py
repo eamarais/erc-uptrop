@@ -311,7 +311,7 @@ class DataCollector:
 class TropomiData:
     """A class for reading, preprocessing and cloud-masking Tropomi data files"""
     def __init__(self, filepath, apply_bias_correction, no2_col):
-        """Returns a new instance of CloudComparisonData containing the data from filepath.
+        """Returns a new instance of CloudComparisonData containing the data from file_path.
         You can also choose whether to apply bias correction and whethere you want the total or troposphere only
         column of this data
         :param filepath: The path to the Tropomi netcdf file
@@ -793,7 +793,7 @@ if __name__ == "__main__":
         Y_MIN=10
         Y_MAX=50
 
-    # Get Pandora filename (one file per site):
+    # Get Pandora file_path (one file per site):
     panfile= get_pandora_file(args.pandir, args.pandora_site, SITE_NUM, C_SITE, args.no2_col, FV)
     if ( args.apply_bias_correction ):
         outfile = os.path.join(args.outdir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v2.nc')

@@ -522,7 +522,7 @@ class TropomiData:
 class CloudData:
 
     def __init__(self, file_path, data_type):
-        # Set from filename
+        # Set from file_path
         self.file_name = path.basename(file_path)
         self.date = get_date(self.file_name)  # Assuming for now that ocra and S5P have the same timestamping
 
