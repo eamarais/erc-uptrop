@@ -82,8 +82,8 @@ class CloudVariableStore:
     Class containing the running results of various datas for this project; also saving to netCDF and plotting.
     """
     def __init__(self, data_shape):
-        """
-        Creates an empty CloudVariableStore of shape data_shape
+        """Creates an empty CloudVariableStore of shape data_shape
+
         :param data_shape: Tuple of (presumably) two elements for shape of cloud data
         :type data_shape: List of length 2
         """
@@ -111,8 +111,8 @@ class CloudVariableStore:
         self.dlr_cf_freq = np.zeros((len(self.latbin), len(self.cldbin)))
 
     def update_pixel(self, tropomi_data, trop_i, trop_j):
-        """
-        Updates the appropriate pixel of running cloud variables with the tropomi data at trop_i, trop_j.
+        """Updates the appropriate pixel of running cloud variables with the tropomi data at trop_i, trop_j.
+
         :param tropomi_data: The tropomi dataset
         :type tropomi_data: CloudComparisonData
         :param trop_i: First index of pixel
@@ -159,10 +159,11 @@ class CloudVariableStore:
         self.gdlr_cnt[p, q] += 1.0
 
     def cloud_fraction_filtering(self, tropomi_data):
-        """
-        Gather data on frequency of cloud fraction > 0.7:
+        """Gather data on frequency of cloud fraction > 0.7:
+
         This is done before filtering for scenes with knmi cloud frac
         > 0.7 to also include all relevant DLR scenes:
+
         :param tropomi_data: The tropomi data containing the cloud fractions
         :type tropomi_data: CloudComparisonData
         """
@@ -195,8 +196,8 @@ class CloudVariableStore:
                     self.dlr_cf_freq[n, w] += len(dbin)
 
     def update_nobs(self, tropomi_data):
-        """
-        Given a tropomi_data object, updates the number of observations.
+        """Given a tropomi_data object, updates the number of observations.
+
         :param tropomi_data: The tropomi data objects
         :type tropomi_data: CloudComparisonData
         """
@@ -204,7 +205,8 @@ class CloudVariableStore:
         self.nobs_fresco += tropomi_data.nobs_fresco
 
     def calc_cloud_statistics(self):
-        """
+        """Finalises cloud statistics
+
         For each pixel in the final model, calculate the cloud fraction, cloud top pressure, cloud albedo and (for
         DLR) cloud base pressure. Cloud pressure is given in Pa.
         """
@@ -225,7 +227,9 @@ class CloudVariableStore:
 
     def write_to_netcdf(self, out_dir):
         """Given an out_directory, writes totalled data to netcdf.
+
         The file will be named 'fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-[file_version].nc'
+
         :param out_dir: The directory that will contain the file.
         :type out_dir: str
         """
@@ -321,6 +325,7 @@ class CloudVariableStore:
 
     def plot_clouds_products(self, plot_dir):
         """For cloud fraction, cloud top pressure, plots the products for DLR, FRESCO and DLR-FRESCO
+
         :param plot_dir: The directory that will contain the plots
         :type plot_dir: str"""
         # TODO: Get MMName and StrYY from filename instead of the global at the bottom of the script
@@ -406,8 +411,8 @@ class CloudComparisonData:
     """
 
     def __init__(self, td_file_path, tf_file_path):
-        """
-        Returns an instance of CloudComparisonData for comparing fresco and dlr files
+        """Returns an instance of CloudComparisonData for comparing fresco and dlr files
+
         :param td_file_path: The path to the DLR file
         :type td_file_path: str
         :param tf_file_path: The path to the Fresco file
@@ -432,6 +437,7 @@ class CloudComparisonData:
 
     def read_tdfile(self, tdfile):
         """Read DLR cloud data
+
         :param tdfile: Path to the DLR file
         :type tdfile: str"""
         dlr_cloud_data = Dataset(tdfile, mode='r')
@@ -461,6 +467,7 @@ class CloudComparisonData:
 
     def read_tffile(self, tffile):
         """Read in FRESCO cloud data
+
         :param tffile: Path to the tffile
         :type tffile: str"""
         fresco_cloud_data = Dataset(tffile, mode='r')
@@ -485,6 +492,7 @@ class CloudComparisonData:
 
     def filter_tdfile(self):
         """Filters DLR data for fill values, quality less than 0.5 and snow cover.
+
         :raises NanInDataException: Raised when any NaNs remain in data
         """
         # Convert all valid snow/ice free flag values (0,255) to 0.
@@ -531,14 +539,15 @@ class CloudComparisonData:
             raise NanInDataException('Not all missing values converted to NANs')
 
     def filter_tffile(self):
-        """
+        """Filters fresco data
+
         Applies the following filters to the fresco data
         Snow: Drops values for snow, coastline, misclassified clouds (snow between 80 and 104)
         Cloud fraction: Drop values where
          - cloud fraction < 0.7
          - quality is < 0.45
          - cloud top pressure is between PMAX and PMIN
-         - That value is snow, ice or cloud according to the snowmask
+         - Cloudmask is not 0
         """
         # Convert all valid snow/ice free flag values (0,255) to 0.
         self.tfsnow = np.where(self.tfsnow == 255, 0, self.tfsnow)
@@ -576,6 +585,7 @@ class CloudComparisonData:
 
     def check_parity(self):
         """Checks the shape of fresco and dlr data match
+
         :raises ShapeMismatchException: Raised when the shapes do not match"""
         # Skip files if the number of indices are not equal:
         if self.tdlons.shape != self.tflons.shape:
@@ -583,13 +593,15 @@ class CloudComparisonData:
             raise ShapeMismatchException
 
     def get_nobs(self):
-        """
+        """Gets the number of valid observations in this cloud data
+
         Returns a tuple of number of valid cloud observations of (dlr product, fresco product)
         A valid observation has:
          - Quality of <0.5 (dlr) or <0.45(fresco)
          - Cloud fraction >= 0.7
          - top-of-atmosphere pressure between PMIN and PMAX
          - No snow (snow mask = 0)
+
         :return: A tuple of number of valid observations of (dlr, fresco)
         :rtype: tuple (int, int)
         """
@@ -603,6 +615,7 @@ class CloudComparisonData:
 def process_file(tdfile, tffile, running_total_container):
     """Processes a paired dlr and fresco product, adds the pixels to the running total in the
     running_total_container and updates the cloud_fraction
+
     :param tdfile: Path to the dlr file
     :type tdfile: str
     :param tffile: Path to the fresco file
@@ -628,15 +641,21 @@ def process_file(tdfile, tffile, running_total_container):
 
 
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
-    """
+    """Gets fresco an
     For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every DLR and Fresco
     filepath. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
+
     :param sen_5_p_dir: The directory containing the DLR and Fresco files
     :type sen_5_p_dir: str
     :param month_index: The month index
     :type month_index: int
     :param ndays: The number of days in the month
     :type ndays: int
+
+    :raises FileMismatchException: Raised if there is an unequal number of fresco and dlr files
+
+    :return: The list of dlr files and the list of fresco files
+    :rtype: tuple(dlr files, fresco files)
     """
     # TODO Roll the string manufacturing into the CloudVariableStore class
     global StrMM, StrYY, MMName
