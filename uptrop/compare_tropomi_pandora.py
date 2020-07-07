@@ -26,7 +26,7 @@ sys.path.append(
     os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
         '..'))
-from uptrop.read_pandora import readpandora
+from uptrop.read_pandora import read_pandora
 from uptrop.bootstrap import rma
 from uptrop.constants import DU_TO_MOLECULES_PER_CM2 as du2moleccm2
 
@@ -634,7 +634,7 @@ class PandoraData:
         :param col_type: Can be 'Tot' or 'Trop'
         :type col_type: str"""
         # Read Pandora data from external function:
-        p = readpandora(file_path, col_type)
+        p = read_pandora(file_path, col_type)
         # Extract latitude and longitude:
         loc = p[0]
         self.panlat = loc['lat']

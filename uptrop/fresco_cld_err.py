@@ -8,11 +8,11 @@
     0.7 and clouds top (centroid) pressure in the upper troposphere 
     (180-450 hPa).
 
-    (1) Initial version created on 15 March 2020 by Eloise Marais
-        (eloise.marais@le.ac.uk). Reworked by John Roberts June 2020
-        (jfr10@le.ac.uk)
-
 '''
+
+#    (1) Initial version created on 15 March 2020 by Eloise Marais
+#        (eloise.marais@le.ac.uk). Reworked by John Roberts June 2020
+#        (jfr10@le.ac.uk)
 
 # Import relevant packages:
 import glob

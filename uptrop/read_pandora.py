@@ -1,5 +1,11 @@
 #!/usr/bin/python
 
+"""A small set of functions for converting a Pandora file to a dataframe.
+
+The main function in this module is readpandora
+
+"""
+
 # Import relevant packages:
 import glob
 import sys
@@ -66,7 +72,7 @@ def get_lat_lon(filename):
     return {"lat": lat, "lon": lon}
 
 
-def readpandora(filename,no2col):
+def read_pandora(filename, no2col):
 
     """
     Reads a Pandora file to a pandas dataframe
