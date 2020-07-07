@@ -28,7 +28,9 @@ class CloudFileDateMismatch(Exception):
 
 
 class CloudFileShapeMismatch(Exception):
-    pass
+    """
+    Raised when FRESCO and DLR files are not the same shape
+    """
 
 
 class GridAggregator:
@@ -207,6 +209,7 @@ class GridAggregator:
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
         print('(9) Total possible points: ', (sum(self.loss_count.values()) + self.cloud_slice_count), flush=True)
+        print('Mean % points retained: ', np.mean(self.postfilt),flush=True)
 
     def save_to_netcdf(self, out_file):
         ncout = Dataset(out_file, mode='w',format="NETCDF4")
@@ -435,7 +438,7 @@ class TropomiData:
     def apply_bias_correction(self):
         # Bias correct stratosphere based on comparison of TROPOMI to Pandora Mauna Loa:
         tstratno2 = np.where(self.stratno2_og != self.fillval,
-                             ((self.stratno2_og - (6.5e14 / self.no2sfac)) / 0.87), np.nan)
+                             ((self.stratno2_og - (6.6e14 / self.no2sfac)) / 0.86), np.nan)
 
         # Bias correct troposphere based on comparison of TROPOMI to Pandora Izana:
         tgeotropvcd = np.where(self.tgeotropvcd != self.fillval,
@@ -475,13 +478,6 @@ class TropomiData:
             print('EXITING: Files are not for the same date!', flush=True)
             raise CloudFileDateMismatch
 
-        # Check that data shapes are equal:
-        if cloud_data.cldfrac.shape != self.sza.shape:
-            print('Cloud product and NO2 indices ne!', flush=True)
-            print(cloud_data.cldfrac.shape, self.sza.shape, flush=True)
-            print('Skipping this swath', flush=True)
-            raise CloudFileShapeMismatch
-
         tgeototvcd = self.tgeototvcd
         # Filter to only include very cloudy scenes at high altitude
         # No. of valid total NO2 column points before apply filtering:
@@ -518,7 +514,6 @@ class TropomiData:
 
         self.cldpres = cloud_data.tcldpres[~np.isnan(tgeototvcd)]
 
-
 class CloudData:
 
     def __init__(self, file_path, data_type):
@@ -531,10 +526,14 @@ class CloudData:
         self.tcldpres = None
         self.tsnow = None
 
+        # Initialize:
+        self.data_parity = True
+
         if data_type == 'fresco':
             self.read_fresco_file(file_path)
         elif data_type == 'dlr-ocra':
             self.read_ocra_file(file_path)
+            self.check_parity()
 
     def read_fresco_file(self, file_path):
         fh = Dataset(file_path)
@@ -621,6 +620,13 @@ class CloudData:
         # Close DLR CLOUD file:
         fd.close()
 
+    def check_parity(self):
+        # Skip files if the number of indices are not equal:            
+        if self.cldfrac.shape != trop_data.sza.shape:
+            print('Cloud product and NO2 indices ne!', flush=True)
+            print(self.cldfrac.shape, trop_data.sza.shape, flush=True)
+            print('Skipping this swath', flush=True)
+            self.data_parity=False
 
 #   TODO: Move these into a seperate file for reuse maybe
 def get_tropomi_file_list(trop_dir, date_range):
@@ -681,7 +687,7 @@ if __name__ == "__main__":
     parser.add_argument("--season", default='jja', help="Can be jja, son, djf, mam")
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
     parser.add_argument("--cloud_product", default = "fresco", help="can be fresco or dlr-ocra")
-    parser.add_argument("--cloud_threshold", default = "07", help="can be 07, 08, 09, 10")
+    parser.add_argument("--cloud_threshold", default = "07", help="recommended value is 07. Can also test 08, 09, 10")
     parser.add_argument("--pmin", default=180, type=int)
     parser.add_argument("--pmax", default=450, type=int)
     args = parser.parse_args()
@@ -726,6 +732,7 @@ if __name__ == "__main__":
     date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
 
     trop_files = get_tropomi_file_list(args.trop_dir, date_range)
+    print('Found total of {} files: '.format(len(trop_files)))
     if args.cloud_product == "fresco":
         cloud_files = trop_files
     elif args.cloud_product == "dlr-ocra":
@@ -739,6 +746,7 @@ if __name__ == "__main__":
     for trop_file, cloud_file in zip(trop_files, cloud_files):
         trop_data = TropomiData(trop_file, args.pmax, args.pmin)
         cloud_data = CloudData(cloud_file, data_type=args.cloud_product)
+        if cloud_data.data_parity==False: continue
         trop_data.calc_geo_column()
         trop_data.apply_bias_correction()
         trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold)
