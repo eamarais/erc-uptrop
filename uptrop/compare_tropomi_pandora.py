@@ -107,7 +107,7 @@ class DataCollector:
         :type date: DateTime
         :param diff_deg: The size of the grid square over the Pandora site to extract Tropomi data from
         :type grid_square: float
-        :param trop_data: The TropomiData object containing tropomi data
+        :param trop_data: The CloudComparisonData object containing tropomi data
         :type trop_data: TropomiData
         :param pandora_data: The PandoraData object containining Pandora data for date
         :type pandora_data: PandoraData
@@ -311,7 +311,7 @@ class DataCollector:
 class TropomiData:
     """A class for reading, preprocessing and cloud-masking Tropomi data files"""
     def __init__(self, filepath, apply_bias_correction, no2_col):
-        """Returns a new instance of TropomiData containing the data from filepath.
+        """Returns a new instance of CloudComparisonData containing the data from filepath.
         You can also choose whether to apply bias correction and whethere you want the total or troposphere only
         column of this data
         :param filepath: The path to the Tropomi netcdf file
@@ -320,7 +320,7 @@ class TropomiData:
         :type apply_bias_correction: bool
         :param no2_col: Whether to use all atmospheric data or just the troposphere
         :type no2_col: str (can be 'Tot' or 'Trop')
-        :return: Returns a new TropomiData instance.
+        :return: Returns a new CloudComparisonData instance.
         :rtype: TropomiData"""
         # Read file:
         fh = Dataset(filepath, mode='r')
@@ -545,7 +545,7 @@ class CloudData:
         :type filepath: str
         :param product_type: Can be 'dlr-ocra' or 'fresco'
         :type product_type: str
-        :param tropomi_data: An instance of TropomiData. Required if type is 'fresco'
+        :param tropomi_data: An instance of CloudComparisonData. Required if type is 'fresco'
         :type tropomi_data: TropomiData"""
 
         if product_type == "dlr-ocra":
