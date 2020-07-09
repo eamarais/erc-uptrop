@@ -26,16 +26,16 @@ CLOUD_SLICE_ERROR_ENUM = {
     7: "non_uni_strat"
 }
 
-def cldslice(pcolno2,cldtophgt):
 
-    """ 
+def cldslice(pcolno2,cldtophgt):
+    """
     Compute upper troposphere NO2 using partial columns above
-    cloudy scenes. 
+    cloudy scenes.
 
     Determine NO2 mixing ratio by regressing NO2 partial columns
     against cloud-top heights over cloudy scenes.
 
-    INPUT: vectors of partial columns in molec/m2 and corresponding 
+    INPUT: vectors of partial columns in molec/m2 and corresponding
            cloud top heights in hPa.
 
     OUTPUT: NO2 volumetric mixing ratio, corresponding estimated error on the
@@ -44,7 +44,6 @@ def cldslice(pcolno2,cldtophgt):
             NO2 value ia nan, and the mean cloud pressure of data retained
             after 10th and 90th percentile filtering.
     """
-
     # Initialize:
     utmrno2=0.0
     utmrno2err=0.0
