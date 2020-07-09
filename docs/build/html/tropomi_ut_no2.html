@@ -1,13 +1,12 @@
 
-
-<!doctype html>
+<!DOCTYPE html>
 
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tropomi_ut_no2 &#8212; Uptrop 1 documentation</title>
-    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,15 +14,11 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script src="_static/bizstyle.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ut_no2_gc_test" href="ut_no2_gc_test.html" />
-    <link rel="prev" title="read_pandora" href="read_pandora.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
+    <link rel="prev" title="read_pandora" href="read_pandora.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -51,17 +46,17 @@
           <div class="body" role="main">
             
   <div class="section" id="module-uptrop.tropomi_ut_no2">
-<span id="tropomi-ut-no2"></span><h1>tropomi_ut_no2<a class="headerlink" href="#module-uptrop.tropomi_ut_no2" title="Permalink to this headline">¶</a></h1>
+<span id="tropomi-ut-no2"></span><h1>tropomi_ut_no2<a class="headerlink" href="#module-uptrop.tropomi_ut_no2" title="Permalink to this headline"> </a></h1>
 <p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
 <p>The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction &gt;=0.7 and within the cloud top pressure range of 450-180 hPa.</p>
 <p>Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.</p>
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.CloudData">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData" title="Permalink to this definition"> </a></dt>
 <dd><p>Class for containing the data for cloud filtering and analysis.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.CloudData.read_fresco_file">
-<code class="sig-name descname">read_fresco_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_fresco_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_fresco_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_fresco_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Reads and filters the fresco data in a s5p file</p>
 <dl class="simple">
 <dt>Pixels are dropped if</dt><dd><ul class="simple">
@@ -81,7 +76,7 @@
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.CloudData.read_ocra_file">
-<code class="sig-name descname">read_ocra_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_ocra_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_ocra_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_ocra_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Reads, filters and preprocesses the data in a dlr-ocra file.</p>
 <p><span class="xref std std-ref">uptrop.convert_height_to_pressure</span> is called to convert ocra cloud-top heights to
 pressure values for cross-compatability with fresco data.</p>
@@ -103,22 +98,22 @@ pressure values for cross-compatability with fresco data.</p>
 
 <dl class="py exception">
 <dt id="uptrop.tropomi_ut_no2.CloudFileDateMismatch">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileDateMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileDateMismatch" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileDateMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileDateMismatch" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
 
 <dl class="py exception">
 <dt id="uptrop.tropomi_ut_no2.CloudFileShapeMismatch">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileShapeMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileShapeMismatch" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileShapeMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileShapeMismatch" title="Permalink to this definition"> </a></dt>
 <dd><p>Raised when FRESCO and DLR files are not the same shape</p>
 </dd></dl>
 
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">GridAggregator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dellat</span></em>, <em class="sig-param"><span class="n">dellon</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">GridAggregator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dellat</span></em>, <em class="sig-param"><span class="n">dellon</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for aggregating higher-resolution data into grid squares</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.add_slice">
-<code class="sig-name descname">add_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">t_cld</span></em>, <em class="sig-param"><span class="n">t_col_no2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.add_slice" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">t_cld</span></em>, <em class="sig-param"><span class="n">t_col_no2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.add_slice" title="Permalink to this definition"> </a></dt>
 <dd><p>Extracts the upper troposphere no2, no2 error and mean cloud pressure for grid square [i,j]</p>
 <p>This method uses the cloud-slicing function [ref]cld
 Once calculated, the a weighting is derived from cloud pressure.
@@ -138,7 +133,7 @@ If the cloud slicing fails, then the reason is added to loss_count for the end r
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.apply_cloud_slice">
-<code class="sig-name descname">apply_cloud_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_slices</span><span class="o">=</span><span class="default_value">40</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.apply_cloud_slice" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">apply_cloud_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_slices</span><span class="o">=</span><span class="default_value">40</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.apply_cloud_slice" title="Permalink to this definition"> </a></dt>
 <dd><p>Applies the cloud slicing algorithm to each square in the populated grid.</p>
 <p>This method walks over every gridsquare in gno2/gstrat/gcldp.
 After sanity checks and conversion to hPa, that pixel’s data is split into
@@ -157,14 +152,14 @@ run on the pixel’s entire dataset.</p>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means">
-<code class="sig-name descname">calc_seasonal_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calc_seasonal_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means" title="Permalink to this definition"> </a></dt>
 <dd><p>Calculates the mean no2 mixing ratio using Gaussian weights or counts.</p>
 <p>This is to be applied at the end of processing to get the final data that will be saved and plotted.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.grid_trop_data">
-<code class="sig-name descname">grid_trop_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.grid_trop_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">grid_trop_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.grid_trop_data" title="Permalink to this definition"> </a></dt>
 <dd><p>Allocates the strat, no2 and cloud pressure in trop_data into the gno2, gstrat and gcldp grid</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -175,25 +170,25 @@ run on the pixel’s entire dataset.</p>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.initalise_grid">
-<code class="sig-name descname">initalise_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.initalise_grid" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initalise_grid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.initalise_grid" title="Permalink to this definition"> </a></dt>
 <dd><p>Zeros the gno2, gstrat, gcldp and cntloop members with empty appendable lists</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.plot_data">
-<code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.plot_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.plot_data" title="Permalink to this definition"> </a></dt>
 <dd><p>Plots the seasonal_means to screen.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.print_report">
-<code class="sig-name descname">print_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.print_report" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">print_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.print_report" title="Permalink to this definition"> </a></dt>
 <dd><p>Prints a report of useful data and reasons for data loss.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.save_to_netcdf">
-<code class="sig-name descname">save_to_netcdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.save_to_netcdf" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save_to_netcdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out_file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.save_to_netcdf" title="Permalink to this definition"> </a></dt>
 <dd><p>Saves the seasonal_means to out_file as a netcdf4</p>
 <p>Call after calling calc_seasonal_means at least once.</p>
 <dl class="field-list simple">
@@ -207,11 +202,11 @@ run on the pixel’s entire dataset.</p>
 
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.TropomiData">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">TropomiData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">TropomiData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for extracting, preprocessing and containing data from a s5p tropomi file.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction">
-<code class="sig-name descname">apply_bias_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">apply_bias_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction" title="Permalink to this definition"> </a></dt>
 <dd><p>Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
 The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
 [</p>
@@ -219,13 +214,13 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.calc_geo_column">
-<code class="sig-name descname">calc_geo_column</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.calc_geo_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calc_geo_column</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.calc_geo_column" title="Permalink to this definition"> </a></dt>
 <dd><p>Calculates the geometric AMF and tropospheric vertical column of this data</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess">
-<code class="sig-name descname">cloud_filter_and_preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cloud_data</span></em>, <em class="sig-param"><span class="n">cldthld</span></em>, <em class="sig-param"><span class="n">pmin</span></em>, <em class="sig-param"><span class="n">pmax</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">cloud_filter_and_preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cloud_data</span></em>, <em class="sig-param"><span class="n">cldthld</span></em>, <em class="sig-param"><span class="n">pmin</span></em>, <em class="sig-param"><span class="n">pmax</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess" title="Permalink to this definition"> </a></dt>
 <dd><p>Filters this tropomi data using the cloud information in cloud_data</p>
 <dl class="simple">
 <dt>Removes data where</dt><dd><ul class="simple">
@@ -251,7 +246,7 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.read_trop_file">
-<code class="sig-name descname">read_trop_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.read_trop_file" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">read_trop_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.read_trop_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Reads the data at file_path into this object. Called by the constructor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -264,12 +259,12 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 
 <dl class="py exception">
 <dt id="uptrop.tropomi_ut_no2.UnequalColumnException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="uptrop.tropomi_ut_no2.get_date">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">time_stamp_index</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_date" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">time_stamp_index</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_date" title="Permalink to this definition"> </a></dt>
 <dd><p>Extracts a datetime object from a filename with a Sentinel timestamp</p>
 <p>See <a class="reference external" href="https://regex101.com/r/QNG11l/1">https://regex101.com/r/QNG11l/1</a> for examples</p>
 <dl class="field-list simple">
@@ -290,7 +285,7 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 
 <dl class="py function">
 <dt id="uptrop.tropomi_ut_no2.get_ocra_file_list">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ocra_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_file_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ocra_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_file_list" title="Permalink to this definition"> </a></dt>
 <dd><p>Returns an alphabetically sorted list of Ocra files
 within a range of dates.</p>
 <dl class="field-list simple">
@@ -311,7 +306,7 @@ within a range of dates.</p>
 
 <dl class="py function">
 <dt id="uptrop.tropomi_ut_no2.get_ocra_files_on_day">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_files_on_day" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_files_on_day" title="Permalink to this definition"> </a></dt>
 <dd><p>Returns a list of ocra files on a given date.</p>
 <p>Uses the <span class="xref std std-ref">uptrop.tropomi_ut_no2.get_date</span> function to extract each candidate file’s date from it’s filename</p>
 <dl class="field-list simple">
@@ -332,7 +327,7 @@ within a range of dates.</p>
 
 <dl class="py function">
 <dt id="uptrop.tropomi_ut_no2.get_tropomi_file_list">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_file_list" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_file_list" title="Permalink to this definition"> </a></dt>
 <dd><p>Returns an alphabetically sorted list of Tropomi files
 within a range of dates.</p>
 <dl class="field-list simple">
@@ -353,7 +348,7 @@ within a range of dates.</p>
 
 <dl class="py function">
 <dt id="uptrop.tropomi_ut_no2.get_tropomi_files_on_day">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_files_on_day" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_files_on_day" title="Permalink to this definition"> </a></dt>
 <dd><p>Returns a list of tropomi files on a given date.</p>
 <p>Uses the <span class="xref std std-ref">get_date</span> function to extract each candidate file’s date from it’s filename</p>
 <dl class="field-list simple">

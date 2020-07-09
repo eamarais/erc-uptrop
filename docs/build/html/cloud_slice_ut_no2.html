@@ -1,13 +1,12 @@
 
-
-<!doctype html>
+<!DOCTYPE html>
 
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>cloud_slice_ut_no2 &#8212; Uptrop 1 documentation</title>
-    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,15 +14,11 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script src="_static/bizstyle.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="compare_tropomi_pandora" href="compare_tropomi_pandora.html" />
-    <link rel="prev" title="bootstrap" href="bootstrap.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
+    <link rel="prev" title="bootstrap" href="bootstrap.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -51,13 +46,13 @@
           <div class="body" role="main">
             
   <div class="section" id="module-uptrop.cloud_slice_ut_no2">
-<span id="cloud-slice-ut-no2"></span><h1>cloud_slice_ut_no2<a class="headerlink" href="#module-uptrop.cloud_slice_ut_no2" title="Permalink to this headline">¶</a></h1>
+<span id="cloud-slice-ut-no2"></span><h1>cloud_slice_ut_no2<a class="headerlink" href="#module-uptrop.cloud_slice_ut_no2" title="Permalink to this headline"> </a></h1>
 <p>Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa.</p>
 <p>If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.</p>
 <p>If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided.</p>
 <dl class="py function">
 <dt id="uptrop.cloud_slice_ut_no2.cldslice">
-<code class="sig-prename descclassname">uptrop.cloud_slice_ut_no2.</code><code class="sig-name descname">cldslice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcolno2</span></em>, <em class="sig-param"><span class="n">cldtophgt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.cloud_slice_ut_no2.cldslice" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">uptrop.cloud_slice_ut_no2.</code><code class="sig-name descname">cldslice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcolno2</span></em>, <em class="sig-param"><span class="n">cldtophgt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.cloud_slice_ut_no2.cldslice" title="Permalink to this definition"> </a></dt>
 <dd><p>Compute upper troposphere NO2 using partial columns above
 cloudy scenes.</p>
 <p>Determine NO2 mixing ratio by regressing NO2 partial columns

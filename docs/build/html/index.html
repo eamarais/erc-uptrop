@@ -1,13 +1,12 @@
 
-
-<!doctype html>
+<!DOCTYPE html>
 
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Uptrop’s documentation! &#8212; Uptrop 1 documentation</title>
-    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,14 +14,10 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
-    <script src="_static/bizstyle.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="bootstrap" href="bootstrap.html" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <!--[if lt IE 9]>
-    <script src="_static/css3-mediaqueries.js"></script>
-    <![endif]-->
+    <link rel="next" title="bootstrap" href="bootstrap.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -47,7 +42,7 @@
           <div class="body" role="main">
             
   <div class="section" id="welcome-to-uptrop-s-documentation">
-<h1>Welcome to Uptrop’s documentation!<a class="headerlink" href="#welcome-to-uptrop-s-documentation" title="Permalink to this headline">¶</a></h1>
+<h1>Welcome to Uptrop’s documentation!<a class="headerlink" href="#welcome-to-uptrop-s-documentation" title="Permalink to this headline"> </a></h1>
 <p>Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020).</p>
 <p>The python code was developed for the ERC Starting Grant project UpTrop (<a class="reference external" href="https://maraisresearchgroup.co.uk/uptrop.html">https://maraisresearchgroup.co.uk/uptrop.html</a>) led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts.</p>
 <div class="toctree-wrapper compound">
@@ -66,7 +61,7 @@
 </ul>
 </div>
 <div class="section" id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"> </a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -75,12 +70,12 @@
 </div>
 </div>
 <div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"> </a></h1>
 <p>A library for applying the cloud-slicing technique to TROPOMI total columns to obtain upper tropospheric (450-180 hPa) mixing ratios of NO2. This includes a feasibility test of the technique using synthetic observations from GEOS-Chem, validation and quantification of bias corrections by comparing TROPOMI and Pandora total columns at high-altitide sites, application of cloud-slicing using either the FRESCO-S or ROCINN-CAL cloud products, and comparison of effective cloud fractions and cloud top pressures from the two cloud products.</p>
 <p>In the modules, the FRESCO-S product is referred to as FRESCO and the ROCINN-CAL product as DLR.</p>
 <p>A description of the data used, the sources of the data, the details of the GEOS-Chem model simulations, and other relevant information for developing the codes can be found in Marais et al. (2020).</p>
 <div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline"> </a></h2>
 <ul class="simple">
 <li><p>Python &gt;= 3.6</p></li>
 <li><p>Numpy</p></li>
@@ -92,7 +87,7 @@
 <p>If you are using Conda, an environment.yml file is provided.</p>
 </div>
 <div class="section" id="examples-of-use">
-<h2>Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this headline">¶</a></h2>
+<h2>Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this headline"> </a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5:
      python ut_no2_gc_test.py --out_path<span class="o">=</span><span class="s2">&quot;/path/to/output/file&quot;</span> --resolution<span class="o">=</span><span class="s2">&quot;4x5&quot;</span> --region<span class="o">=</span><span class="s2">&quot;NA&quot;</span>
 
@@ -110,7 +105,7 @@ Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at
 </div>
 </div>
 <div class="section" id="scripts">
-<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h2>
+<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"> </a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">ut_no2_gc_test</span></code></p>
 <span class="target" id="module-uptrop.ut_no2_gc_test"></span><p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced 
 NO2 in the upper troposphere and compare this to UT NO2 obtained if
