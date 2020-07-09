@@ -7,7 +7,7 @@ Welcome to Uptrop's documentation!
 ==================================
 Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020).
 
-The python code was first developed by Eloise Marais and substantially improved by John Roberts. Roberts also constucted the code documentation. 
+The python code was developed for the ERC Starting Grant project UpTrop (https://maraisresearchgroup.co.uk/uptrop.html) led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts. 
 
 .. toctree::
    :maxdepth: 2
@@ -58,21 +58,19 @@ Examples of use
 
 .. code-block:: bash
 
-   Cloud-slice synthetic partial columns from GEOS-Chem native North America (NA) nested domain and obtain 
-   seasonal mean NO2 mixing ratios at 4x5:
-   python ut_no2_gc_test.py --out_path="/path/to/output/file" --resolution="4x5" --region="NA"
+   Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5:
+        python ut_no2_gc_test.py --out_path="/path/to/output/file" --resolution="4x5" --region="NA"
    
-   Co-sample daily Pandora and TROPOMI total columns of NO2 at the Izana high-altitude site:
-   python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/ 
+   Co-sample daily Pandora and TROPOMI total NO2 columns at Izana:
+        python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/ 
              /path/to/output/folder/ --no2_col="Tot" --pandora_site="izana"
    
-   Cloud-slice TROPOMI partial columns of NO2 using the FRESCO-S cloud product "fresco" for Jun-Aug ("jja"):
-   python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder/ --cloud_product="fresco" 
+   Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product:
+        python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder/ --cloud_product="fresco" 
              --season="jja"
    
-   Obtain coincident cloud top pressures and cloud fractions from FRESCO-S and ROCINN-CAL as monthly averages 
-   for January at 1x1 using cloud top height rather than cloud top pressure from the ROCINN-CAL product:
-   python fresco_cld_err.py --month="01" --number_of_days=31 --out_res="1x1" --dlr_cld_top="height"  
+   Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at 1x1:
+        python fresco_cld_err.py --month="01" --number_of_days=31 --out_res="1x1" --dlr_cld_top="height"  
 
 
 Scripts
