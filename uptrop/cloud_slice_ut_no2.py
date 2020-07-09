@@ -1,5 +1,12 @@
 #!/usr/bin/python
 
+''' Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa. 
+
+If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.
+
+If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided. 
+   '''
+
 # Import relevant packages:
 import sys
 import os
