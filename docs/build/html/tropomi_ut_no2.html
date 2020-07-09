@@ -52,8 +52,9 @@
             
   <div class="section" id="module-uptrop.tropomi_ut_no2">
 <span id="tropomi-ut-no2"></span><h1>tropomi_ut_no2<a class="headerlink" href="#module-uptrop.tropomi_ut_no2" title="Permalink to this headline">¶</a></h1>
-<p>Aggregates daily S5P data into a global grid across a season
-[ELOISE DO WE NEED MORE HERE?]</p>
+<p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
+<p>The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction &gt;=0.7 and within the cloud top pressure range of 450-180 hPa.</p>
+<p>Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.</p>
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.CloudData">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData" title="Permalink to this definition">¶</a></dt>
@@ -157,7 +158,7 @@ run on the pixel’s entire dataset.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means">
 <code class="sig-name descname">calc_seasonal_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates the mean no2 VMR (WHAT’S THIS? -J), error and weight from cloud-sliced data</p>
+<dd><p>Calculates the mean no2 mixing ratio using Gaussian weights or counts.</p>
 <p>This is to be applied at the end of processing to get the final data that will be saved and plotted.</p>
 </dd></dl>
 
@@ -211,7 +212,9 @@ run on the pixel’s entire dataset.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction">
 <code class="sig-name descname">apply_bias_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies bias corrections to this data. [I THINK WE’LL NEED MORE HERE]</p>
+<dd><p>Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
+The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
+[</p>
 </dd></dl>
 
 <dl class="py method">
@@ -230,7 +233,7 @@ run on the pixel’s entire dataset.</p>
 <li><p>The fraction of cloud is less than the specified cloud threshold</p></li>
 <li><p>Cloud heights are not in the range pmin-pmax</p></li>
 <li><p>Quality value is greater than 0.45</p></li>
-<li><p>AAI is &gt; 1 (WHAT IS AAI? -J)</p></li>
+<li><p>Aerosol Absorbing Index (AAI) is &gt; 1</p></li>
 </ul>
 </dd>
 </dl>
