@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>read_pandora &#8212; Uptrop 1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tropomi_ut_no2" href="tropomi_ut_no2.html" />
+    <link rel="prev" title="gamap_colormap" href="gamap_colormap.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-uptrop.read_pandora">
+<span id="read-pandora"></span><h1>read_pandora<a class="headerlink" href="#module-uptrop.read_pandora" title="Permalink to this headline">¶</a></h1>
+<p>A small set of functions for converting a Pandora file to a dataframe.</p>
+<p>The main function in this module is read_pandora:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uptrop.read_pandora</span> <span class="kn">import</span> <span class="n">read_pandora</span>
+<span class="n">location</span><span class="p">,</span> <span class="n">pandora_df</span> <span class="o">=</span> <span class="n">read_pandora</span><span class="p">(</span><span class="s2">&quot;pandora_file&quot;</span><span class="p">,</span> <span class="s2">&quot;Tot&quot;</span><span class="p">)</span>
+<span class="n">pandora_df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s1">&#39;day&#39;</span><span class="p">,</span> <span class="s1">&#39;no2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The rest are ancillary functions for reading pandora data files.</p>
+<dl class="py function">
+<dt id="uptrop.read_pandora.get_column_description_index">
+<code class="sig-prename descclassname">uptrop.read_pandora.</code><code class="sig-name descname">get_column_description_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.read_pandora.get_column_description_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of {description:column index} for a pandora file</p>
+<p>See <a class="reference external" href="https://regex101.com/r/gAjFtL/1">https://regex101.com/r/gAjFtL/1</a> for an in-depth explanation of the regex used</p>
+<p>Returns two groups; group 1 is the column number, group 2 is the description.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – The path to the pandora data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The dictionary of {description:column index} suitable for passing to get_column_from_description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict{str:int}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="uptrop.read_pandora.get_column_from_description">
+<code class="sig-prename descclassname">uptrop.read_pandora.</code><code class="sig-name descname">get_column_from_description</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">column_dict</span></em>, <em class="sig-param"><span class="n">description</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.read_pandora.get_column_from_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searched through the output from get_column_description_index for a given description</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>column_dict</strong> (<em>dict</em>) – The output from get_column_description_index</p></li>
+<li><p><strong>description</strong> – A substring of the column description you want to find the index for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The first index corresponding to description</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="uptrop.read_pandora.get_lat_lon">
+<code class="sig-prename descclassname">uptrop.read_pandora.</code><code class="sig-name descname">get_lat_lon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pandora_filepath</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.read_pandora.get_lat_lon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of lat, lon extracted from the pandora file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>pandora_filepath</strong> (<em>str</em>) – The pandora file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dict of {“lat”:lat, “lon”:lon}</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict{str:int}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="uptrop.read_pandora.get_start_of_data">
+<code class="sig-prename descclassname">uptrop.read_pandora.</code><code class="sig-name descname">get_start_of_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.read_pandora.get_start_of_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the line number of the start of the data itself</p>
+<p>Inspects the file line-by-line, counting lines until it finds the second dotted line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – Path to the Pandora file</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The 1-indexed line number of the start of the data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="uptrop.read_pandora.read_pandora">
+<code class="sig-prename descclassname">uptrop.read_pandora.</code><code class="sig-name descname">read_pandora</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pandora_filepath</span></em>, <em class="sig-param"><span class="n">no2col</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.read_pandora.read_pandora" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads position and data from a Pandora file</p>
+<p>Returns two values: a dictionary of position and a dataframe of Pandora data</p>
+<p>Pandora data can be either all values or troposphere only</p>
+<p>The dictionary has key {‘lat,’lon’}</p>
+<p>The dataframe has column headings:</p>
+<p>jday, sza, no2, no2err, qaflag, fitflag, year, month, day, hour_utc, minute</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pandora_filepath</strong> (<em>str</em>) – The path to the pandora file</p></li>
+<li><p><strong>no2col</strong> (<em>str</em>) – Whether to get all values ‘Tot’ or tropospheric values only ‘Trop’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple of the position dictionary and the dataframe</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple(dict, pandas.dataframe)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Uptrop</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="bootstrap.html">bootstrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cloud_slice_ut_no2.html">cloud_slice_ut_no2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare_tropomi_pandora.html">compare_tropomi_pandora</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_height_to_press.html">convert_height_to_press</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fresco_cld_err.html">fresco_cld_err</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gamap_colormap.html">gamap_colormap</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">read_pandora</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tropomi_ut_no2.html">tropomi_ut_no2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ut_no2_gc_test.html">ut_no2_gc_test</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="gamap_colormap.html" title="previous chapter">gamap_colormap</a></li>
+      <li>Next: <a href="tropomi_ut_no2.html" title="next chapter">tropomi_ut_no2</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Eloise Marais.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/read_pandora.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
