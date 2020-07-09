@@ -243,7 +243,7 @@ class GridAggregator:
             self.cloud_slice_count += 1
 
     def calc_seasonal_means(self):
-        """Calculates the mean no2 VMR (WHAT'S THIS? -J), error and weight from cloud-sliced data
+        """Calculates the mean no2 mixing ratio using Gaussian weights or counts.
 
         This is to be applied at the end of processing to get the final data that will be saved and plotted.
         """
@@ -512,7 +512,9 @@ class TropomiData:
         self.tgeotropvcd = tgeotropvcd
 
     def apply_bias_correction(self):
-        """Applies bias corrections to this data. [I THINK WE'LL NEED MORE HERE]"""
+        """Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
+           The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
+           ["""
         # Bias correct stratosphere based on comparison of TROPOMI to Pandora Mauna Loa:
         tstratno2 = np.where(self.stratno2_og != self.fillval,
                              ((self.stratno2_og - (6.6e14 / self.no2sfac)) / 0.86), np.nan)
@@ -555,7 +557,7 @@ class TropomiData:
          - The fraction of cloud is less than the specified cloud threshold
          - Cloud heights are not in the range pmin-pmax
          - Quality value is greater than 0.45
-         - AAI is > 1 (WHAT IS AAI? -J)
+         - Aerosol Absorbing Index (AAI) is > 1
 
         :param cloud_data: Instance of CloudData
         :type cloud_data: uptrop.tropomi_ut_no2.CloudData
