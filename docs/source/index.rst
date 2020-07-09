@@ -63,8 +63,8 @@ Examples of use
    python ut_no2_gc_test.py --out_path="/path/to/output/file" --resolution="4x5" --region="NA"
    
    Co-sample daily Pandora and TROPOMI total columns of NO2 at the Izana high-altitude site:
-   python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/ /path/to/output/folder/ 
-             --no2_col="Tot" --pandora_site="izana"
+   python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/ 
+             /path/to/output/folder/ --no2_col="Tot" --pandora_site="izana"
    
    Cloud-slice TROPOMI partial columns of NO2 using the FRESCO-S cloud product "fresco" for Jun-Aug ("jja"):
    python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder/ --cloud_product="fresco" 
