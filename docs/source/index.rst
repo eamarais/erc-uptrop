@@ -5,6 +5,9 @@
 
 Welcome to Uptrop's documentation!
 ==================================
+Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020).
+
+The python code was first developed by Eloise Marais and substantially improved by John Roberts. Roberts also constucted the code documentation. 
 
 .. toctree::
    :maxdepth: 2
