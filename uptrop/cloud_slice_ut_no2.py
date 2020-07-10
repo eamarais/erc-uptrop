@@ -1,15 +1,27 @@
 #!/usr/bin/python
 
+''' Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa. 
+
+If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.
+
+If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided. 
+   '''
+
 # Import relevant packages:
-import glob
 import sys
 import os
 import numpy as np
-from bootstrap import rma
 
-from constants import AVOGADRO as na
-from constants import G as g
-from constants import MW_AIR as mmair
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
+
+from uptrop.bootstrap import rma
+from uptrop.constants import AVOGADRO as na
+from uptrop.constants import G as g
+from uptrop.constants import MW_AIR as mmair
 
 CLOUD_SLICE_ERROR_ENUM = {
     1: "too_few_points",
@@ -21,16 +33,16 @@ CLOUD_SLICE_ERROR_ENUM = {
     7: "non_uni_strat"
 }
 
-def cldslice(pcolno2,cldtophgt):
 
-    """ 
+def cldslice(pcolno2,cldtophgt):
+    """
     Compute upper troposphere NO2 using partial columns above
-    cloudy scenes. 
+    cloudy scenes.
 
     Determine NO2 mixing ratio by regressing NO2 partial columns
     against cloud-top heights over cloudy scenes.
 
-    INPUT: vectors of partial columns in molec/m2 and corresponding 
+    INPUT: vectors of partial columns in molec/m2 and corresponding
            cloud top heights in hPa.
 
     OUTPUT: NO2 volumetric mixing ratio, corresponding estimated error on the
@@ -39,7 +51,6 @@ def cldslice(pcolno2,cldtophgt):
             NO2 value ia nan, and the mean cloud pressure of data retained
             after 10th and 90th percentile filtering.
     """
-
     # Initialize:
     utmrno2=0.0
     utmrno2err=0.0
@@ -112,6 +123,12 @@ def cldslice(pcolno2,cldtophgt):
     # Account for negative values:
     # Set points with sum of slope and error less than zero to nan.
     # This is to account for noise in the data that hover near zero.
+    # This could be reduced to a single line. Eventually update to:
+    #if result[0]<0 and np.add(result[0],result[2])<0):
+    #    error_state=5
+    #    utmrno2=np.nan
+    #    utmrno2err=np.nan
+    #    return (utmrno2, utmrno2err, error_state, mean_cld_pres)
     if result[0]<0 and (not np.isnan(utmrno2)):
         if (np.add(result[0],result[2])<0):
             error_state=5

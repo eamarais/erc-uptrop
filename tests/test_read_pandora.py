@@ -1,10 +1,9 @@
 import read_pandora
-import os
 
 test_file_path = "test_data/Pandora101s1_Izana_L2Tot_rnvs1p1-7.txt"
 
 def test_readpandora():
-    loc, out_df = read_pandora.readpandora(test_file_path)
+    loc, out_df = read_pandora.read_pandora(test_file_path)
 
 def test_get_column_indicies():
     groups = read_pandora.get_column_description_index(test_file_path)

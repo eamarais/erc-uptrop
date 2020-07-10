@@ -1,0 +1,215 @@
+
+
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Uptrop’s documentation! &#8212; Uptrop 1 documentation</title>
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bootstrap" href="bootstrap.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bootstrap.html" title="bootstrap"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">Uptrop 1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Welcome to Uptrop’s documentation!</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-uptrop-s-documentation">
+<h1>Welcome to Uptrop’s documentation!<a class="headerlink" href="#welcome-to-uptrop-s-documentation" title="Permalink to this headline"> </a></h1>
+<p>Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020).</p>
+<p>The python code was developed for the ERC Starting Grant project UpTrop (<a class="reference external" href="https://maraisresearchgroup.co.uk/uptrop.html">https://maraisresearchgroup.co.uk/uptrop.html</a>) led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bootstrap.html">bootstrap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cloud_slice_ut_no2.html">cloud_slice_ut_no2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compare_tropomi_pandora.html">compare_tropomi_pandora</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="convert_height_to_press.html">convert_height_to_press</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fresco_cld_err.html">fresco_cld_err</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gamap_colormap.html">gamap_colormap</a></li>
+<li class="toctree-l1"><a class="reference internal" href="read_pandora.html">read_pandora</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tropomi_ut_no2.html">tropomi_ut_no2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ut_no2_gc_test.html">ut_no2_gc_test</a></li>
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"> </a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"> </a></h1>
+<p>A library for applying the cloud-slicing technique to TROPOMI total columns to obtain upper tropospheric (450-180 hPa) mixing ratios of NO2. This includes a feasibility test of the technique using synthetic observations from GEOS-Chem, validation and quantification of bias corrections by comparing TROPOMI and Pandora total columns at high-altitide sites, application of cloud-slicing using either the FRESCO-S or ROCINN-CAL cloud products, and comparison of effective cloud fractions and cloud top pressures from the two cloud products.</p>
+<p>In the modules, the FRESCO-S product is referred to as FRESCO and the ROCINN-CAL product as DLR.</p>
+<p>A description of the data used, the sources of the data, the details of the GEOS-Chem model simulations, and other relevant information for developing the codes can be found in Marais et al. (2020).</p>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline"> </a></h2>
+<ul class="simple">
+<li><p>Python &gt;= 3.6</p></li>
+<li><p>Numpy</p></li>
+<li><p>NetCDF4</p></li>
+<li><p>Dateutil</p></li>
+<li><p>Matplotlib</p></li>
+<li><p>Basemap</p></li>
+</ul>
+<p>If you are using Conda, an environment.yml file is provided.</p>
+</div>
+<div class="section" id="examples-of-use">
+<h2>Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this headline"> </a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5:
+     python ut_no2_gc_test.py --out_path<span class="o">=</span><span class="s2">&quot;/path/to/output/file&quot;</span> --resolution<span class="o">=</span><span class="s2">&quot;4x5&quot;</span> --region<span class="o">=</span><span class="s2">&quot;NA&quot;</span>
+
+Co-sample daily Pandora and TROPOMI total NO2 columns at Izana:
+     python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/
+          /path/to/output/folder/ --no2_col<span class="o">=</span><span class="s2">&quot;Tot&quot;</span> --pandora_site<span class="o">=</span><span class="s2">&quot;izana&quot;</span>
+
+Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product:
+     python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder/ --cloud_product<span class="o">=</span><span class="s2">&quot;fresco&quot;</span>
+          --season<span class="o">=</span><span class="s2">&quot;jja&quot;</span>
+
+Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at 1x1:
+     python fresco_cld_err.py --month<span class="o">=</span><span class="s2">&quot;01&quot;</span> --number_of_days<span class="o">=</span><span class="m">31</span> --out_res<span class="o">=</span><span class="s2">&quot;1x1&quot;</span> --dlr_cld_top<span class="o">=</span><span class="s2">&quot;height&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="scripts">
+<h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"> </a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ut_no2_gc_test</span></code></p>
+<span class="target" id="module-uptrop.ut_no2_gc_test"></span><p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced 
+NO2 in the upper troposphere and compare this to UT NO2 obtained if
+simply average the NO2 mixing ratios from the model over the same 
+pressure range (the “truth”). Both are obtained by Gaussian 
+weighting toward the pressure center.</p>
+<p>GEOS-Chem partial columns are obtained over Europe, North America, 
+and China at the GEOS-FP meteorology native resolution (0.25x0.3125)
+(latxlon) for June-August 2016-2017.</p>
+<p>Input options to process the data include the region, the horizontal 
+resolution, and model simulation years.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cloud_slice_ut_no2</span></code></p>
+<span class="target" id="module-uptrop.cloud_slice_ut_no2"></span><p>Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa.</p>
+<p>If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.</p>
+<p>If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided.</p>
+<p><code class="docutils literal notranslate"><span class="pre">compare_tropomi_pandora</span></code></p>
+<span class="target" id="module-uptrop.compare_tropomi_pandora"></span><p>Code to compare TROPOMI and Pandora column NO2 at high altitude
+sites to assess skill of TROPOMI at reproducing Pandora observations
+of free tropospheric NO2.</p>
+<p>Code is set up to process Pandora total or tropospheric column NO2
+at the Mauna Loa, Izana, or Altzomoni sites.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fresco_cld_err</span></code></p>
+<span class="target" id="module-uptrop.fresco_cld_err"></span><p>Read and regrid cloud information from the official TROPOMI CLOUD product 
+and from the FRESCO cloud product in the TROPOMI NO2 data product file.</p>
+<p>Data are regridded to a 2x2.5 degree global grid and saved as monthly 
+means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
+0.7 and clouds top (centroid) pressure in the upper troposphere 
+(180-450 hPa).</p>
+<p><code class="docutils literal notranslate"><span class="pre">tropomi_ut_no2</span></code></p>
+<span class="target" id="module-uptrop.tropomi_ut_no2"></span><p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
+<p>The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction &gt;=0.7 and within the cloud top pressure range of 450-180 hPa.</p>
+<p>Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.</p>
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to Uptrop’s documentation!</a><ul>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#introduction">Introduction</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#examples-of-use">Examples of use</a></li>
+<li><a class="reference internal" href="#scripts">Scripts</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bootstrap.html"
+                        title="next chapter">bootstrap</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="bootstrap.html" title="bootstrap"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">Uptrop 1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Welcome to Uptrop’s documentation!</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Eloise Marais.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.1.
+    </div>
+  </body>
+</html>

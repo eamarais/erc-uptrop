@@ -8,27 +8,31 @@
     0.7 and clouds top (centroid) pressure in the upper troposphere 
     (180-450 hPa).
 
-    (1) Initial version created on 15 March 2020 by Eloise Marais
-        (eloise.marais@le.ac.uk).
-
 '''
+
+#    (1) Initial version created on 15 March 2020 by Eloise Marais
+#        (eloise.marais@le.ac.uk). Reworked by John Roberts June 2020
+#        (jfr10@le.ac.uk)
 
 # Import relevant packages:
 import glob
-import os
 import numpy as np
-import netCDF4
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import argparse
+import sys
+import os
 from os import path
 
-from gamap_colormap import WhGrYlRd
+# Import hack
+sys.path.append(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        '..'))
 
-import pdb
-
-from convert_height_to_press import alt2pres
+from uptrop.gamap_colormap import WhGrYlRd
+from uptrop.convert_height_to_press import alt2pres
 
 # Turn off warnings:
 # np.warnings.filterwarnings('ignore')
@@ -65,6 +69,12 @@ class ShapeMismatchException(Exception):
     """
     Raised when a FRESCO and DLR file are not the same shape
     """
+    pass
+
+class NanInDataException(Exception):
+    """
+    Raised when filtering has failed
+    """
 
 
 class CloudVariableStore:
@@ -72,9 +82,10 @@ class CloudVariableStore:
     Class containing the running results of various datas for this project; also saving to netCDF and plotting.
     """
     def __init__(self, data_shape):
-        """
-        Creates an empty CloudVariableStore of shape data_shape
+        """Creates an empty CloudVariableStore of shape data_shape
+
         :param data_shape: Tuple of (presumably) two elements for shape of cloud data
+        :type data_shape: List of length 2
         """
         # TODO Find out from Eloise what these stand for for better variable names
         self.gknmi_cf = np.zeros(data_shape)
@@ -100,8 +111,14 @@ class CloudVariableStore:
         self.dlr_cf_freq = np.zeros((len(self.latbin), len(self.cldbin)))
 
     def update_pixel(self, tropomi_data, trop_i, trop_j):
-        """
-        Updates the appropriate pixel of running cloud variables with the tropomi data at trop_i, trop_j.
+        """Updates the appropriate pixel of running cloud variables with the tropomi data at trop_i, trop_j.
+
+        :param tropomi_data: The tropomi dataset
+        :type tropomi_data: CloudComparisonData
+        :param trop_i: First index of pixel
+        :param trop_j: Second index of pixel
+        :type trop_i: int
+        :type trop_j: int
         """
         # TODO: Make this vectorised
         # Skip where FRESCO cloud product is NAN:
@@ -141,19 +158,29 @@ class CloudVariableStore:
         self.gdlr_od[p, q] += tropomi_data.tdoptd[trop_i, trop_j]
         self.gdlr_cnt[p, q] += 1.0
 
-    def cloud_fraction_filtering(self, tropomi_data):
+    def bin_cloud_fraction(self, tropomi_data):
         """
-        # Gather data on frequency of cloud fraction > 0.7:
+        # Gather data on frequency of cloud fraction >= 0.7:
         # This is done before filtering for scenes with knmi cloud frac
-        # > 0.7 to also include all relevant DLR scenes:
+        # >= 0.7 to also include all relevant DLR scenes:
+
+        :param tropomi_data: The tropomi data containing the cloud fractions
+        :type tropomi_data: CloudComparisonData
         """
         # loop over cloud and latitude band bins:
         for w in range(len(self.cldbin)):
             for n in range(len(self.latbin)):
 
+                # Define minimum value in range of interest to avoid cloud fractions < 0.7:
+                if w == 0:
+                    min_val = self.cldbin[w]
+                else:
+                    min_val = self.cldbin[w] - 0.025
+                
+
                 # (1) KNMI:
                 # Get indices for relevant data:
-                fbin = np.where((tropomi_data.tffrc >= (self.cldbin[w] - 0.025)) &
+                fbin = np.where((tropomi_data.tffrc >= min_val) &
                                 (tropomi_data.tffrc < (self.cldbin[w] + 0.025)) &
                                 (tropomi_data.tflats >= (self.latbin[n] - 7.5)) &
                                 (tropomi_data.tflats < (self.latbin[n] + 7.5)) &
@@ -165,7 +192,7 @@ class CloudVariableStore:
 
                 # (2) DLR-OCRA:
                 # Get indices for relevant data:
-                dbin = np.where((tropomi_data.tdfrc >= (self.cldbin[w] - 0.025)) &
+                dbin = np.where((tropomi_data.tdfrc >= min_val) &
                                 (tropomi_data.tdfrc < (self.cldbin[w] + 0.025)) &
                                 (tropomi_data.tdlats >= (self.latbin[n] - 7.5)) &
                                 (tropomi_data.tdlats < (self.latbin[n] + 7.5)) &
@@ -176,14 +203,17 @@ class CloudVariableStore:
                     self.dlr_cf_freq[n, w] += len(dbin)
 
     def update_nobs(self, tropomi_data):
-        """
-        Given a tropomi_data object, updates the number of observations.
+        """Given a tropomi_data object, updates the number of observations.
+
+        :param tropomi_data: The tropomi data objects
+        :type tropomi_data: CloudComparisonData
         """
         self.nobs_dlr += tropomi_data.nobs_dlr
         self.nobs_fresco += tropomi_data.nobs_fresco
 
     def calc_cloud_statistics(self):
-        """
+        """Finalises cloud statistics
+
         For each pixel in the final model, calculate the cloud fraction, cloud top pressure, cloud albedo and (for
         DLR) cloud base pressure. Cloud pressure is given in Pa.
         """
@@ -203,7 +233,13 @@ class CloudVariableStore:
         self.gdlr_cb[self.gdlr_cnt == 0.0] = np.nan
 
     def write_to_netcdf(self, out_dir):
-        """Given an out_directory, writes totalled data to netcdf"""
+        """Given an out_directory, writes totalled data to netcdf.
+
+        The file will be named 'fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-[file_version].nc'
+
+        :param out_dir: The directory that will contain the file.
+        :type out_dir: str
+        """
         out_dir = path.abspath(out_dir)
 
         # Write data to file:
@@ -295,8 +331,11 @@ class CloudVariableStore:
         ncfile.close()
 
     def plot_clouds_products(self, plot_dir):
-        """For cloud fraction, cloud top pressure, plots the products for DLR, FRESCO and DLR-FRESCO"""
-        # TODO: Get MMName and StrYY from filename instead of the global at the bottom of the script
+        """For cloud fraction, cloud top pressure, plots the products for DLR, FRESCO and DLR-FRESCO
+
+        :param plot_dir: The directory that will contain the plots
+        :type plot_dir: str"""
+        # TODO: Get MMName and StrYY from file_path instead of the global at the bottom of the script
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
                     llcrnrlon=MIN_LON, llcrnrlat=-70,
@@ -373,13 +412,22 @@ class CloudVariableStore:
         plt.show()
 
 
-class TropomiData:
+class CloudComparisonData:
     """
-    Class for holding the data for an individual Tropomi file. Applies data filters on creation.
+    Class for holding the data for a fresco-dlr file pair. Applies data filters on creation.
     """
 
     def __init__(self, td_file_path, tf_file_path):
-        # TODO: Ask E which number in the filename is the orbit
+        """Returns an instance of CloudComparisonData for comparing fresco and dlr files
+
+        :param td_file_path: The path to the DLR file
+        :type td_file_path: str
+        :param tf_file_path: The path to the Fresco file
+        :type tf_file_path: str
+        :return: A filtered and sanity-checked cloud comparison
+        :rtype: CloudComparisonData
+        """
+        # TODO: Ask E which number in the file_path is the orbit
         self.forb = path.basename(tf_file_path)[104:109]
         self.dorb = path.basename(td_file_path)[106:111]
         # Check orbit/swath is the same. If not, skip this iteration:
@@ -395,7 +443,10 @@ class TropomiData:
         self.shape = self.tdlons.shape
 
     def read_tdfile(self, tdfile):
-        """Read DLR cloud data:"""
+        """Read DLR cloud data
+
+        :param tdfile: Path to the DLR file
+        :type tdfile: str"""
         dlr_cloud_data = Dataset(tdfile, mode='r')
         # Extract data of interest:
         self.tdlons = dlr_cloud_data.groups['PRODUCT'].variables['longitude'][:].data[0, :, :]
@@ -422,7 +473,10 @@ class TropomiData:
         dlr_cloud_data.close()   # Note to self; does NetCDF have a context manager?
 
     def read_tffile(self, tffile):
-        """Read in FRESCO cloud data:"""
+        """Read in FRESCO cloud data
+
+        :param tffile: Path to the tffile
+        :type tffile: str"""
         fresco_cloud_data = Dataset(tffile, mode='r')
         # Extract data of interest:
         self.tflons = fresco_cloud_data.groups['PRODUCT'].variables['longitude'][:].data[0, :, :]
@@ -444,6 +498,10 @@ class TropomiData:
         fresco_cloud_data.close()
 
     def filter_tdfile(self):
+        """Filters DLR data for fill values, quality less than 0.5 and snow cover.
+
+        :raises NanInDataException: Raised when any NaNs remain in data
+        """
         # Convert all valid snow/ice free flag values (0,255) to 0.
         #self.tdsnow = np.where(self.tdsnow == 255, 0, self.tdsnow)
         # Coastlines (listed as potentially "suspect" in the ATBD document p. 67):
@@ -481,16 +539,22 @@ class TropomiData:
         self.tdoptd = np.where(np.isnan(self.tdfrc), np.nan, self.tdoptd)
         # Error check:
         if np.nanmax(self.tdtop) == FILL_VAL:
-            raise Exception('Not all missing values converted to NANs')
+            raise NanInDataException('Not all missing values converted to NANs')
         if np.nanmax(self.tdbase) == FILL_VAL:
-            raise Exception('Not all missing values converted to NANs')
+            raise NanInDataException('Not all missing values converted to NANs')
         if np.nanmax(self.tdoptd) == FILL_VAL:
-            raise Exception('Not all missing values converted to NANs')
+            raise NanInDataException('Not all missing values converted to NANs')
 
     def filter_tffile(self):
-        """
-        Identifing coincident
-        :return:
+        """Filters fresco data
+
+        Applies the following filters to the fresco data
+        Snow: Drops values for snow, coastline, misclassified clouds (snow between 80 and 104)
+        Cloud fraction: Drop values where
+         - cloud fraction < 0.7
+         - quality is < 0.45
+         - cloud top pressure is between PMAX and PMIN
+         - Cloudmask is not 0
         """
         # Convert all valid snow/ice free flag values (0,255) to 0.
         self.tfsnow = np.where(self.tfsnow == 255, 0, self.tfsnow)
@@ -499,8 +563,9 @@ class TropomiData:
         # Less then 1% snow/ice cover:
         self.tfsnow = np.where(self.tfsnow < 1, 0, self.tfsnow)
         # Snow/ice misclassified as clouds:
-        self.tfsnow = np.where((self.tfsnow > 80) & (self.tfsnow < 104) & \
-                               (self.tfscenep > (np.multiply(0.98,self.tfsurfp))),\
+        self.tfsnow = np.where((self.tfsnow > 80)
+                               & (self.tfsnow < 104)
+                               & (self.tfscenep > (np.multiply(0.98, self.tfsurfp))),
                                0, self.tfsnow)
 
         # Set missing/poor quality/irrelevant data to NAN:
@@ -526,18 +591,28 @@ class TropomiData:
         self.tftop = np.where(np.isnan(self.tffrc), np.nan, self.tftop)
 
     def check_parity(self):
+        """Checks the shape of fresco and dlr data match
+
+        :raises ShapeMismatchException: Raised when the shapes do not match"""
         # Skip files if the number of indices are not equal:
         if self.tdlons.shape != self.tflons.shape:
             print('Indices not equal for orbit {}'.format(self.forb))
             raise ShapeMismatchException
-            # m=min(md,mf)
-            # n=min(nd,nf)
 
     def get_nobs(self):
-        # Bug might be here?
+        """Gets the number of valid observations in this cloud data
+
+        Returns a tuple of number of valid cloud observations of (dlr product, fresco product)
+        A valid observation has:
+         - Quality of <0.5 (dlr) or <0.45(fresco)
+         - Cloud fraction >= 0.7
+         - top-of-atmosphere pressure between PMIN and PMAX
+         - No snow (snow mask = 0)
+
+        :return: A tuple of number of valid observations of (dlr, fresco)
+        :rtype: tuple (int, int)
         """
-        Returns a tuple of number of valid observations of (dlr product, fresco product)
-        """
+        # Bug might still be here? I think we fixed it.
         dlr_ind = np.count_nonzero((self.tdqval < 0.5) & (self.tdfrc >= 0.7) & (self.tdtop >= PMIN*1e2) & (self.tdtop <= PMAX*1e2) & (self.tdsnow == 0))
         fr_ind = np.count_nonzero((self.tfqval < 0.45) & (self.tffrc >= 0.7) & (self.tftop >= PMIN*1e2) & (self.tftop <= PMAX*1e2) & (self.tfsnow == 0))
         # DLR value will be different, fr_ind will be same
@@ -546,15 +621,23 @@ class TropomiData:
 
 def process_file(tdfile, tffile, running_total_container):
     """Processes a paired dlr and fresco product, adds the pixels to the running total in the
-    running_total_container and updates the cloud_fraction"""
+    running_total_container and updates the cloud_fraction
+
+    :param tdfile: Path to the dlr file
+    :type tdfile: str
+    :param tffile: Path to the fresco file
+    :type tffile: str
+    :param running_total_container: Instance of CloudVariableStore to update with the dlr and fresco file
+    :type running_total_container: CloudVariableStore
+    """
     # Track progress:
     print('===> Processing: ', tdfile)
     try:
-        file_data_container = TropomiData(tdfile, tffile)
+        file_data_container = CloudComparisonData(tdfile, tffile)
         running_total_container.update_nobs(file_data_container)
         #print("Fresco nobs: {}\nDLR nobs: {}".format(
         #    file_data_container.nobs_fresco, file_data_container.nobs_dlr))
-        running_total_container.cloud_fraction_filtering(file_data_container)
+        running_total_container.bin_cloud_fraction(file_data_container)
         # REGRID THE DATA:
         for i in range(file_data_container.shape[0]):
             for j in range(file_data_container.shape[1]):
@@ -565,9 +648,21 @@ def process_file(tdfile, tffile, running_total_container):
 
 
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
-    """
-    For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every Tropomi and Fresco
-    filepath. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
+    """Gets fresco an
+    For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every DLR and Fresco
+    file_path. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
+
+    :param sen_5_p_dir: The directory containing the DLR and Fresco files
+    :type sen_5_p_dir: str
+    :param month_index: The month index
+    :type month_index: int
+    :param ndays: The number of days in the month
+    :type ndays: int
+
+    :raises FileMismatchException: Raised if there is an unequal number of fresco and dlr files
+
+    :return: The list of dlr files and the list of fresco files
+    :rtype: tuple(dlr files, fresco files)
     """
     # TODO Roll the string manufacturing into the CloudVariableStore class
     global StrMM, StrYY, MMName
@@ -598,7 +693,7 @@ def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
         strdd[cnt] = '0' + str(d) if d < 10 else str(d)
         cnt = cnt + 1
 
-    # dir structure specific to HPC, filename from TROPOMI
+    # dir structure specific to HPC, file_path from TROPOMI
     # Get DLR data file names:
     td_file_list = glob.glob(
         path.join(sen_5_p_dir,

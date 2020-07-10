@@ -1,3 +1,12 @@
+"""
+Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.
+
+The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction >=0.7 and within the cloud top pressure range of 450-180 hPa.
+
+Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.
+
+"""
+
 import glob
 import argparse
 import sys
@@ -28,11 +37,27 @@ class CloudFileDateMismatch(Exception):
 
 
 class CloudFileShapeMismatch(Exception):
+    """
+    Raised when FRESCO and DLR files are not the same shape
+    """
+
+
+class UnequalColumnException(Exception):
     pass
 
 
 class GridAggregator:
+    """A class for aggregating higher-resolution data into grid squares"""
     def __init__(self, dellat, dellon):
+        """Creates a grid aggregator across the entire world of resolution dellon, dellat
+
+        :param dellat: vertical size of the aggregation grid in decimal degrees
+        :type dellat: float
+        :param dellon: Horizontal size of the aggregation grid in decimal degrees
+        :type dellon: float
+
+        :returns: A GridAggregator object
+        :rtype: GridAggregator"""
         self.postfilt = []
         self.out_lon = np.arange(-180, 180 + dellon, dellon)
         self.out_lat = np.arange(-90, 90 + dellat, dellat)
@@ -67,17 +92,22 @@ class GridAggregator:
 
         self.cloud_slice_count = 0
 
-    def add_trop_data_to_gridsquare(self, trop_data):
-
-        # These are reinitialised with every new product
+    def initalise_grid(self):
+        """Zeros the gno2, gstrat, gcldp and cntloop members with empty appendable lists"""
         self.gno2 = [[[] for n in range(self.ydim)] for m in range(self.xdim)]
         self.gstrat = [[[] for n in range(self.ydim)] for m in range(self.xdim)]
         self.gcldp = [[[] for n in range(self.ydim)] for m in range(self.xdim)]
-
         self.cntloop = [[0 for n in range(self.ydim)] for m in range(self.xdim)]
 
+    def grid_trop_data(self, trop_data):
+        """Allocates the strat, no2 and cloud pressure in trop_data into the gno2, gstrat and gcldp grid
+
+        :param trop_data: an instance of TropomiData
+        :type trop_data: uptrop.tropomi_ut.no2.TropomiData
+        """
+
         for geo_tot_value, trop_lat, trop_lon, strat_no2_val, cloud_pressure \
-             in zip(trop_data.geototvcd, trop_data.lats, trop_data.lons, trop_data.stratno2, trop_data.cldpres):
+         in zip(trop_data.geototvcd, trop_data.lats, trop_data.lons, trop_data.stratno2, trop_data.cldpres):
             # Skip over pixels where total column is less than stratospheric
             # column. This addresses positive bias in the cloud-sliced results
             # at low concentrations of UT NO2:
@@ -105,6 +135,20 @@ class GridAggregator:
         self.file_count += 1
 
     def apply_cloud_slice(self, n_slices=40):
+        """Applies the cloud slicing algorithm to each square in the populated grid.
+
+        This method walks over every gridsquare in gno2/gstrat/gcldp.
+        After sanity checks and conversion to hPa, that pixel's data is split into
+        [len(pixel)/n_slices] subsets, each of n_slices length. The split is alternating,
+        so in the cast of three subsets pixel_data[0] goes to subset 0, pixel_data[1] to subset 1,
+        pixel_data[2] to subset 2, pixel_data[3] to subset 0, pixel_data[4] to subset 1 and so on.
+        Each subset then has apply_slice applied to it.
+        If a pixel has less than 100 data points in it, subsetting is skipped and apply_slice is
+        run on the pixel's entire dataset.
+
+        :param n_slices: The number of pixels to apply to each subset
+        :type n_slices: int
+        """
         # Estimate daily mean VMRs from the clustered data:
         for i in range(self.xdim):
             for j in range(self.ydim):
@@ -146,7 +190,6 @@ class GridAggregator:
 
                 # Use cloud_slice_ut_no2 function to get NO2 mixing
                 # ratio from cloud-slicing:
-                # TODO: Confirm with E that we skip here if npnts is between 10 and 20
                 if ((npnts >= 10) & (npnts < 100)):
                     self.add_slice(i,j,tcld,tcolno2)
 
@@ -159,10 +202,23 @@ class GridAggregator:
                         subset_t_cld = tcld[w::stride]
                         self.add_slice(i, j, subset_t_cld, subset_t_col_no2)
 
-
     def add_slice(self, i, j, t_cld, t_col_no2):
-        """Applies and adds a cloud slice from the given data"""
-        # TODO: Check with E that the chunk of unreachable code at the end of cldslice is supposed to be there
+        """Extracts the upper troposphere no2, no2 error and mean cloud pressure for grid square [i,j]
+
+        This method uses the cloud-slicing function [ref]cld
+        Once calculated, the a weighting is derived from cloud pressure.
+        The weighted upper tropospheric no2 and error is added to the rolling total for this season.
+        If the cloud slicing fails, then the reason is added to loss_count for the end report.
+
+        :param i: X-index of grid square
+        :type i: int
+        :param j: Y-index of grid square
+        :type j: int
+        :param t_cld: A list of cloud pressures
+        :type t_cld: list of floats
+        :param t_col_no2: A list of no2 values, of same length as t_cld
+        :type t_col_no2: list of floats
+        """
         utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
         # Calculate weights:
         #gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
@@ -187,6 +243,10 @@ class GridAggregator:
             self.cloud_slice_count += 1
 
     def calc_seasonal_means(self):
+        """Calculates the mean no2 mixing ratio using Gaussian weights or counts.
+
+        This is to be applied at the end of processing to get the final data that will be saved and plotted.
+        """
         self.mean_gno2vmr = np.divide(self.gno2vmr, self.gwgt, where=self.gcnt != 0)
         self.mean_gerr = np.divide(self.gerr, self.gwgt, where=self.gcnt != 0)
         self.mean_gwgt = np.divide(self.gwgt, self.gcnt, where=self.gcnt != 0)
@@ -196,6 +256,7 @@ class GridAggregator:
         self.gcnt[self.gcnt == 0] = np.nan   # Watch out for this rewriting of gcnt in the future
 
     def print_report(self):
+        """Prints a report of useful data and reasons for data loss."""
         print('Max no. of data points in a gridsquare: ', np.nanmax(self.gcnt), flush=True)
         # Track reasons for data loss:
         print('(1) Too few points: ', self.loss_count["too_few_points"], flush=True)
@@ -207,8 +268,15 @@ class GridAggregator:
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
         print('(9) Total possible points: ', (sum(self.loss_count.values()) + self.cloud_slice_count), flush=True)
+        print('Mean % points retained: ', np.mean(self.postfilt),flush=True)
 
     def save_to_netcdf(self, out_file):
+        """Saves the seasonal_means to out_file as a netcdf4
+
+        Call after calling calc_seasonal_means at least once.
+
+        :param out_file: Location to save the netcdf4.
+        :type out_file: str"""
         ncout = Dataset(out_file, mode='w',format="NETCDF4")
 
         ncout.createDimension('lat', self.ydim)
@@ -245,6 +313,7 @@ class GridAggregator:
         ncout.close()
 
     def plot_data(self):
+        """Plots the seasonal_means to screen."""
         # Plot the data:
         m = Basemap(resolution='l', projection='merc',
                     lat_0=0, lon_0=0, llcrnrlon=-180,
@@ -282,15 +351,19 @@ class GridAggregator:
 
 
 class TropomiData:
+    """A class for extracting, preprocessing and containing data from a s5p tropomi file."""
 
-    #This time, I'm not putting the read in the init - this is _just_ for member initialisation
-    def __init__(self, file_path, pmax, pmin):
+    #This time, I'm initialising _everything_ first before the first read.
+    def __init__(self, file_path):
+        """Reads the tropomi file at file_path and prepares it for processing.
+
+        :param file_path: Path to the netcdf4 file containing the tropomi data
+        :type file_path: str
+        """
 
         self.file_name = path.basename(file_path)
-        print('Processing: ',self.file_name, flush=True)
+        print('Processing: ', self.file_name, flush=True)
         self.date = get_date(self.file_name)
-        self.pmax = pmax
-        self.pmin = pmin
 
         # Members straight from trop body
         self.no2sfac = None
@@ -333,6 +406,11 @@ class TropomiData:
         self.read_trop_file(file_path)
 
     def read_trop_file(self, file_path):
+        """Reads the data at file_path into this object. Called by the constructor.
+
+        :param file_path: Path to the netcdf4 file containing the tropomi data
+        :type file_path: str
+        """
         fh = Dataset(file_path, mode='r')
 
         # no2sfac, qasfac, and fillval only need to be read in once, so could
@@ -414,6 +492,7 @@ class TropomiData:
         self.vza = vza
 
     def calc_geo_column(self):
+        """Calculates the geometric AMF and tropospheric vertical column of this data"""
         # Calculate the geometric AMF:
         tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
@@ -433,9 +512,12 @@ class TropomiData:
         self.tgeotropvcd = tgeotropvcd
 
     def apply_bias_correction(self):
+        """Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
+           The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
+           ["""
         # Bias correct stratosphere based on comparison of TROPOMI to Pandora Mauna Loa:
         tstratno2 = np.where(self.stratno2_og != self.fillval,
-                             ((self.stratno2_og - (6.5e14 / self.no2sfac)) / 0.87), np.nan)
+                             ((self.stratno2_og - (6.6e14 / self.no2sfac)) / 0.86), np.nan)
 
         # Bias correct troposphere based on comparison of TROPOMI to Pandora Izana:
         tgeotropvcd = np.where(self.tgeotropvcd != self.fillval,
@@ -467,20 +549,30 @@ class TropomiData:
         self.tgeotropvcd = tgeotropvcd  # Filter applied to member defined in geo_column
         self.ttropvcd_geo_err = ttropvcd_geo_err
 
-    def cloud_filter_and_preprocess(self, cloud_data, cldthld):
+    def cloud_filter_and_preprocess(self, cloud_data, cldthld, pmin, pmax):
+        """Filters this tropomi data using the cloud information in cloud_data
 
+        Removes data where
+         - There is no cloud data
+         - The fraction of cloud is less than the specified cloud threshold
+         - Cloud heights are not in the range pmin-pmax
+         - Quality value is greater than 0.45
+         - Aerosol Absorbing Index (AAI) is > 1
+
+        :param cloud_data: Instance of CloudData
+        :type cloud_data: uptrop.tropomi_ut_no2.CloudData
+        :param cldthld: The cloud fraction threshold to be used
+        :type cldthld: float
+        :param pmax: The maximum cloud height to be used in processing
+        :type pmax: float
+        :param pmin: The minimum cloud height to be used in processing
+        :type pmin: float
+        """
         # Do date check
         if self.date != cloud_data.date:
             print('NO2 file: {}, Cloud file: {}'.format(self.date, cloud_data.date), flush=True)
             print('EXITING: Files are not for the same date!', flush=True)
             raise CloudFileDateMismatch
-
-        # Check that data shapes are equal:
-        if cloud_data.cldfrac.shape != self.sza.shape:
-            print('Cloud product and NO2 indices ne!', flush=True)
-            print(cloud_data.cldfrac.shape, self.sza.shape, flush=True)
-            print('Skipping this swath', flush=True)
-            raise CloudFileShapeMismatch
 
         tgeototvcd = self.tgeototvcd
         # Filter to only include very cloudy scenes at high altitude
@@ -494,8 +586,8 @@ class TropomiData:
         tgeototvcd = np.where(cloud_data.cldfrac < cldthld, np.nan, tgeototvcd)
 
         # Filter out scenes with cloud heights outside the UT range of interest (180-450 hPa):
-        tgeototvcd = np.where(cloud_data.tcldpres > self.pmax * 1e2, np.nan, tgeototvcd)
-        tgeototvcd = np.where(cloud_data.tcldpres < self.pmin * 1e2, np.nan, tgeototvcd)
+        tgeototvcd = np.where(cloud_data.tcldpres > pmax * 1e2, np.nan, tgeototvcd)
+        tgeototvcd = np.where(cloud_data.tcldpres < pmin * 1e2, np.nan, tgeototvcd)
 
         # Filter out low quality data (0.45 threshold suggested TROPOMI NO2
         # PI Henk Eskes from the KNMI:
@@ -518,11 +610,18 @@ class TropomiData:
 
         self.cldpres = cloud_data.tcldpres[~np.isnan(tgeototvcd)]
 
-
 class CloudData:
-
+    """Class for containing the data for cloud filtering and analysis."""
     def __init__(self, file_path, data_type):
-        # Set from filename
+        """Reads either the tropomi file (if data_type = 'fresco') or the ocra file (if data_type = 'dlr-ocra')
+        at file_path and returns an instance of CloudData. Calls either read_fresco_file or read_ocra_file.
+
+        :param file_path: Path to the file containing cloud_data
+        :type file_path: str
+        :param data_type: Can be 'fresco' or 'dlr-ocra'
+        :type data_type: str
+        """
+        # Set from file_path
         self.file_name = path.basename(file_path)
         self.date = get_date(self.file_name)  # Assuming for now that ocra and S5P have the same timestamping
 
@@ -531,12 +630,27 @@ class CloudData:
         self.tcldpres = None
         self.tsnow = None
 
+        # Initialize:
+        self.data_parity = True
+
         if data_type == 'fresco':
             self.read_fresco_file(file_path)
         elif data_type == 'dlr-ocra':
             self.read_ocra_file(file_path)
+            self.check_parity()
 
     def read_fresco_file(self, file_path):
+        """Reads and filters the fresco data in a s5p file
+
+        Pixels are dropped if
+         - they have type 255 (ocean)
+         - they have type 252 (coastline; ATBD treats as 'suspect')
+         - they have less thant 1% cover
+         - there is a potential misclassification of snow/ice as cloud
+
+        :param file_path: The path to the fresco file
+        :type file_path: str
+        """
         fh = Dataset(file_path)
         # Cloud fraction:
         tcldfrac = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
@@ -577,6 +691,18 @@ class CloudData:
         fh.close()
 
     def read_ocra_file(self, file_path):
+        """Reads, filters and preprocesses the data in a dlr-ocra file.
+
+        :ref:`uptrop.convert_height_to_pressure` is called to convert ocra cloud-top heights to
+        pressure values for cross-compatability with fresco data.
+
+        Pixels are dropped if
+         - They are over snow/ice scenes
+         - They have quality less than 0.5
+
+        :param file_path: The path to the ocra data
+        :type file_path: str
+        """
 
         fd = Dataset(file_path)
         # Cloud fraction:
@@ -621,9 +747,27 @@ class CloudData:
         # Close DLR CLOUD file:
         fd.close()
 
+    def check_parity(self):
+        # Skip files if the number of indices are not equal:            
+        if self.cldfrac.shape != trop_data.sza.shape:
+            print('Cloud product and NO2 indices ne!', flush=True)
+            print(self.cldfrac.shape, trop_data.sza.shape, flush=True)
+            print('Skipping this swath', flush=True)
+            self.data_parity=False
 
 #   TODO: Move these into a seperate file for reuse maybe
 def get_tropomi_file_list(trop_dir, date_range):
+    """Returns an alphabetically sorted list of Tropomi files
+    within a range of dates.
+
+    :param trop_dir: The directory containing the tropomi files
+    :type trop_dir: str
+    :param date_range: A list of dates. Generation using DateUtil's rrule function is recommended.
+    :type date_range: list(datetime)
+
+    :returns: A list of filepaths to tropomi data
+    :rtype: list of str
+    """
     out = []
     for date in date_range:
         out += (get_tropomi_files_on_day(trop_dir, date))
@@ -631,6 +775,17 @@ def get_tropomi_file_list(trop_dir, date_range):
 
 
 def get_ocra_file_list(ocra_dir, date_range):
+    """Returns an alphabetically sorted list of Ocra files
+    within a range of dates.
+
+    :param ocra_dir: The directory containing the ocra files
+    :type ocra_dir: str
+    :param date_range: A list of dates. Generation using DateUtil's rrule function is recommended.
+    :type date_range: list(datetime)
+
+    :returns: A list of filepaths to ocra data
+    :rtype: list of str
+    """
     out = []
     for date in date_range:
         out += (get_ocra_files_on_day(ocra_dir, date))
@@ -638,6 +793,18 @@ def get_ocra_file_list(ocra_dir, date_range):
 
 
 def get_tropomi_files_on_day(tomidir, date):
+    """Returns a list of tropomi files on a given date.
+
+    Uses the :ref:`get_date` function to extract each candidate file's date from it's filename
+
+    :param tomidir: The directory containing the tropomi files
+    :type tomidir: str
+    :param date: The date to search for
+    :type date: DateTime
+
+    :returns: A list of filepaths to tropomi data
+    :rtype: list of str
+    """
     # Converts the python date object to a set string representation of time
     # In this case, zero-padded year, month and a datestamp of the Sentinel format
     # See https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
@@ -652,6 +819,18 @@ def get_tropomi_files_on_day(tomidir, date):
 
 
 def get_ocra_files_on_day(tomidir,date):
+    """Returns a list of ocra files on a given date.
+
+    Uses the :ref:`uptrop.tropomi_ut_no2.get_date` function to extract each candidate file's date from it's filename
+
+    :param tomidir: The directory containing the ocra files (usually packaged with tropomi data)
+    :type tomidir: str
+    :param date: The date to search for
+    :type date: DateTime
+
+    :returns: A list of filepaths to ocra data
+    :rtype: list of str
+    """
     # Get string of day:
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
@@ -664,24 +843,36 @@ def get_ocra_files_on_day(tomidir,date):
     return cldfile
 
 
-def get_date(file_name):
+def get_date(file_name, time_stamp_index = 0):
+    """Extracts a datetime object from a filename with a Sentinel timestamp
+
+    See https://regex101.com/r/QNG11l/1 for examples
+
+    :param file_name: The filename to extract the date from
+    :type file_name: str
+    :param time_stamp_index: Which time-stamp to get the date from if more than one. Defaults to 0.
+    :type time_stamp_index: int
+
+    :returns: A DateTime object of the date of the file
+    :rtype: DateTime
+    """
     # A regular expression that gets Sentinel datestamps out of filenames
     # See https://regex101.com/r/QNG11l/1
     date_regex = r"\d{8}T\d{6}"
-    date_string = re.findall(date_regex, file_name)[0]
+    date_string = re.findall(date_regex, file_name)[time_stamp_index]
     # A line for converting Sentinel string reps to datetime
     return dt.datetime.strptime(date_string, r"%Y%m%dT%H%M%S")
 
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser("Produces a netCDF and preview plot for upper troposphere NO2")
     parser.add_argument("trop_dir")
     parser.add_argument("out_dir")
     parser.add_argument("--season", default='jja', help="Can be jja, son, djf, mam")
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
     parser.add_argument("--cloud_product", default = "fresco", help="can be fresco or dlr-ocra")
-    parser.add_argument("--cloud_threshold", default = "07", help="can be 07, 08, 09, 10")
+    parser.add_argument("--cloud_threshold", default = "07", help="recommended value is 07. Can also test 08, 09, 10")
     parser.add_argument("--pmin", default=180, type=int)
     parser.add_argument("--pmax", default=450, type=int)
     args = parser.parse_args()
@@ -726,6 +917,7 @@ if __name__ == "__main__":
     date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
 
     trop_files = get_tropomi_file_list(args.trop_dir, date_range)
+    print('Found total of {} files: '.format(len(trop_files)))
     if args.cloud_product == "fresco":
         cloud_files = trop_files
     elif args.cloud_product == "dlr-ocra":
@@ -737,12 +929,14 @@ if __name__ == "__main__":
     grid_aggregator = GridAggregator(dellat, dellon)
 
     for trop_file, cloud_file in zip(trop_files, cloud_files):
-        trop_data = TropomiData(trop_file, args.pmax, args.pmin)
+        trop_data = TropomiData(trop_file)
         cloud_data = CloudData(cloud_file, data_type=args.cloud_product)
+        if cloud_data.data_parity==False: continue
         trop_data.calc_geo_column()
         trop_data.apply_bias_correction()
-        trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold)
-        grid_aggregator.add_trop_data_to_gridsquare(trop_data)
+        trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold, args.pmax, args.pmin)
+        grid_aggregator.initalise_grid()
+        grid_aggregator.grid_trop_data(trop_data)
         grid_aggregator.apply_cloud_slice()
     grid_aggregator.calc_seasonal_means()
 
