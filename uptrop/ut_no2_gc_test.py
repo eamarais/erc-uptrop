@@ -679,7 +679,10 @@ class GeosChemDay:
 
         TODO: MORE HERE
 
-
+        :param x: The x index of the pixel
+        :type x: int
+        :param y: The y index of the pixel
+        :type y: int
         """
         # Calculate corresponding mid-pressure values:
         tp_mid = np.zeros(len(self.t_p_edge[:, y, x]))
@@ -766,6 +769,18 @@ class GeosChemDay:
                                 * self.t_bx_hgt[tppind:, y, x])
 
 def get_file_list(gcdir, REGION, YEARS_TO_PROCESS):
+    """Gets a list of geoschem files for a given region and set of years
+
+    :param gcdir: The directory containing the geoschem files
+    :type gcdir: str
+    :param REGION: Can be NA, EU or CH
+    :type REGION: str
+    :param YEARS_TO_PROCESS: A list of years to process as string (eg ['2019', '2020'])
+    :type YEARS_TO_PROCESS: list of str
+
+    :returns: A sorted list of geoschem files
+    :rtype: list of str
+    """
     # Define target grid:
     if REGION == 'NA':
         dirreg = '_na_'
