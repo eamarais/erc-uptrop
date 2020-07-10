@@ -83,7 +83,7 @@ class DataCollector:
         self.n_days = nvals
 
     def add_trop_data_to_day(self, date, trop_data):
-        """Adds the tropomi no2, no2 error, cloud pressure and cloud fraction to a date in this object
+        """Adds the tropomi gc_data, gc_data error, cloud pressure and cloud fraction to a date in this object
         Call set_trop_ind_for_day before this function
         :param date: The date to add the data to.
         :type date: DateTime
@@ -221,7 +221,7 @@ class DataCollector:
         plt.ylabel('$NO_2$ total VCD [$10^{14}$ molecules $cm^2$]')
         leg = plt.legend(loc='lower left', fontsize='large')
         leg.get_frame().set_linewidth(0.0)
-        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-no2-timeseries-v1-jun2019-apr2020.ps', \
+        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-gc_data-timeseries-v1-jun2019-apr2020.ps', \
         #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         # Plot scatterplot:
         tx = self.pan_no2
@@ -257,7 +257,7 @@ class DataCollector:
         add2plt = ("r = {a:.3f}".format(a=r[0]))
         plt.text(0.1, 0.84, add2plt, fontsize=10,
                  ha='left', va='center', transform=ax.transAxes)
-        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-no2-scatterplot-v1-jun2019-apr2020.ps', \
+        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-gc_data-scatterplot-v1-jun2019-apr2020.ps', \
         #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         plt.show()
 
@@ -558,7 +558,7 @@ class CloudData:
         # Read data:
         fh = Dataset(filepath, mode='r')
         # TODO: Watch out for those string indexes. Change when format is understood.
-        # Check that date is the same as the no2 file:
+        # Check that date is the same as the gc_data file:
         strdate = filepath[-66:-51]
         # TODO: Move check elsewhere
         if strdate != tomi_files_on_day[-66:-51]:
@@ -627,7 +627,7 @@ class CloudData:
 class PandoraData:
     """Extracts and preprocesses pandora data from a pandora datafile. See docs for read_pandora for file details"""
     def __init__(self, file_path, col_type):
-        """Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to no2 and no2_err
+        """Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to gc_data and no2_err
         to bring the product up to 'pseudo 1.8'. Also applies corrections for Manua Loa if needed
         :param file_path: Path to the pandora file
         :type file_path: str
