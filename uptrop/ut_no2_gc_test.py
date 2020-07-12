@@ -93,7 +93,7 @@ class ProcessedData:
         :type do_temperature_correction: bool
         :param do_error_weighting: Whether to weight errors
         :type do_error_weighting: bool
-        :param do_cld_frac_filter: Wheter to perform fractional filtering of clouds
+        :param do_cld_frac_filter: Whether to perform fractional filtering of clouds
         :type do_cld_frac_filter: bool
 
         :returns: A ProcessedData isntance ready to recieve data
