@@ -355,15 +355,15 @@ class ProcessedData:
         :type j: int
         :param t_cld: Tropospheric cloud
         :type t_cld: float
-        :param t_col_no2: Tropospheric column no2
+        :param t_col_no2: Total (stratosphere+troposphere) column no2
         :type t_col_no2: float
-        :param t_mr_no2: SOMETHING NO2? ASK ELOISE
+        :param t_mr_no2: NO2 mixing ratio between pmax and pmin
         :type t_mr_no2: float
-        :param t_fr_c: I THINK IT MIGHT BE FREON BUT I REALLY HOPE NOT
+        :param t_fr_c: Cloud fraction between pmax and pmin
         :type t_fr_c: float
-        :param t_grad_no2: GRADIATED NO2? HELP I NEED AN ACTUAL CHEMIST
+        :param t_grad_no2: NO2 gradient between pmax and pmin in pptv/hPa
         :type t_grad_no2: float
-        :param t_o3: OOH I KNOW THIS ONE ITS OZONE
+        :param t_o3: O3 mixing ratio to test influence from stratosphere
         :type t_o3: float
         """
         utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
@@ -652,7 +652,6 @@ class GeosChemDay:
         # Read dataset:
         fh = Dataset(file_path, mode='r')
         # Extract data of interest:
-        # (Add tropopause height to this in the future)
         tlon, tlat, tgcno2, tcldfr, tcldhgt, tadn, tbxhgt, tpedge, tpause, tgco3, tdegk = \
             fh.variables['LON'], fh.variables['LAT'], \
             fh.variables['IJ-AVG-S__NO2'], fh.variables['TIME-SER__CF'], \
@@ -728,7 +727,6 @@ class GeosChemDay:
         # Equation is:
         #   w = exp(-(p-315)^2/2*135^2 ) where 315 hPa is the centre and
         #         135 hPa is the standard deviation.
-        # The "shorthand" formula (np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))) can be used here too
         #if self.error_weight:
         #self.twgt = np.ones(len(self.askind))
         #else:
