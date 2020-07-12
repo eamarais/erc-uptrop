@@ -6,7 +6,7 @@ The main function in this module is read_pandora: ::
 
     from uptrop.read_pandora import read_pandora
     location, pandora_df = read_pandora("pandora_file", "Tot")
-    pandora_df.plot('day', 'no2')
+    pandora_df.plot('day', 'gc_data')
 
 The rest are ancillary functions for reading pandora data files.
 """
@@ -122,7 +122,7 @@ def read_pandora(pandora_filepath, no2col):
 
     The dataframe has column headings:
 
-    jday, sza, no2, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
+    jday, sza, gc_data, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
 
 
     :param pandora_filepath: The path to the pandora file
@@ -165,7 +165,7 @@ def read_pandora(pandora_filepath, no2col):
 
     data_start = get_start_of_data(pandora_filepath)
 
-    names = ["ut_date", "jday", "sza", "no2", "no2err", "qaflag", "fitflag"]
+    names = ["ut_date", "jday", "sza", "gc_data", "no2err", "qaflag", "fitflag"]
     columns = [dateind, jdayind,szaind,no2ind,errind, qaflagind, fitflagind]
     columns = [column -1 for column in columns]  # Pandora columns are 1-indexed, Pandas are 0
 

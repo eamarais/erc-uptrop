@@ -100,10 +100,10 @@ class GridAggregator:
         self.cntloop = [[0 for n in range(self.ydim)] for m in range(self.xdim)]
 
     def grid_trop_data(self, trop_data):
-        """Allocates the strat, no2 and cloud pressure in trop_data into the gno2, gstrat and gcldp grid
+        """Allocates the strat, gc_data and cloud pressure in trop_data into the gno2, gstrat and gcldp grid
 
         :param trop_data: an instance of TropomiData
-        :type trop_data: uptrop.tropomi_ut.no2.TropomiData
+        :type trop_data: uptrop.tropomi_ut.gc_data.TropomiData
         """
 
         for geo_tot_value, trop_lat, trop_lon, strat_no2_val, cloud_pressure \
@@ -203,11 +203,11 @@ class GridAggregator:
                         self.add_slice(i, j, subset_t_cld, subset_t_col_no2)
 
     def add_slice(self, i, j, t_cld, t_col_no2):
-        """Extracts the upper troposphere no2, no2 error and mean cloud pressure for grid square [i,j]
+        """Extracts the upper troposphere gc_data, gc_data error and mean cloud pressure for grid square [i,j]
 
-        This method uses the cloud-slicing function [ref]cld
+        This method uses the cloud-slicing function :ref:`uptrop.cloud_slice_ut_no2.cldslice`
         Once calculated, the a weighting is derived from cloud pressure.
-        The weighted upper tropospheric no2 and error is added to the rolling total for this season.
+        The weighted upper tropospheric gc_data and error is added to the rolling total for this season.
         If the cloud slicing fails, then the reason is added to loss_count for the end report.
 
         :param i: X-index of grid square
@@ -216,7 +216,7 @@ class GridAggregator:
         :type j: int
         :param t_cld: A list of cloud pressures
         :type t_cld: list of floats
-        :param t_col_no2: A list of no2 values, of same length as t_cld
+        :param t_col_no2: A list of gc_data values, of same length as t_cld
         :type t_col_no2: list of floats
         """
         utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
@@ -244,7 +244,6 @@ class GridAggregator:
 
     def calc_seasonal_means(self):
         """Calculates the mean no2 mixing ratio using Gaussian weights or counts.
-
         This is to be applied at the end of processing to get the final data that will be saved and plotted.
         """
         self.mean_gno2vmr = np.divide(self.gno2vmr, self.gwgt, where=self.gcnt != 0)
@@ -940,7 +939,7 @@ if __name__ == "__main__":
         grid_aggregator.apply_cloud_slice()
     grid_aggregator.calc_seasonal_means()
 
-    out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+args.cloud_product
+    out_file = path.join(args.out_dir, 'tropomi-ut-gc_data-'+args.cloud_product
                          + '-' + args.cloud_threshold
                          + '-' + args.grid_res
                          + '-' + args.season

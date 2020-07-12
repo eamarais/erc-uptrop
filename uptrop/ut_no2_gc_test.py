@@ -14,6 +14,9 @@
     resolution, and model simulation years.
     '''
 
+# Note for the future; most of this can probably be replaced with a modification of the GridAggregator class from
+# tropomi_ut_no2
+
 # Import relevant packages:
 import glob
 import numpy as np
@@ -68,14 +71,34 @@ class InvalidRegionException(Exception):
 class InvalidResolutionException(Exception):
     pass
 
+
 class DomainIssueException(Exception):
     pass
 
 
-
 class ProcessedData:
-    # ----Initialisation methods----
+    """A class for comparing geoschem and tropomi data"""
+    # Note for anyone reading this; this performs very similar functions to the GridAggregator class, but in a different
+    # way. I prefer the method in GridAggregator, but this is fine for now. -John Roberts
     def __init__(self, region, str_res, strat_thld, do_temperature_correction=False, do_error_weighting=False, do_cld_frac_filter=False):
+        """Creates and returns an instance of ProcessedData for a given region
+
+        This class aggregates geoschem data over a grid defined by the :ref:`define_grid method`.
+
+        :param region: The region to aggregate geoschem over; can be NA, EU or CH.
+        :type region: str
+        :param str_res: The resolution of the grid around teh region to analyse; can be 8x10, 4x5, 2x25 or 1x1
+        :type str_res: str
+        :param do_temperature_correction: Whether to perform the temperature correction step
+        :type do_temperature_correction: bool
+        :param do_error_weighting: Whether to weight errors
+        :type do_error_weighting: bool
+        :param do_cld_frac_filter: Wheter to perform fractional filtering of clouds
+        :type do_cld_frac_filter: bool
+
+        :returns: A ProcessedData isntance ready to recieve data
+        :rtype: ProcessedData
+        """
 
         self.temperature_correction = do_temperature_correction
         self.error_weight = do_error_weighting
@@ -129,6 +152,13 @@ class ProcessedData:
         self.den2mr = np.divide((np.multiply(G, MW_AIR)), AVOGADRO)
 
     def define_grid(self, region, str_res):
+        """Defines a grid based on a set of regional bounding boxes and a resolution
+
+        :param region: The region to aggregate geoschem over; can be NA, EU or CH.
+        :type region: str
+        :param str_res: The resolution of the grid around the region to analyse; can be 8x10, 4x5, 2x25 or 1x1
+        :type str_res: str
+        """
         # Define target grid:
         if region == 'NA':
             self.minlat = 2.
@@ -179,7 +209,13 @@ class ProcessedData:
 
     # ----Processing methods----
     def process_geoschem_day(self, file_path):
+        """Aggregates geoschem data into the processing grid for a file on a given day.
 
+        Calls :ref:`regrid_and_process` for each pixel in the geoschem file, then calls
+        :ref:`process_grid_square` for each square of the grid
+
+        :param file_path: Path to the geoschem file to load into the processing grid
+        :type file_path: str"""
         # Define output data for this day:
         out_shape = (self.xdim, self.ydim)  # This feel gross. A 3-d list of appendable lists.
         self.g_no2 = [[[] for n in range(self.ydim)] for m in range(self.xdim)]
@@ -197,29 +233,37 @@ class ProcessedData:
         for y in range(len(this_geoschem_day.t_lat)):
             for x in range(len(this_geoschem_day.t_lon)):
                 this_geoschem_day.prepare_no2_pixel(x, y)
-                self.regrid_and_process(x, y, this_geoschem_day, self.cld_frac_filter)
+                self.regrid_and_process(x, y, this_geoschem_day)
         for i in range(self.xdim):
             for j in range(self.ydim):
                 if any(value != 0 for value in self.g_no2[i][j]):
                     self.process_grid_square(i, j)
 
-    def regrid_and_process(self, x, y, no2, filter_cld_frac):
+    def regrid_and_process(self, x, y, gc_data):
+        """Inserts data from pixel x,y from geoschem data into the appropriate grid cell
 
+        :param x: X index of geoschem grid cell
+        :type x: int
+        :param y: Y index of geoschem grid cell
+        :type y: int
+        :param gc_data: An instance of GeosChemDay data
+        :type gc_data: GeosChemDay
+        """
         # If no valid data, skip:
-        if ( len(no2.askind) == 0 ):
+        if ( len(gc_data.askind) == 0):
             return
 
         # Find nearest gridsquare in output grid:
-        lon = int(np.argmin(abs(self.out_lon - no2.t_lon[x])))
-        lat = int(np.argmin(abs(self.out_lat - no2.t_lat[y])))
+        lon = int(np.argmin(abs(self.out_lon - gc_data.t_lon[x])))
+        lat = int(np.argmin(abs(self.out_lat - gc_data.t_lat[y])))
 
-        self.g_ask_gaus_wgt[lon, lat] += np.sum(no2.twgt)
+        self.g_ask_gaus_wgt[lon, lat] += np.sum(gc_data.twgt)
 
-        self.g_askut_no2[lon, lat] += np.sum(no2.t_gc_no2[no2.askind, y, x] * no2.twgt * 1e3)
+        self.g_askut_no2[lon, lat] += np.sum(gc_data.t_gc_no2[gc_data.askind, y, x] * gc_data.twgt * 1e3)
         self.g_as_cnt[lon, lat] += 1.0
 
         # Add relevant data to array if there are clouds at 450-180 hPa:
-        if (no2.lcld <no2.level_min) or (no2.lcld > no2.level_max):
+        if (gc_data.lcld < gc_data.level_min) or (gc_data.lcld > gc_data.level_max):
             # Check for clouds between min and max pressure. If none, move to next pixel.
             #print("Cloud top outside pressure range in pixel {},{}".format(x,y))
             return
@@ -228,22 +272,23 @@ class ProcessedData:
         # true all-sky NO2:
         # (Keep for testing effect of thick clouds on cloud-sliced UT NO2):
         if ( self.cld_frac_filter ):
-            if np.sum(no2.t_cld_fr[no2.level_min:no2.level_max + 1, y, x]) < 0.7: 
+            if np.sum(gc_data.t_cld_fr[gc_data.level_min:gc_data.level_max + 1, y, x]) < 0.7:
                 return
 
-        self.g_no2[lon][lat].append(no2.no2_2d)  
-        self.g_grad[lon][lat].append(no2.grad)          
-        self.strat_no2[lon][lat].append(no2.strat_col)
-        self.all_cld_p[lon][lat].append(no2.t_cld_hgt[y, x])
+        self.g_no2[lon][lat].append(gc_data.no2_2d)
+        self.g_grad[lon][lat].append(gc_data.grad)
+        self.strat_no2[lon][lat].append(gc_data.strat_col)
+        self.all_cld_p[lon][lat].append(gc_data.t_cld_hgt[y, x])
         self.g_o3[lon][lat].append(
-            np.mean(no2.t_gc_o3[no2.level_min:no2.level_max + 1, y, x]))
+            np.mean(gc_data.t_gc_o3[gc_data.level_min:gc_data.level_max + 1, y, x]))
         self.g_true_no2[lon][lat].append(
-            np.mean(no2.t_gc_no2[no2.level_min:no2.level_max + 1, y, x]))
+            np.mean(gc_data.t_gc_no2[gc_data.level_min:gc_data.level_max + 1, y, x]))
         self.all_cld_fr[lon][lat].append(
-            np.sum(no2.t_cld_fr[no2.level_min:no2.level_max + 1, y, x]))
+            np.sum(gc_data.t_cld_fr[gc_data.level_min:gc_data.level_max + 1, y, x]))
         pass
 
     def process_grid_square(self, i, j):
+
         # Define vectors of relevant data:
         # These should all have the same length
         t_col_no2 = np.asarray(self.g_no2[i][j],dtype=np.float)
@@ -296,7 +341,31 @@ class ProcessedData:
                 self.add_slice(i, j, subset_t_cld, subset_t_col_no2, subset_t_mr_no2, subset_t_fr_c, subset_t_grad_no2, subset_t_o3)
 
     def add_slice(self, i, j, t_cld, t_col_no2, t_mr_no2, t_fr_c, t_grad_no2, t_o3):
-        """Applies and adds a cloud slice from the given data"""
+        """Extracts the upper troposphere gc_data, gc_data error, ozone data, ozone error,
+         and mean cloud pressure for grid square [i,j]
+
+        This method uses the cloud-slicing function :ref:`uptrop.cloud_slice_ut_no2.cldslice`
+        Once calculated, the a weighting is derived from cloud pressure.
+        The weighted upper tropospheric gc_data and error is added to the rolling total for this season.
+        If the cloud slicing fails, then the reason is added to loss_count for the end report.
+
+        :param i: X-index of grid square
+        :type i: int
+        :param j: Y-index of grid square
+        :type j: int
+        :param t_cld: Tropospheric cloud
+        :type t_cld: float
+        :param t_col_no2: Tropospheric column no2
+        :type t_col_no2: float
+        :param t_mr_no2: SOMETHING NO2? ASK ELOISE
+        :type t_mr_no2: float
+        :param t_fr_c: I THINK IT MIGHT BE FREON BUT I REALLY HOPE NOT
+        :type t_fr_c: float
+        :param t_grad_no2: GRADIATED NO2? HELP I NEED AN ACTUAL CHEMIST
+        :type t_grad_no2: float
+        :param t_o3: OOH I KNOW THIS ONE ITS OZONE
+        :type t_o3: float
+        """
         utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
         
         # Calculate weights:
@@ -340,8 +409,7 @@ class ProcessedData:
             self.cloud_slice_count += 1
 
     def get_weighted_mean(self):
-        """
-        Get weighted mean of data
+        """Applies weighting to the aggregated means.
         """
 
         # Mean physical parameters:
@@ -367,6 +435,8 @@ class ProcessedData:
 
     # ----Reporting and saving methods----
     def print_data_report(self):
+        """Prints a set of reasons for missing data
+        """
         # Output code diagnostics:
         # No. of data points:
         # print('No. of valid data points: ',cloud_slice_count,flush=True)
@@ -386,6 +456,8 @@ class ProcessedData:
         print('Error range of cloud-sliced UT NO2: ', np.nanmin(self.slope_err), np.nanmax(self.slope_err))
 
     def plot_data(self):
+        """Plots the present state of the gridded data
+        """
         # Plot the data:
         m = Basemap(resolution='l', projection='merc',
                     lat_0=0, lon_0=0, llcrnrlon=self.minlon,
@@ -486,6 +558,11 @@ class ProcessedData:
         plt.show()
 
     def save_to_netcdf(self, out_path):
+        """Saves the present state of the grid to a netCDF4 file
+
+        :param out_path: Path to the output file
+        :type out_path: str
+        """
         # Save the data to NetCDF:
         ncout = Dataset(out_path, mode='w', format='NETCDF4')
         # Create data dimensions:
@@ -552,7 +629,21 @@ class ProcessedData:
 
 
 class GeosChemDay:
+    """A class for reading, preprocessing and accessing Geoschem data on a given day
+    """
     def __init__(self, file_path, error_weight=False, temperature_correction=False):
+        """Reads the data at file_path and returns a GeosChemDay object containing that data
+
+        :param file_path: Path to the netcdf4 file containing the GeosChem data
+        :type file_path: str
+        :param error_weight: Whether to apply error weighting
+        :type error_weight: bool
+        :param temperature_correction: Whether to apply temperature correction
+        :type temperature_correction: bool
+
+        :returns: A GeosChemDay class
+        :rtype: GeosChemDay
+        """
         print(file_path, flush=True)
 
         self.error_weight = error_weight
@@ -596,6 +687,15 @@ class GeosChemDay:
         self.askind = None
 
     def prepare_no2_pixel(self, x, y):
+        """Extracts preprocesed no2 from the geoschem pixel at x,y
+
+        TODO: MORE HERE
+
+        :param x: The x index of the pixel
+        :type x: int
+        :param y: The y index of the pixel
+        :type y: int
+        """
         # Calculate corresponding mid-pressure values:
         tp_mid = np.zeros(len(self.t_p_edge[:, y, x]))
         # Get mid-pressure values, except for highest layer:
@@ -681,6 +781,18 @@ class GeosChemDay:
                                 * self.t_bx_hgt[tppind:, y, x])
 
 def get_file_list(gcdir, REGION, YEARS_TO_PROCESS):
+    """Gets a list of geoschem files for a given region and set of years
+
+    :param gcdir: The directory containing the geoschem files
+    :type gcdir: str
+    :param REGION: Can be NA, EU or CH
+    :type REGION: str
+    :param YEARS_TO_PROCESS: A list of years to process as string (eg ['2019', '2020'])
+    :type YEARS_TO_PROCESS: list of str
+
+    :returns: A sorted list of geoschem files
+    :rtype: list of str
+    """
     # Define target grid:
     if REGION == 'NA':
         dirreg = '_na_'
