@@ -491,58 +491,52 @@ class TropomiData:
         self.vza = vza
 
     def calc_geo_column(self):
-        """Calculates the geometric AMF and tropospheric vertical column of this data"""
+        """Calculates the geometric AMF and tropospheric vertical column of this data.
+        Includes application of a bias correction to the stratospheric and tropospheric columns. These are obtaind from comparing TROPOMI to Pandora surface observations. 
+           The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
+           """
+
         # Calculate the geometric AMF:
         tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
 
-        # Get VCD under cloud conditions. This is done as the current
+        # Bias correct the stratosphere:
+        tstratno2 = np.where(self.stratno2_og != self.fillval,
+                             ((self.stratno2_og - (6.5e14 / self.no2sfac)) / 0.86), np.nan)
+
+        # Get VCD under cloudy conditions. This is done as the current
         # tropospheric NO2 VCD product includes influence from the prior
         # below clouds:
-        # Calculate the stratospheric slant columns:
-        tscdstrat = np.multiply(self.stratno2_og, self.tstratamf)
+        # Calculate the stratospheric slant columns using the original stratospheric column:
+        tscdstrat = np.where( self.stratno2_og != self.fillval, (np.multiply(self.stratno2_og, self.tstratamf)), self.fillval )
         # Calculate the tropospheric slant columns:
-        ttropscd = np.subtract(self.tscdno2, tscdstrat)
+        ttropscd = np.where( tscdstrat != self.fillval, (np.subtract(self.tscdno2, tscdstrat)), self.fillval )
         # Calculate the tropospheric vertical column using the geometric AMF:
-        tgeotropvcd = np.divide(ttropscd, tamf_geo)
+        tgeotropvcd = np.where( ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
-        # Setting members
-        self.tamf_geo = tamf_geo
-        self.tgeotropvcd = tgeotropvcd
+        # Bias correct the troposphere:
+        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 2., np.nan )
 
-    def apply_bias_correction(self):
-        """Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
-           The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
-           ["""
-        # Bias correct stratosphere based on comparison of TROPOMI to Pandora Mauna Loa:
-        tstratno2 = np.where(self.stratno2_og != self.fillval,
-                             ((self.stratno2_og - (6.6e14 / self.no2sfac)) / 0.86), np.nan)
-
-        # Bias correct troposphere based on comparison of TROPOMI to Pandora Izana:
-        tgeotropvcd = np.where(self.tgeotropvcd != self.fillval,
-                               self.tgeotropvcd / 2., np.nan)
-
-        # Get the total column as the sum of the bias-corrected components:
+        # Get total column as the sum of the bias-corrected stratosphere and troposphere:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
 
-        # Calculate updated stratospheric NO2 error after bias correcting.
+        # Calculate updated errors after bias correcting.
         # Determine by scaling it by the relative change in stratospheric vertical
         # colum NO2 after applying a bias correction:
-        tstratno2err = np.where(self.stratno2err != self.fillval,
-                                np.multiply(self.stratno2err, np.divide(tstratno2, self.stratno2_og)),
-                                np.nan)
+        tstratno2err = np.where(self.stratno2err != self.fillval, np.multiply(self.stratno2err, np.divide(tstratno2, self.stratno2_og)), np.nan)
 
         # Calculate error by adding in quadrature individual
         # contributions:
-        ttotvcd_geo_err = np.sqrt(np.add(np.square(tstratno2err),
-                                         np.square(self.tscdno2err)))
+        ttotvcd_geo_err = np.sqrt(np.add(np.square(tstratno2err), np.square(self.tscdno2err)))
         # Estimate the tropospheric NO2 error as the total error
         # weighted by the relative contribution of the troposphere
         # to the total column, as components that contribute to the
         # error are the same:
-        ttropvcd_geo_err = np.multiply(ttotvcd_geo_err,
-                                       (np.divide(tgeotropvcd, tgeototvcd)))
+        ttropvcd_geo_err = np.multiply(ttotvcd_geo_err, (np.divide(tgeotropvcd, tgeototvcd)))
 
+        # Setting members
+        self.tamf_geo = tamf_geo
+        self.tgeotropvcd = tgeotropvcd
         self.tstratno2 = tstratno2
         self.tgeototvcd = tgeototvcd
         self.tgeotropvcd = tgeotropvcd  # Filter applied to member defined in geo_column
@@ -932,7 +926,6 @@ if __name__ == "__main__":
         cloud_data = CloudData(cloud_file, data_type=args.cloud_product)
         if cloud_data.data_parity==False: continue
         trop_data.calc_geo_column()
-        trop_data.apply_bias_correction()
         trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold, args.pmax, args.pmin)
         grid_aggregator.initalise_grid()
         grid_aggregator.grid_trop_data(trop_data)

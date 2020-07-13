@@ -457,42 +457,54 @@ class TropomiData:
 
     def preprocess(self):
         """Prepares the Tropomi data for use. Applies bias correction if needed here.
-        REFERNCE HERE
+        Bias correction to stratosphere and troposphere is obtained in this work from comparison of TROPOMI to Pandora over Mauna Loa (stratospheric column) and Izana and Altzomoni (tropospheric column). The correction is confirmed by also comparing TROPOMI and MAX-DOAS tropospheric columns at Izana. 
         """
         # Calculate the geometric AMF:
         self.tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
         # Calculate the total column with a geometric AMF:
-        # Step 1: calculate stratospheric SCD (not in data product):
-        self.tscdstrat = np.multiply(self.tstratno2, self.tstratamf)
-        # Step 2: calculate tropospheric NO2 SCD:
-        self.ttropscd = np.subtract(self.tscdno2, self.tscdstrat)
-        # Step 3: calculate tropospheric NO2 VCD:
-        self.tgeotropvcd = np.divide(self.ttropscd, self.tamf_geo)
-        # Step 4: sum up stratospheric and tropospheric NO2 VCDs:
-        self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
-        # Calculate total VCD column error by adding in quadrature
-        # individual contributions:
-        self.ttotvcd_geo_err = np.sqrt(np.add(np.square(self.tstratno2err),
-                                              np.square(self.tscdno2err)))
-        # Estimate the tropospheric NO2 error as the total error
-        # weighted by the relative contribution of the troposphere
-        # to the total column. This can be done as components that
-        # contribute to the error are the same:
-        self.ttropvcd_geo_err = np.multiply(self.ttotvcd_geo_err,
-                                            (np.divide(self.tgeotropvcd, self.tgeototvcd)))
+        if ( ~self.apply_bias ):
+            # Step 1: calculate stratospheric SCD (not in data product):
+            self.tscdstrat = np.multiply(self.tstratno2, self.tstratamf)
+            # Step 2: calculate tropospheric NO2 SCD:
+            self.ttropscd = np.subtract(self.tscdno2, self.tscdstrat)
+            # Step 3: calculate tropospheric NO2 VCD:
+            self.tgeotropvcd = np.divide(self.ttropscd, self.tamf_geo)
+            # Step 4: sum up stratospheric and tropospheric NO2 VCDs:
+            self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
+            # Calculate total VCD column error by adding in quadrature
+            # individual contributions:
+            self.ttotvcd_geo_err = np.sqrt(np.add(np.square(self.tstratno2err),
+                                                  np.square(self.tscdno2err)))
+            # Estimate the tropospheric NO2 error as the total error
+            # weighted by the relative contribution of the troposphere
+            # to the total column. This can be done as components that
+            # contribute to the error are the same:
+            self.ttropvcd_geo_err = np.multiply(self.ttotvcd_geo_err,
+                                                (np.divide(self.tgeotropvcd, self.tgeototvcd)))
 
-        # Apply bias correction if indicated in the input arguments:
-        if (self.apply_bias):
+        else:
+            # Apply bias correction if indicated in the input arguments:
             # Preserve original stratosphere for error adjustment:
             self.tstratno2_og = self.tstratno2
             # Apply correction to stratosphere based on comparison
             # to Pandora Mauna Loa total columns:
             self.tstratno2 = np.where(self.tstratno2 != self.fillval,
-                                      ((self.tstratno2 - (6.6e14 / self.no2sfac)) / 0.86), np.nan)
+                                      ((self.tstratno2 - (6.5e14 / self.no2sfac)) / 0.86), np.nan)
+
+
+            # Step 1: calculate stratospheric SCD (not in data product):
+            self.tscdstrat = np.multiply(self.tstratno2_og, self.tstratamf)
+            # Step 2: calculate tropospheric NO2 SCD:
+            self.ttropscd = np.subtract(self.tscdno2, self.tscdstrat)
+            # Step 3: calculate tropospheric NO2 VCD:
+            self.tgeotropvcd = np.divide(self.ttropscd, self.tamf_geo)
             # Apply bias correction to troposphere based on comparison
             # to Pandora Izana tropospheric columns:
             self.tgeotropvcd = np.where(self.tgeotropvcd != self.fillval, self.tgeotropvcd / 2, np.nan)
+            # Step 4: sum up stratospheric and tropospheric NO2 VCDs:
+            self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
+            
             # Bias correct the error estimates by the same amount as
             # the absolute columns:
             self.tstratno2err = np.where(self.tstratno2err != self.fillval,
@@ -503,9 +515,6 @@ class TropomiData:
             # individual contributions:
             self.ttotvcd_geo_err = np.sqrt(np.add(np.square(self.tstratno2err),
                                              np.square(self.tscdno2err)))
-            # Step 4: sum up bias corrected stratospheric and tropospheric 
-            # NO2 VCDs:
-            self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
 
     def apply_cloud_filter(self, cloud_product):
         """Applies a cloud filter and finishes preprocessing.
