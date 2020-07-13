@@ -376,7 +376,7 @@ class TropomiData:
         self.stratno2err = None
         self.tstratamf = None
         self.qaval = None
-        self.aai = None
+        #self.aai = None
         self.sza = None
         self.vza = None
 
@@ -386,8 +386,6 @@ class TropomiData:
 
         # Members from bias correction
         self.tstratno2 = None
-        self.tgeototvcd = None
-        self.ttropvcd_geo_err = None  # This one doesn't seem to be used
 
         # Members from filtering
         self.inicnt = None
@@ -459,10 +457,10 @@ class TropomiData:
         qaval = fh.groups['PRODUCT'].variables['qa_value'][0, :, :]
 
         # Aerosol absorbing index:
-        taai = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
-                   variables['aerosol_index_354_388'][:]
-        aai = taai.data[0, :, :]
-        aai = np.where(aai > 1e30, np.nan, aai)
+        #taai = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
+        #           variables['aerosol_index_354_388'][:]
+        #aai = taai.data[0, :, :]
+        #aai = np.where(aai > 1e30, np.nan, aai)
 
         # Solar zenith angle (degrees):
         tsza = fh.groups['PRODUCT']['SUPPORT_DATA']['GEOLOCATIONS']. \
@@ -486,7 +484,7 @@ class TropomiData:
         self.stratno2err = stratno2err
         self.tstratamf = tstratamf
         self.qaval = qaval
-        self.aai = aai
+        #self.aai = aai
         self.sza = sza
         self.vza = vza
 
@@ -502,7 +500,7 @@ class TropomiData:
 
         # Bias correct the stratosphere:
         tstratno2 = np.where(self.stratno2_og != self.fillval,
-                             ((self.stratno2_og - (6.5e14 / self.no2sfac)) / 0.86), np.nan)
+                             ((self.stratno2_og - (7.6e14 / self.no2sfac)) / 0.86), np.nan)
 
         # Get VCD under cloudy conditions. This is done as the current
         # tropospheric NO2 VCD product includes influence from the prior
@@ -515,7 +513,7 @@ class TropomiData:
         tgeotropvcd = np.where( ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
         # Bias correct the troposphere:
-        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 2., np.nan )
+        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 1.9, np.nan )
 
         # Get total column as the sum of the bias-corrected stratosphere and troposphere:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
@@ -525,22 +523,11 @@ class TropomiData:
         # colum NO2 after applying a bias correction:
         tstratno2err = np.where(self.stratno2err != self.fillval, np.multiply(self.stratno2err, np.divide(tstratno2, self.stratno2_og)), np.nan)
 
-        # Calculate error by adding in quadrature individual
-        # contributions:
-        ttotvcd_geo_err = np.sqrt(np.add(np.square(tstratno2err), np.square(self.tscdno2err)))
-        # Estimate the tropospheric NO2 error as the total error
-        # weighted by the relative contribution of the troposphere
-        # to the total column, as components that contribute to the
-        # error are the same:
-        ttropvcd_geo_err = np.multiply(ttotvcd_geo_err, (np.divide(tgeotropvcd, tgeototvcd)))
-
         # Setting members
         self.tamf_geo = tamf_geo
         self.tgeotropvcd = tgeotropvcd
         self.tstratno2 = tstratno2
         self.tgeototvcd = tgeototvcd
-        self.tgeotropvcd = tgeotropvcd  # Filter applied to member defined in geo_column
-        self.ttropvcd_geo_err = ttropvcd_geo_err
 
     def cloud_filter_and_preprocess(self, cloud_data, cldthld, pmin, pmax):
         """Filters this tropomi data using the cloud information in cloud_data
@@ -550,7 +537,6 @@ class TropomiData:
          - The fraction of cloud is less than the specified cloud threshold
          - Cloud heights are not in the range pmin-pmax
          - Quality value is greater than 0.45
-         - Aerosol Absorbing Index (AAI) is > 1
 
         :param cloud_data: Instance of CloudData
         :type cloud_data: uptrop.tropomi_ut_no2.CloudData
@@ -587,7 +573,7 @@ class TropomiData:
         tgeototvcd = np.where(self.qaval < 0.45, np.nan, tgeototvcd)
 
         # Filter out scenes with AAI > 1 (could be misclassified as clouds)
-        tgeototvcd = np.where(self.aai > 1., np.nan, tgeototvcd)
+        #tgeototvcd = np.where(self.aai > 1., np.nan, tgeototvcd)
         self.tgeototvcd = tgeototvcd
 
         # No. of points retained after filtering:
@@ -884,7 +870,7 @@ if __name__ == "__main__":
         yrrange = '2019-2020'
     elif args.season == "mam":
         start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=6, day=29)
+        end_date = dt.datetime(year=2020, month=5, day=31)
         yrrange = '2020'
     elif args.season == "test":
         start_date = dt.datetime(year=2020, month=3, day=1)

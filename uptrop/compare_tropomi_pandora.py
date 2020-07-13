@@ -490,7 +490,7 @@ class TropomiData:
             # Apply correction to stratosphere based on comparison
             # to Pandora Mauna Loa total columns:
             self.tstratno2 = np.where(self.tstratno2 != self.fillval,
-                                      ((self.tstratno2 - (6.5e14 / self.no2sfac)) / 0.86), np.nan)
+                                      ((self.tstratno2 - (7.6e14 / self.no2sfac)) / 0.86), np.nan)
 
 
             # Step 1: calculate stratospheric SCD (not in data product):
@@ -501,7 +501,7 @@ class TropomiData:
             self.tgeotropvcd = np.divide(self.ttropscd, self.tamf_geo)
             # Apply bias correction to troposphere based on comparison
             # to Pandora Izana tropospheric columns:
-            self.tgeotropvcd = np.where(self.tgeotropvcd != self.fillval, self.tgeotropvcd / 2, np.nan)
+            self.tgeotropvcd = np.where(self.tgeotropvcd != self.fillval, self.tgeotropvcd / 1.9, np.nan)
             # Step 4: sum up stratospheric and tropospheric NO2 VCDs:
             self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
             
@@ -708,8 +708,9 @@ class PandoraData:
         # reference temperature at these sites that will be used in the future v1.8
         # retrieval rather than 254K used for sites that extend to the surface.
         # V1.8 data will be available in late 2020.
-        self.panno2 = self.panno2 * 0.9
-        self.panno2err = self.panno2err * 0.9
+        if (col_type == 'Tot'):
+            self.panno2 = self.panno2 * 0.9
+            self.panno2err = self.panno2err * 0.9
         # Get data length (i.e., length of each row):
         npanpnts = len(df)
         # Confirm processing correct site:
@@ -769,7 +770,7 @@ def get_pandora_file(pandir, pandora_site, site_num, c_site, no2_col, fv):
 def get_days_since_data_start(date, data_start = None):
     """Returns the number of days since the start date. If no start date is given, assumed 01/05/2019"""
     if not data_start:
-        data_start = dt.datetime(year=2019, month=5, day=1)
+        data_start = dt.datetime(year=2019, month=6, day=1)
     delta = date - data_start
     return delta.days
 
