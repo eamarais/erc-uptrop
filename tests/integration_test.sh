@@ -3,7 +3,7 @@ PANDORA_DIR=/data/uptrop/nobackup/pandora/
 GC_DIR=/data/uptrop/Projects/DEFRA-NH3/GC/
 OUT_DIR=./integration_outputs
 START_DATE=2019-06-01
-END_DATE=2019-06-31
+END_DATE=2019-06-30
 
 echo Testing tropomi_ut_no2...
 python ../uptrop/tropomi_ut_no2.py --trop_dir $TROPOMI_DIR --out_dir $OUT_DIR \
