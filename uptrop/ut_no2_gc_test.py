@@ -805,7 +805,6 @@ if __name__ == "__main__":
     gc_dir = args.gc_dir
     STR_RES = args.resolution
     REGION = args.region
-    out_path = args.out_path
 
     out_file = os.path.join(args.out_dir, 'ut_no2_gc_test'
                          + '-' + args.region
@@ -853,7 +852,6 @@ if __name__ == "__main__":
     rolling_total.get_weighted_mean()
     rolling_total.print_data_report()
     rolling_total.plot_data()
-    out_path = args.out_path
-    rolling_total.save_to_netcdf(out_path)
+    rolling_total.save_to_netcdf(out_file)
 
 
