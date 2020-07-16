@@ -806,19 +806,6 @@ if __name__ == "__main__":
     STR_RES = args.resolution
     REGION = args.region
 
-    out_file = os.path.join(args.out_dir, 'ut_no2_gc_test'
-                         + '-' + args.region
-                         + '-' + args.strat_filter_threshold
-                         + '-' + args.resolution
-                         + '-' + args.yrrange)
-    if args.do_temp_correct:
-        out_file += "-temp_correct"
-    if args.do_error_weight:
-        out_file += "-error_weight"
-    if args.apply_cloud_filter:
-        out_file += "-cld_frac"
-    out_file += ".nc4"
-
     if args.season:
         start_date, end_date = season_to_date(args.season)
     else:
@@ -833,10 +820,21 @@ if __name__ == "__main__":
     else:
         yrrange = str(start_date.year) + "-" + str(end_date.year)
 
+    out_file = os.path.join(args.out_dir, 'ut_no2_gc_test'
+                         + '-' + args.region
+                         + '-' + args.strat_filter_threshold
+                         + '-' + args.resolution
+                         + '-' + yrrange)
+    if args.do_temp_correct:
+        out_file += "-temp_correct"
+    if args.do_error_weight:
+        out_file += "-error_weight"
+    if args.apply_cloud_filter:
+        out_file += "-cld_frac"
+    out_file += ".nc4"
+
     strat_filter_threshold = float(args.strat_filter_threshold)
-
     date_range = rrule('daily', dtstart=start_date, until=end_date)
-
     files = get_gc_file_list(gc_dir, args.region, date_range)
     print('Number of files:', len(files), flush=True)
 
@@ -845,7 +843,6 @@ if __name__ == "__main__":
                                   do_error_weighting=args.do_error_weight,
                                   do_cld_frac_filter=args.apply_cld_frac_filter)
 
-    # Loop over files:
     for file_path in files:
         rolling_total.process_geoschem_day(file_path)
 
