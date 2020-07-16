@@ -24,6 +24,8 @@ import argparse
 import sys
 import os
 from os import path
+import datetime as dt
+import dateutil.rrule as rr
 
 # Import hack
 sys.path.append(
@@ -31,13 +33,13 @@ sys.path.append(
         os.path.dirname(os.path.abspath(__file__)),
         '..'))
 
+from uptrop.date_file_utils import season_to_date, get_tropomi_file_list, get_ocra_file_list
 from uptrop.gamap_colormap import WhGrYlRd
 from uptrop.convert_height_to_press import alt2pres
 
 # Turn off warnings:
 # np.warnings.filterwarnings('ignore')
 
-# TODO: Check with Eloise how constant these are going to be
 # Define constants/maybe parameters?
 FILL_VAL = 9.96921e+36
 
@@ -50,6 +52,7 @@ MAX_LON = 180.
 # Define limits of pressure range of interest (in hPa):
 PMIN = 180.
 PMAX = 450.
+
 
 class FileMismatchException(Exception):
     """
@@ -81,13 +84,16 @@ class CloudVariableStore:
     """
     Class containing the running results of various datas for this project; also saving to netCDF and plotting.
     """
-    def __init__(self, data_shape):
-        """Creates an empty CloudVariableStore of shape data_shape
+    def __init__(self, data_shape, start_date, end_date):
+        """Creates an empty CloudVariableStore of shape data_shape for data between start_date and end_date
 
         :param data_shape: Tuple of (presumably) two elements for shape of cloud data
         :type data_shape: List of length 2
         """
-        # TODO Find out from Eloise what these stand for for better variable names
+
+        self.start_date = start_date
+        self.end_date = end_date
+
         self.gknmi_cf = np.zeros(data_shape)
         self.gknmi_ct = np.zeros(data_shape)
         self.gknmi_cb = np.zeros(data_shape)
@@ -243,7 +249,7 @@ class CloudVariableStore:
         out_dir = path.abspath(out_dir)
 
         # Write data to file:
-        outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + MMName + '-' + StrYY + '-' + out_res + '-' + file_version + '.nc')
+        outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + str(self.start_date) + '-' + str(self.end_date) + '-' + out_res + '-' + file_version + '.nc')
         ncfile = Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
         ncfile.createDimension('xdim', len(out_lon))    # TODO: Make this a member
         ncfile.createDimension('ydim', len(out_lat))
@@ -335,7 +341,9 @@ class CloudVariableStore:
 
         :param plot_dir: The directory that will contain the plots
         :type plot_dir: str"""
-        # TODO: Get MMName and StrYY from file_path instead of the global at the bottom of the script
+
+        MMName = str(self.start_date.month)
+
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
                     llcrnrlon=MIN_LON, llcrnrlat=-70,
@@ -358,7 +366,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('Difference (FRESCO-DLR)')
-        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-frac-' + MMName + '-' + StrYY + '-' + file_version + '.ps'), \
+        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-frac-' + str(self.start_date) + '-' + str(self.end_date) + '-' + file_version + '.ps'),
                     format='ps')
         # (2) Cloud top pressure:
         plt.figure(2)
@@ -377,7 +385,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('Difference (FRESCO-DLR)')
-        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-top-press-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-top-press-' + str(self.start_date) + '-' + str(self.end_date) + '-' + file_version + '.ps'),
                     format='ps')
         # (3) Cloud optical depth/albedo (DLR only):
         plt.figure(3)
@@ -385,7 +393,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR cloud optical thickness')
-        plt.savefig(path.join(plot_dir, 'dlr-cloud-optical-depth-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'dlr-cloud-optical-depth-' + str(self.start_date) + '-' + str(self.end_date) + '-' + file_version + '.ps'),
                     format='ps')
         # (4) Cloud base pressure (DLR only):
         plt.figure(4)
@@ -393,7 +401,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR base pressure [hPa]')
-        plt.savefig(path.join(plot_dir,'dlr-cloud-base-press-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir,'dlr-cloud-base-press-' + str(self.start_date) + '-' + str(self.end_date) + '-' + file_version + '.ps'),
                     format='ps')
         # (5) Number of points (both):
         plt.figure(4)
@@ -407,7 +415,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR No. of obs')
-        plt.savefig(path.join(plot_dir, 'fresco-dlr-number-of-obs-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'fresco-dlr-number-of-obs-' + str(self.start_date) + '-' + str(self.end_date) + '-' + file_version + '.ps'),
                     format='ps')
         plt.show()
 
@@ -647,99 +655,26 @@ def process_file(tdfile, tffile, running_total_container):
     return
 
 
-def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
-    """Gets fresco an
-    For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every DLR and Fresco
-    file_path. Also sets the globals StrMM, StrYY, MMName (used in the plotting method)(at least until I fix it)
-
-    :param sen_5_p_dir: The directory containing the DLR and Fresco files
-    :type sen_5_p_dir: str
-    :param month_index: The month index
-    :type month_index: int
-    :param ndays: The number of days in the month
-    :type ndays: int
-
-    :raises FileMismatchException: Raised if there is an unequal number of fresco and dlr files
-
-    :return: The list of dlr files and the list of fresco files
-    :rtype: tuple(dlr files, fresco files)
-    """
-    # TODO Roll the string manufacturing into the CloudVariableStore class
-    global StrMM, StrYY, MMName
-
-
-    # Input parameter (to selet month of interest):
-    # Define month of interest as string 2 characters in length:
-    # TODO: Change this entire section into datetime
-    StrMM = str(month_index)
-    # Define string of year and first 3 letters of month name based on above entry:
-    if StrMM == '01': StrYY, MMName = '2020', 'jan'
-    if StrMM == '02': StrYY, MMName = '2020', 'feb'
-    if StrMM == '03': StrYY, MMName = '2020', 'mar'
-    if StrMM == '04': StrYY, MMName = '2020', 'apr'
-    if StrMM == '05': StrYY, MMName = '2020', 'may'
-    if StrMM == '06': StrYY, MMName = '2019', 'jun'
-    if StrMM == '07': StrYY, MMName = '2019', 'jul'
-    if StrMM == '08': StrYY, MMName = '2019', 'aug'
-    if StrMM == '09': StrYY, MMName = '2019', 'sep'
-    if StrMM == '10': StrYY, MMName = '2019', 'oct'
-    if StrMM == '11': StrYY, MMName = '2019', 'nov'
-    if StrMM == '12': StrYY, MMName = '2019', 'dec'
-    # Define days:
-    dd = list(range(1, ndays + 1))
-    strdd = [''] * ndays
-    cnt = 0
-    for d in dd:
-        strdd[cnt] = '0' + str(d) if d < 10 else str(d)
-        cnt = cnt + 1
-
-    # dir structure specific to HPC, file_path from TROPOMI
-    # Get DLR data file names:
-    td_file_list = glob.glob(
-        path.join(sen_5_p_dir,
-                  'CLOUD_OFFL',
-                  StrYY,
-                  StrMM,
-                  'S5P_OFFL_L2__CLOUD__' + StrYY + StrMM + '*'))
-    td_file_list = sorted(td_file_list)
-    # Get FRESCO file names:
-    tf_file_list = glob.glob(
-        path.join(sen_5_p_dir,
-                  'NO2_OFFL',
-                  StrYY,
-                  StrMM ,
-                  'S5P_OFFL_L2__NO2____' + StrYY + StrMM + '*'))
-    tf_file_list = sorted(tf_file_list)
-    # Check that number of files are equal. If not, exit the programme:
-    if len(td_file_list) != len(tf_file_list):
-        print('DLR files = ', len(td_file_list))
-        print('FRESCO files = ', len(tf_file_list))
-        print('unequal number of files')
-        raise FileMismatchException("Unequal number of DLR and FRESCO files, check archive.")
-    if len(td_file_list) == 0:
-        raise FileNotFoundError("No files found in {}".format(sen_5_p_dir))
-
-    return td_file_list, tf_file_list
-
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Extracts and plots cloud data")
-    parser.add_argument("--s5p_data_dir", default='/data/uptrop/nobackup/tropomi/Data/')
-    parser.add_argument("--output_dir", default='/data/uptrop/Projects/UpTrop/python/Data_v2/')
-    parser.add_argument("--month", default="10")
+    parser.add_argument("--trop_dir", default='/data/uptrop/nobackup/tropomi/Data/')
+    parser.add_argument("--out_dir", default='/data/uptrop/Projects/UpTrop/python/Data_v2/')
+    parser.add_argument("--season", help="Can be jja, son, djf, mam. Overrides start_date/end_date")
+    parser.add_argument("--start_date", help="Start date of processing window (yyyy-mm-dd)")
+    parser.add_argument("--end_date", help="End date of processing window (yyyy-mm-dd)")
     parser.add_argument("--plot_dir", default="/data/uptrop/Projects/UpTrop/python/Images/")
-    parser.add_argument("--number_of_days", default=31, type=int)
     parser.add_argument("--out_res", default="1x1")
     parser.add_argument("--dlr_cld_top", default="height")
     parser.add_argument("--file_version", default="v1")
     args = parser.parse_args()
 
-    s5p_data_dir = path.expanduser(args.s5p_data_dir)
-    output_dir = path.expanduser(args.output_dir)
+    trop_dir = path.expanduser(args.trop_dir)
+    out_dir = path.expanduser(args.out_dir)
     plot_dir = path.expanduser(args.plot_dir)
-    dlr_cld_top = path.expanduser(args.dlr_cld_top)
-    file_version = path.expanduser(args.file_version)
+    dlr_cld_top = args.dlr_cld_top
+    file_version = args.file_version
+    out_res = args.out_res
 
     # TODO: Make this a member of CloudVariableStore
     if args.out_res == '1x1':
@@ -756,23 +691,38 @@ if __name__ == "__main__":
     # Convert output lats and long to 2D:
     X, Y = np.meshgrid(out_lon, out_lat, indexing='ij')
 
-    out_res = path.expanduser(args.out_res)
+    if args.season:
+        start_date, end_date = season_to_date(args.season)
+    else:
+        if args.start_date and args.end_date:
+            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
+            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+        else:
+            print("Please provide either --season or --start_date and --end_date")
+            sys.exit(1)
+    if start_date.year == end_date.year:
+        yrrange = str(start_date.year)
+    else:
+        yrrange = str(start_date.year) + "-" + str(end_date.year)
 
-    td_file_list, tf_file_list = get_files_for_month(s5p_data_dir, args.month, args.number_of_days)
-    running_cloud_total = CloudVariableStore(X.shape)
+    date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
+    tf_file_list = get_tropomi_file_list(trop_dir, date_range)
+    td_file_list = get_ocra_file_list(trop_dir, date_range)
+    if len(tf_file_list) != len(td_file_list):
+        print("Unequal number of dlr and no2 files")
+        raise FileMismatchException
 
-    # Loop over files:
+    running_cloud_total = CloudVariableStore(X.shape, start_date, end_date)
     for td_file, tf_file in zip(td_file_list, tf_file_list):
         print("Processing files {} and {}".format(tf_file, td_file))
         process_file(td_file, tf_file, running_cloud_total)
-
     running_cloud_total.calc_cloud_statistics()
 
     # Print number of observations to screen:
-    print('No. of FRESCO obs for '+MMName+' = ',running_cloud_total.nobs_fresco)
-    print('No. of DLR obs for '+MMName+' = ',running_cloud_total.nobs_dlr)
-    print("Writing to NetCDF at {}".format(args.output_dir))
-    running_cloud_total.write_to_netcdf(output_dir)
+    print('No. of FRESCO between {} and {}: {}'.format(str(start_date), str(end_date), running_cloud_total.nobs_fresco))
+    print('No. of DLR obs between {} and {}: {}'.format(str(start_date), str(end_date),  running_cloud_total.nobs_dlr))
+    print("Writing to NetCDF at {}".format(args.out_dir))
+    running_cloud_total.write_to_netcdf(out_dir)
     print("Creating plots at {}".format(args.plot_dir))
     running_cloud_total.plot_clouds_products(plot_dir)
     print("Processing complete.")
