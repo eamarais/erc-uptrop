@@ -12,7 +12,8 @@ python ../uptrop/tropomi_ut_no2.py --trop_dir $TROPOMI_DIR --out_dir $OUT_DIR \
 echo --------------------------------------
 
 echo Testing ut_no2_gc_test.py
-python ../uptrop/ut_no2_gc_test.py --gc_dir $GC_DIR --out_dir $OUT_DIR --start_date $START_DATE --end_date $END_DATE
+python ../uptrop/ut_no2_gc_test.py --gc_dir $GC_DIR --out_dir $OUT_DIR \
+ --start_date $START_DATE --end_date $END_DATE --region EU
 
 echo --------------------------------------
 

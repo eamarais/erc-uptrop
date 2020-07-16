@@ -256,9 +256,9 @@ class CloudVariableStore:
         ncfile.createDimension('frdim', len(self.cldbin))
         ncfile.createDimension('lbdim', len(self.latbin))
         # Global attributes:
-        ncfile.title = 'FRESCO and DLR TROPOMI monthly mean cloud properties for ' + \
-                       StrMM + ' ' + StrYY
-        ncfile.subtitle = 'Data written to file in ' + StrMM + ' ' + StrYY
+        ncfile.title = 'FRESCO and DLR TROPOMI monthly mean cloud properties between ' + \
+                       str(self.start_date) + ' ' + str(self.end_date)
+        ncfile.subtitle = 'Data written to file in ' + str(self.start_date) + ' ' + str(self.end_date)
         ncfile.anything = 'Verions used are v010107 for the DLR product and v010302 for the FRESCO product'
         # Longitudes:
         lon = ncfile.createVariable('lon', np.dtype('float'), ('xdim',))
@@ -341,8 +341,6 @@ class CloudVariableStore:
 
         :param plot_dir: The directory that will contain the plots
         :type plot_dir: str"""
-
-        MMName = str(self.start_date.month)
 
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
