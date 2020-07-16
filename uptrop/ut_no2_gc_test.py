@@ -28,7 +28,7 @@ from sklearn.linear_model import LinearRegression
 import sys
 import os
 import datetime as dt
-from dateutil.rrule import rrule
+from dateutil import rrule as rr
 
 # Import hack
 sys.path.append(
@@ -834,7 +834,7 @@ if __name__ == "__main__":
     out_file += ".nc4"
 
     strat_filter_threshold = float(args.strat_filter_threshold)
-    date_range = rrule('daily', dtstart=start_date, until=end_date)
+    date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
     files = get_gc_file_list(gc_dir, args.region, date_range)
     print('Number of files:', len(files), flush=True)
 
