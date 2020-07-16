@@ -786,8 +786,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Shorten directory name to up to "GC/", then define the subdirectory
     # as 'geosfp' + dirreg + 'iccw/' in get_file_list.
+    # This is now done in get_gc_file_list
     parser.add_argument("--gc_dir")
-    parser.add_argument("--out_path")
+    parser.add_argument("--out_dir")
     parser.add_argument('--resolution', default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
     parser.add_argument('--region', default="EU", help="Can be EU, NA, or CH")
     parser.add_argument('--strat_filter_threshold', default="0.02", help="")
@@ -799,11 +800,6 @@ if __name__ == "__main__":
     parser.add_argument("--do_error_weight", type=bool)
     parser.add_argument("--apply_cld_frac_filter", type=bool)
     args = parser.parse_args()
-
-    if len(YEARS_TO_PROCESS) == 1:
-        yrrange = YEARS_TO_PROCESS[0]
-    if len(YEARS_TO_PROCESS) == 2:
-        yrrange = '2016-2017'
 
     # Get files:
     gc_dir = args.gc_dir
