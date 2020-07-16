@@ -829,7 +829,7 @@ if __name__ == "__main__":
         out_file += "-temp_correct"
     if args.do_error_weight:
         out_file += "-error_weight"
-    if args.apply_cloud_filter:
+    if args.apply_cld_frac_filter:
         out_file += "-cld_frac"
     out_file += ".nc4"
 
