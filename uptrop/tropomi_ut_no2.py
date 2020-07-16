@@ -7,14 +7,11 @@ Options are available to use cloud information from either the FRESCO-S or ROCIN
 
 """
 
-import glob
 import argparse
 import sys
 import os
 from os import path
-from netCDF4 import Dataset
 import datetime as dt
-import re
 
 import numpy as np
 from netCDF4 import Dataset
@@ -30,6 +27,7 @@ sys.path.append(
 
 from uptrop.convert_height_to_press import alt2pres
 from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
+from uptrop.date_file_utils import season_to_date, get_tropomi_file_list, get_ocra_file_list, get_date
 
 
 class CloudFileDateMismatch(Exception):
@@ -748,121 +746,15 @@ class CloudData:
             print('Skipping this swath', flush=True)
             self.data_parity=False
 
-#   TODO: Move these into a seperate file for reuse maybe
-def get_tropomi_file_list(trop_dir, date_range):
-    """Returns an alphabetically sorted list of Tropomi files
-    within a range of dates.
-
-    :param trop_dir: The directory containing the tropomi files
-    :type trop_dir: str
-    :param date_range: A list of dates. Generation using DateUtil's rrule function is recommended.
-    :type date_range: list(datetime)
-
-    :returns: A list of filepaths to tropomi data
-    :rtype: list of str
-    """
-    out = []
-    for date in date_range:
-        out += (get_tropomi_files_on_day(trop_dir, date))
-    return sorted(out)
-
-
-def get_ocra_file_list(ocra_dir, date_range):
-    """Returns an alphabetically sorted list of Ocra files
-    within a range of dates.
-
-    :param ocra_dir: The directory containing the ocra files
-    :type ocra_dir: str
-    :param date_range: A list of dates. Generation using DateUtil's rrule function is recommended.
-    :type date_range: list(datetime)
-
-    :returns: A list of filepaths to ocra data
-    :rtype: list of str
-    """
-    out = []
-    for date in date_range:
-        out += (get_ocra_files_on_day(ocra_dir, date))
-    return sorted(out)
-
-
-def get_tropomi_files_on_day(tomidir, date):
-    """Returns a list of tropomi files on a given date.
-
-    Uses the :ref:`get_date` function to extract each candidate file's date from it's filename
-
-    :param tomidir: The directory containing the tropomi files
-    :type tomidir: str
-    :param date: The date to search for
-    :type date: DateTime
-
-    :returns: A list of filepaths to tropomi data
-    :rtype: list of str
-    """
-    # Converts the python date object to a set string representation of time
-    # In this case, zero-padded year, month and a datestamp of the Sentinel format
-    # See https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
-    year = date.strftime(r"%Y")
-    month = date.strftime(r"%m")
-    datestamp = date.strftime(r"%Y%m%dT")
-    tomi_glob_string = path.join(tomidir, 'NO2_OFFL', year, month,'S5P_OFFL_L2__NO2____'+ datestamp + '*')
-    tomi_files_on_day = glob.glob(tomi_glob_string)
-    print('Found {} tropomi files for {}: '.format(len(tomi_files_on_day), date))
-    tomi_files_on_day = sorted(tomi_files_on_day)
-    return tomi_files_on_day
-
-
-def get_ocra_files_on_day(tomidir,date):
-    """Returns a list of ocra files on a given date.
-
-    Uses the :ref:`uptrop.tropomi_ut_no2.get_date` function to extract each candidate file's date from it's filename
-
-    :param tomidir: The directory containing the ocra files (usually packaged with tropomi data)
-    :type tomidir: str
-    :param date: The date to search for
-    :type date: DateTime
-
-    :returns: A list of filepaths to ocra data
-    :rtype: list of str
-    """
-    # Get string of day:
-    year = date.strftime(r"%Y")
-    month = date.strftime(r"%m")
-    datestamp = date.strftime(r"%Y%m%dT")
-    cld_glob_string = path.join(tomidir, "CLOUD_OFFL", year, month,
-                                   'S5P_OFFL_L2__CLOUD__' + datestamp + '*')
-    cldfile = glob.glob(cld_glob_string) 
-    # Order the files:
-    cldfile = sorted(cldfile)
-    return cldfile
-
-
-def get_date(file_name, time_stamp_index = 0):
-    """Extracts a datetime object from a filename with a Sentinel timestamp
-
-    See https://regex101.com/r/QNG11l/1 for examples
-
-    :param file_name: The filename to extract the date from
-    :type file_name: str
-    :param time_stamp_index: Which time-stamp to get the date from if more than one. Defaults to 0.
-    :type time_stamp_index: int
-
-    :returns: A DateTime object of the date of the file
-    :rtype: DateTime
-    """
-    # A regular expression that gets Sentinel datestamps out of filenames
-    # See https://regex101.com/r/QNG11l/1
-    date_regex = r"\d{8}T\d{6}"
-    date_string = re.findall(date_regex, file_name)[time_stamp_index]
-    # A line for converting Sentinel string reps to datetime
-    return dt.datetime.strptime(date_string, r"%Y%m%dT%H%M%S")
-
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("Produces a netCDF and preview plot for upper troposphere NO2")
-    parser.add_argument("trop_dir")
-    parser.add_argument("out_dir")
+    parser.add_argument("--trop_dir", help="Directory containing tropomi data")
+    parser.add_argument("--out_dir", help="Directory to contain finished netcdf4")
     parser.add_argument("--season", default='jja', help="Can be jja, son, djf, mam")
+    parser.add_argument("--start_date", default="2019-06-01", help="Start date of processing window (yyyy-mm-dd)")
+    parser.add_argument("--end_date", default="2020-05-31", help="End date of processing window (yyyy-mm-dd)")
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
     parser.add_argument("--cloud_product", default = "fresco", help="can be fresco or dlr-ocra")
     parser.add_argument("--cloud_threshold", default = "07", help="recommended value is 07. Can also test 08, 09, 10")
@@ -870,29 +762,19 @@ if __name__ == "__main__":
     parser.add_argument("--pmax", default=450, type=int)
     args = parser.parse_args()
 
-    if args.season == "jja":
-        start_date = dt.datetime(year=2019, month=6, day=1)
-        end_date = dt.datetime(year=2019, month=8, day=31)
-        yrrange = '2019'
-    elif args.season == "son":
-        start_date = dt.datetime(year=2019, month=9, day=1)
-        end_date = dt.datetime(year=2019, month=11, day=30)
-        yrrange = '2019'
-    elif args.season == "djf":
-        start_date = dt.datetime(year=2019, month=12, day=1)
-        end_date = dt.datetime(year=2020, month=2, day=29)  # Beware the leap year here
-        yrrange = '2019-2020'
-    elif args.season == "mam":
-        start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=6, day=29)
-        yrrange = '2020'
-    elif args.season == "test":
-        start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=3, day=3)
-        yrrange = 'TEST'
+    if args.season:
+        start_date, end_date = season_to_date(args.season)
     else:
-        print("Invalid season; can be jja, son, djf, mam")
-        sys.exit(1)
+        if args.start_date and args.end_date:
+            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
+            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+        else:
+            print("Please provide either --season or --start_date and --end_date")
+            sys.exit(1)
+    if start_date.year == end_date.year:
+        yrrange = str(start_date.year)
+    else:
+        yrrange = str(start_date.year) + "-" + str(end_date.year)
 
     if args.grid_res == '1x1':
         dellat, dellon = 1, 1

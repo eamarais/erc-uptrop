@@ -759,9 +759,9 @@ def get_ocra_files_on_day(tropomi_dir, date):
     return cldfile
 
 
-def get_pandora_file(pandir, pandora_site, site_num, c_site, no2_col, fv):
+def get_pandora_file(pan_dir, pandora_site, site_num, c_site, no2_col, fv):
     """Gets the pandora file for the given set of parameters"""
-    pandora_glob_string = os.path.join(pandir, pandora_site,
+    pandora_glob_string = os.path.join(pan_dir, pandora_site,
                          'Pandora' + site_num + 's1_' + c_site + '_L2' + no2_col + '_' + fv + '.txt')
     return glob.glob(pandora_glob_string)[0]
 
@@ -777,9 +777,9 @@ def get_days_since_data_start(date, data_start = None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("tomi_dir")
-    parser.add_argument("pandir")
-    parser.add_argument("outdir")
+    parser.add_argument("--trop_dir")
+    parser.add_argument("--pan_dir")
+    parser.add_argument("--out_dir")
     parser.add_argument("--no2_col", default="Tot", help="Either Tot or Trop; default is Tot")
     parser.add_argument("--cloud_product", default="fresco", help="options are fresco, dlr-ocra; default is fresco")
     parser.add_argument("--pandora_site", default="izana", help="options are izana,mauna_loa,altzomoni; default is izana")
@@ -835,11 +835,11 @@ if __name__ == "__main__":
         Y_MAX=50
 
     # Get Pandora file_path (one file per site):
-    panfile= get_pandora_file(args.pandir, args.pandora_site, SITE_NUM, C_SITE, args.no2_col, FV)
+    panfile= get_pandora_file(args.pan_dir, args.pandora_site, SITE_NUM, C_SITE, args.no2_col, FV)
     if ( args.apply_bias_correction ):
-        outfile = os.path.join(args.outdir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v3.nc')
+        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v3.nc')
     else:
-        outfile = os.path.join(args.outdir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-v3.nc')
+        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-v3.nc')
 
     pandora_data = PandoraData(panfile,args.no2_col)
     data_aggregator = DataCollector(start_date, end_date)
@@ -854,10 +854,10 @@ if __name__ == "__main__":
         # For every day in the month (probably a better way to express this)
         # TODO: Known bug; this will fail if end_date is not the last day of a month
         for processing_day in rr.rrule(freq=rr.DAILY, dtstart=dt_month, until=dt_month + rd(months=1, days=-1)):
-            tomi_files_on_day = get_tropomi_files_on_day(args.tomi_dir, processing_day)
+            tomi_files_on_day = get_tropomi_files_on_day(args.trop_dir, processing_day)
 
             if args.cloud_product== 'dlr-ocra':
-                cloud_files_on_day = get_ocra_files_on_day(args.tomi_dir, processing_day)
+                cloud_files_on_day = get_ocra_files_on_day(args.trop_dir, processing_day)
                 # Check for inconsistent number of files:
                 if len(cloud_files_on_day) != len(tomi_files_on_day):
                     print('NO2 files = ', len(tomi_files_on_day), flush=True)
