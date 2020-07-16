@@ -18,7 +18,7 @@ echo --------------------------------------
 
 echo Testing compare_tropomi_pandora.py
 python ../uptrop/compare_tropomi_pandora.py --trop_dir $TROPOMI_DIR --pan_dir $PANDORA_DIR --out_dir $OUT_DIR \
---start_date $START_DATE --end_date $END_DATE--apply_bias_correction True
+--start_date $START_DATE --end_date $END_DATE --apply_bias_correction True
 
 echo --------------------------------------
 

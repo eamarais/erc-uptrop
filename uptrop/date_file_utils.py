@@ -3,11 +3,14 @@ import glob
 import re
 from os import path
 
-from uptrop.ut_no2_gc_test import InvalidRegionException, REGION, YEARS_TO_PROCESS
-
 
 class InvalidSeasonException(Exception):
     print("Invalid season")
+    pass
+
+# TODO: Clean up exceptions
+class InvalidRegionException(Exception):
+    print("Invalid region")
     pass
 
 
