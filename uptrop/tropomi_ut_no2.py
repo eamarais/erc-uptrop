@@ -506,14 +506,14 @@ class TropomiData:
         # tropospheric NO2 VCD product includes influence from the prior
         # below clouds:
         # Calculate the stratospheric slant columns using the original stratospheric column:
-        tscdstrat = np.where( self.stratno2_og != self.fillval, (np.multiply(self.stratno2_og, self.tstratamf)), self.fillval )
+        tscdstrat = np.where(self.stratno2_og != self.fillval, (np.multiply(self.stratno2_og, self.tstratamf)), self.fillval )
         # Calculate the tropospheric slant columns:
-        ttropscd = np.where( tscdstrat != self.fillval, (np.subtract(self.tscdno2, tscdstrat)), self.fillval )
+        ttropscd = np.where(tscdstrat != self.fillval, (np.subtract(self.tscdno2, tscdstrat)), self.fillval )
         # Calculate the tropospheric vertical column using the geometric AMF:
-        tgeotropvcd = np.where( ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
+        tgeotropvcd = np.where(ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
         # Bias correct the troposphere:
-        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 2., np.nan )
+        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / 2., np.nan )
 
         # Get total column as the sum of the bias-corrected stratosphere and troposphere:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
@@ -817,7 +817,8 @@ if __name__ == "__main__":
     out_file = path.join(args.out_dir, 'tropomi-ut-gc_data-'+args.cloud_product
                          + '-' + args.cloud_threshold
                          + '-' + args.grid_res
-                         + '-' + args.season
+                         + '-' + str(start_date)
+                         + '-' + str(end_date)
                          + '-' + yrrange+'-v2.nc')
     grid_aggregator.print_report()
     grid_aggregator.save_to_netcdf(out_file)

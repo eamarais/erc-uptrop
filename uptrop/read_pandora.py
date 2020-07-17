@@ -165,7 +165,7 @@ def read_pandora(pandora_filepath, no2col):
 
     data_start = get_start_of_data(pandora_filepath)
 
-    names = ["ut_date", "jday", "sza", "gc_data", "no2err", "qaflag", "fitflag"]
+    names = ["ut_date", "jday", "sza", "no2", "no2err", "qaflag", "fitflag"]
     columns = [dateind, jdayind,szaind,no2ind,errind, qaflagind, fitflagind]
     columns = [column -1 for column in columns]  # Pandora columns are 1-indexed, Pandas are 0
 

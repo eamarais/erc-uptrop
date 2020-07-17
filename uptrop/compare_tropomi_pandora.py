@@ -463,7 +463,7 @@ class TropomiData:
         self.tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
         # Calculate the total column with a geometric AMF:
-        if ( ~self.apply_bias ):
+        if not self.apply_bias:
             # Step 1: calculate stratospheric SCD (not in data product):
             self.tscdstrat = np.multiply(self.tstratno2, self.tstratamf)
             # Step 2: calculate tropospheric NO2 SCD:

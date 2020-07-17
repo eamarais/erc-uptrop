@@ -146,7 +146,7 @@ def get_date(file_name, time_stamp_index = 0):
 def get_gc_files_on_day(gcdir, region, date):
     # Get string of day:
     datestamp = date.strftime(r"%Y%m%d")
-    cld_glob_string = path.join(gcdir, 'ts_12_15.{}.{}.nc'.format(region, datestamp))
+    cld_glob_string = path.join(gcdir, 'nc_sat_files_47L', 'ts_12_15.{}.{}.nc'.format(region, datestamp))
     cldfile = glob.glob(cld_glob_string)
     # Order the files:
     cldfile = sorted(cldfile)
@@ -177,7 +177,7 @@ def get_gc_file_list(gc_dir, region, date_range):
         print("Invalid region; valid regions are 'NA','EU','CH'.")
         raise InvalidRegionException
 
-    gc_dir = gc_dir+'geosfp'+dirreg+'iccw'
+    gc_dir = path.join(gc_dir,'geosfp'+dirreg+'iccw')
     out_files = []
     for date in date_range:
         out_files += get_gc_files_on_day(gc_dir, region, date)

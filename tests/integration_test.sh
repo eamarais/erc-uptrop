@@ -2,8 +2,8 @@ TROPOMI_DIR=/data/uptrop/nobackup/tropomi/Data/
 PANDORA_DIR=/data/uptrop/nobackup/pandora/
 GC_DIR=/data/uptrop/Projects/DEFRA-NH3/GC/
 OUT_DIR=./integration_outputs
-START_DATE=2016-06-01
-END_DATE=2016-06-02
+START_DATE=2019-06-01
+END_DATE=2019-06-02
 
 echo Testing tropomi_ut_no2...
 python ../uptrop/tropomi_ut_no2.py --trop_dir $TROPOMI_DIR --out_dir $OUT_DIR \
@@ -19,10 +19,10 @@ echo --------------------------------------
 
 echo Testing compare_tropomi_pandora.py
 python ../uptrop/compare_tropomi_pandora.py --trop_dir $TROPOMI_DIR --pan_dir $PANDORA_DIR --out_dir $OUT_DIR \
---start_date $START_DATE --end_date $END_DATE --apply_bias_correction True
+--start_date $START_DATE --end_date $END_DATE --apply_bias_correction True --no2_col Trop
 
 echo --------------------------------------
 
 echo Testing fresco_cl_err.py
 python ../uptrop/fresco_cld_err.py --trop_dir $TROPOMI_DIR --out_dir $OUT_DIR \
---start_date $START_DATE --end_date $END_DATE
+--start_date $START_DATE --end_date $END_DATE --plot_dir ./integration_plots
