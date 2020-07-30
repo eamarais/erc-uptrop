@@ -70,6 +70,7 @@ class GridAggregator:
         self.gcnt = np.zeros((self.xdim, self.ydim))  # No. of data points (orbits)
         self.gerr = np.zeros((self.xdim, self.ydim))  # Weighted error
         self.gwgt = np.zeros((self.xdim, self.ydim))  # Weights
+        self.pcld_range = np.zeros((self.xdim, self.ydim))  # Cloud top pressure range used for cloud-slicing
 
         self.file_count = 0
         self.current_max_points = 0
@@ -237,6 +238,7 @@ class GridAggregator:
             # Calculate weights:
             gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
             self.gno2vmr[i, j] += np.multiply(utmrno2, gaus_wgt)
+            self.pcld_range[i, j] += np.nanmax(t_cld) - np.nanmin(t_cld)
             self.gwgt[i, j] += gaus_wgt
             self.gerr[i, j] += np.multiply(utmrno2err, gaus_wgt)
             self.gcnt[i, j] += 1
@@ -249,9 +251,11 @@ class GridAggregator:
         self.mean_gno2vmr = np.divide(self.gno2vmr, self.gwgt, where=self.gcnt != 0)
         self.mean_gerr = np.divide(self.gerr, self.gwgt, where=self.gcnt != 0)
         self.mean_gwgt = np.divide(self.gwgt, self.gcnt, where=self.gcnt != 0)
+        self.mean_cld_p_range = np.divide(self.pcld_range, self.gcnt, where=self.gcnt != 0)
         self.mean_gno2vmr[self.gcnt == 0] = np.nan
         self.mean_gerr[self.gcnt == 0] = np.nan
         self.mean_gwgt[self.gcnt == 0] = np.nan
+        self.mean_cld_p_range[self.gcnt == 0] = np.nan
         self.gcnt[self.gcnt == 0] = np.nan   # Watch out for this rewriting of gcnt in the future
 
     def print_report(self):
@@ -303,6 +307,11 @@ class GridAggregator:
         utno2err.units = 'pptv'
         utno2err.long_name = 'Standard error of the NO2 mixing ratios in the UT (180-450 hPa) obtained using cloud-slicing'
         utno2err[:] = self.mean_gerr
+
+        utno2err = ncout.createVariable('cld_top_p_range', np.float32, ('lon', 'lat'))
+        utno2err.units = 'hPa'
+        utno2err.long_name = 'Gridded mean range in cloud top pressures used to cloud-slice TROPOMI NO2'
+        utno2err[:] = self.mean_cld_p_range
 
         nobs = ncout.createVariable('nobs', np.float32, ('lon', 'lat'))
         nobs.units = 'unitless'
@@ -457,6 +466,7 @@ class TropomiData:
         qaval = fh.groups['PRODUCT'].variables['qa_value'][0, :, :]
 
         # Aerosol absorbing index:
+        # (Preserving for future use)
         #taai = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
         #           variables['aerosol_index_354_388'][:]
         #aai = taai.data[0, :, :]
