@@ -3,10 +3,13 @@
 ''' Read and regrid cloud information from the official TROPOMI CLOUD product 
     and from the FRESCO cloud product in the TROPOMI NO2 data product file.
 
-    Data are regridded to a 2x2.5 degree global grid and saved as monthly 
-    means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction >
-    0.7 and clouds top (centroid) pressure in the upper troposphere 
-    (180-450 hPa).
+    Output from this code includes a NetCDF file with:
+    (1) Data regridded to a 1 deg x 1 deg global grid and saved as monthly 
+        means for scenes with the reference cloud product (specied as input 
+        argument) cloud fraction > 0.7 and cloud tops in the upper 
+        troposphere (450-180 hPa).
+    (2) Meridional frequency of upper tropospheric (450-180 hPa) cloud 
+        fractions > 0.7 for each product.
 
 '''
 
@@ -37,7 +40,6 @@ from uptrop.convert_height_to_press import alt2pres
 # Turn off warnings:
 # np.warnings.filterwarnings('ignore')
 
-# TODO: Check with Eloise how constant these are going to be
 # Define constants/maybe parameters?
 FILL_VAL = 9.96921e+36
 
@@ -88,7 +90,12 @@ class CloudVariableStore:
         :type data_shape: List of length 2
         """
         # TODO Find out from Eloise what these stand for for better variable names
-        self.gknmi_cf = np.zeros(data_shape)
+        # Variables explained:
+        # KNMI is the cloud product provied with the TROPOMI NO2 data.
+        # DLR is the standalone TROPOMI cloud product.
+        # Data are: cloud fraction (cf), cloud top (ct), cloud base (cb),
+        # optical depth (od; DLR only).        
+        self.gknmi_cf = np.zeros(data_shape)  
         self.gknmi_ct = np.zeros(data_shape)
         self.gknmi_cb = np.zeros(data_shape)
         self.gknmi_cnt = np.zeros(data_shape)
@@ -127,7 +134,7 @@ class CloudVariableStore:
             #print("No FRESCO or DLR data, skipping....")
             return
 
-                # Find corresponding gridsquare
+        # Find corresponding gridsquare
         # TODO: Find a better place to put out_lon
         p = np.argmin(abs(out_lon - tropomi_data.tdlons[trop_i, trop_j]))
         q = np.argmin(abs(out_lat - tropomi_data.tdlats[trop_i, trop_j]))
@@ -235,7 +242,7 @@ class CloudVariableStore:
     def write_to_netcdf(self, out_dir):
         """Given an out_directory, writes totalled data to netcdf.
 
-        The file will be named 'fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-[file_version].nc'
+        The file will be named 'fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-ref-[ref_cld_prod]-v3.nc'
 
         :param out_dir: The directory that will contain the file.
         :type out_dir: str
@@ -243,7 +250,7 @@ class CloudVariableStore:
         out_dir = path.abspath(out_dir)
 
         # Write data to file:
-        outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + MMName + '-' + StrYY + '-' + out_res + '-' + file_version + '.nc')
+        outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + MMName + '-' + StrYY + '-' + out_res + '-ref-' + ref_cld_prod + '-v3.nc')
         ncfile = Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
         ncfile.createDimension('xdim', len(out_lon))    # TODO: Make this a member
         ncfile.createDimension('ydim', len(out_lat))
@@ -358,7 +365,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('Difference (FRESCO-DLR)')
-        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-frac-' + MMName + '-' + StrYY + '-' + file_version + '.ps'), \
+        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-frac-' + MMName + '-' + StrYY + '.ps'), \
                     format='ps')
         # (2) Cloud top pressure:
         plt.figure(2)
@@ -377,7 +384,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('Difference (FRESCO-DLR)')
-        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-top-press-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'fresco-vs-dlr-cloud-top-press-' + MMName + '-' + StrYY + '.ps'),
                     format='ps')
         # (3) Cloud optical depth/albedo (DLR only):
         plt.figure(3)
@@ -385,7 +392,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR cloud optical thickness')
-        plt.savefig(path.join(plot_dir, 'dlr-cloud-optical-depth-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'dlr-cloud-optical-depth-' + MMName + '-' + StrYY + '.ps'),
                     format='ps')
         # (4) Cloud base pressure (DLR only):
         plt.figure(4)
@@ -393,7 +400,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR base pressure [hPa]')
-        plt.savefig(path.join(plot_dir,'dlr-cloud-base-press-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir,'dlr-cloud-base-press-' + MMName + '-' + StrYY + '.ps'),
                     format='ps')
         # (5) Number of points (both):
         plt.figure(4)
@@ -407,7 +414,7 @@ class CloudVariableStore:
         m.drawcoastlines()
         cbar = m.colorbar(cs, location='bottom', pad="10%")
         plt.title('DLR No. of obs')
-        plt.savefig(path.join(plot_dir, 'fresco-dlr-number-of-obs-' + MMName + '-' + StrYY + '-' + file_version + '.ps'),
+        plt.savefig(path.join(plot_dir, 'fresco-dlr-number-of-obs-' + MMName + '-' + StrYY + '.ps'),
                     format='ps')
         plt.show()
 
@@ -417,17 +424,19 @@ class CloudComparisonData:
     Class for holding the data for a fresco-dlr file pair. Applies data filters on creation.
     """
 
-    def __init__(self, td_file_path, tf_file_path):
+    def __init__(self, td_file_path, tf_file_path, ref_cld_prd):
         """Returns an instance of CloudComparisonData for comparing fresco and dlr files
 
         :param td_file_path: The path to the DLR file
         :type td_file_path: str
         :param tf_file_path: The path to the Fresco file
         :type tf_file_path: str
+        :param ref_cld_prd: The reference cloud product for identifying optically thick clouds in the upper troposphere
+        :type ref_cld_prd: str
         :return: A filtered and sanity-checked cloud comparison
         :rtype: CloudComparisonData
         """
-        # TODO: Ask E which number in the file_path is the orbit
+        # Extract orbit numbers from the file name.
         self.forb = path.basename(tf_file_path)[104:109]
         self.dorb = path.basename(td_file_path)[106:111]
         # Check orbit/swath is the same. If not, skip this iteration:
@@ -436,6 +445,7 @@ class CloudComparisonData:
             return
         self.read_tdfile(td_file_path)
         self.read_tffile(tf_file_path)
+        self.ref_cld_prd = ref_cld_prd
         self.nobs_dlr, self.nobs_fresco = self.get_nobs()
         self.filter_tdfile()
         self.filter_tffile()
@@ -498,27 +508,26 @@ class CloudComparisonData:
         fresco_cloud_data.close()
 
     def filter_tdfile(self):
-        """Filters DLR data for fill values, quality less than 0.5 and snow cover.
+        """Filters DLR data 
+
+        Applies the following filters to the dlr data
+        Snow: Drops values flagged as snow
+        Poor quality data: quality flag is < 0.5
+        Drop the following values if DLR-OCRA is the reference cloud product:
+         - cloud fraction < 0.7
+         - cloud top pressure is between PMAX and PMIN
 
         :raises NanInDataException: Raised when any NaNs remain in data
         """
-        # Convert all valid snow/ice free flag values (0,255) to 0.
-        #self.tdsnow = np.where(self.tdsnow == 255, 0, self.tdsnow)
-        # Coastlines (listed as potentially "suspect" in the ATBD document p. 67):
-        #self.tdsnow = np.where(self.tdsnow == 252, 0, self.tdsnow)
-
-        # If necessary, convert heigh to pressure:
-        #if ( dlr_cld_top=='height' ):
-        #    self.tdtop = np.where(self.tdtop != FILL_VAL, \
-        #                          alt2pres(self.tdtop), self.tdtop) 
 
         # Set missing/poor quality/irrelevant data to NAN:
         # Apply cloud fraction filter, but set it to 0.7 rather
         #     than 0.9 to account for variability around this threshold
         #     in the two cloud products.
-        # inicnt=np.count_nonzero(~np.isnan(tdfrc))
-        # print(inicnt)
-        # tdfrc=np.where(tdfrc<0.7, np.nan, tdfrc)
+        if self.ref_cld_prd=='dlr-ocra':
+            self.tdfrc = np.where(self.tdfrc < 0.7, np.nan, self.tdfrc)
+            self.tdtop = np.where(self.tdtop > (PMAX * 1e2), np.nan, self.tdtop)
+            self.tdtop = np.where(self.tdtop < (PMIN * 1e2), np.nan, self.tdtop)
         # Fill values (do for cloud fraction and cloud top pressure, as missing
         # values for cloud fraction may not be the same as missing values for
         # other data, as these are obtained with different algorithms):
@@ -549,12 +558,11 @@ class CloudComparisonData:
         """Filters fresco data
 
         Applies the following filters to the fresco data
-        Snow: Drops values for snow, coastline, misclassified clouds (snow between 80 and 104)
-        Cloud fraction: Drop values where
+        Snow: Drops values for snow, coastline, snow/ice misclassified as clouds
+        Poor quality data: quality flag is < 0.45
+        Drop the following values if FRESCO is the reference cloud product:
          - cloud fraction < 0.7
-         - quality is < 0.45
          - cloud top pressure is between PMAX and PMIN
-         - Cloudmask is not 0
         """
         # Convert all valid snow/ice free flag values (0,255) to 0.
         self.tfsnow = np.where(self.tfsnow == 255, 0, self.tfsnow)
@@ -572,19 +580,15 @@ class CloudComparisonData:
         # Apply cloud fraction filter, but set it to 0.7 rather
         #     than 0.9 to account for variability around this threshold
         #     in the two cloud products.
-        # inicnt=np.count_nonzero(~np.isnan(tffrc))
-        # print(inicnt)
-        self.tffrc = np.where(self.tffrc < 0.7, np.nan, self.tffrc)
+        if self.ref_cld_prd=='fresco':
+            self.tffrc = np.where(self.tffrc < 0.7, np.nan, self.tffrc)
+            # Apply cloud top pressure filter:
+            self.tffrc = np.where(self.tftop > (PMAX * 1e2), np.nan, self.tffrc)
+            self.tffrc = np.where(self.tftop < (PMIN * 1e2), np.nan, self.tffrc)
         self.tffrc = np.where(self.tffrc == FILL_VAL, np.nan, self.tffrc)
         # QA Flags. Threshold of 0.45 suggested by Henk Eskes in email
         # exchange on 18 Jan 2020:
         self.tffrc = np.where(self.tfqval < 0.45, np.nan, self.tffrc)
-        # Apply cloud top pressure filter to only consider clouds above
-        #   500 hPa and below 150 hPa (more generous than the 450-200 hPa
-        #   range to account for variability around this threshold in the
-        #   two cloud products:
-        self.tffrc = np.where(self.tftop > (PMAX * 1e2), np.nan, self.tffrc)
-        self.tffrc = np.where(self.tftop < (PMIN * 1e2), np.nan, self.tffrc)
         # Snow/ice cover:
         self.tffrc = np.where(self.tfsnow != 0, np.nan, self.tffrc)
         # Apply filter to remaining data:
@@ -633,7 +637,7 @@ def process_file(tdfile, tffile, running_total_container):
     # Track progress:
     print('===> Processing: ', tdfile)
     try:
-        file_data_container = CloudComparisonData(tdfile, tffile)
+        file_data_container = CloudComparisonData(tdfile, tffile, ref_cld_prod)
         running_total_container.update_nobs(file_data_container)
         #print("Fresco nobs: {}\nDLR nobs: {}".format(
         #    file_data_container.nobs_fresco, file_data_container.nobs_dlr))
@@ -732,14 +736,14 @@ if __name__ == "__main__":
     parser.add_argument("--number_of_days", default=31, type=int)
     parser.add_argument("--out_res", default="1x1")
     parser.add_argument("--dlr_cld_top", default="height")
-    parser.add_argument("--file_version", default="v1")
+    parser.add_argument("--ref_cld_prod", default="fresco")
     args = parser.parse_args()
 
     s5p_data_dir = path.expanduser(args.s5p_data_dir)
     output_dir = path.expanduser(args.output_dir)
     plot_dir = path.expanduser(args.plot_dir)
     dlr_cld_top = path.expanduser(args.dlr_cld_top)
-    file_version = path.expanduser(args.file_version)
+    ref_cld_prod = path.expanduser(args.ref_cld_prod)
 
     # TODO: Make this a member of CloudVariableStore
     if args.out_res == '1x1':
