@@ -510,7 +510,7 @@ class TropomiData:
 
         # Bias correct the stratosphere:
         tstratno2 = np.where(self.stratno2_og != self.fillval,
-                             ((self.stratno2_og - (7.6e14 / self.no2sfac)) / 0.86), np.nan)
+                     ((self.stratno2_og / 0.86) - (7.6e14 / self.no2sfac)), np.nan)
 
         # Get VCD under cloudy conditions. This is done as the current
         # tropospheric NO2 VCD product includes influence from the prior
@@ -523,7 +523,7 @@ class TropomiData:
         tgeotropvcd = np.where( ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
         # Bias correct the troposphere:
-        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 1.9, np.nan )
+        tgeotropvcd = np.where( tgeotropvcd != self.fillval, tgeotropvcd / 1.9, np.nan )
 
         # Get total column as the sum of the bias-corrected stratosphere and troposphere:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
@@ -539,7 +539,7 @@ class TropomiData:
         self.tstratno2 = tstratno2
         self.tgeototvcd = tgeototvcd
 
-    def cloud_filter_and_preprocess(self, cloud_data, cldthld, pmin, pmax):
+    def cloud_filter_and_preprocess(self, cloud_data, cldthld, pmax, pmin):
         """Filters this tropomi data using the cloud information in cloud_data
 
         Removes data where
@@ -868,7 +868,7 @@ if __name__ == "__main__":
 
     if args.season == "jja":
         start_date = dt.datetime(year=2019, month=6, day=1)
-        end_date = dt.datetime(year=2019, month=8, day=31)
+        end_date = dt.datetime(year=2019, month=6, day=2)
         yrrange = '2019'
     elif args.season == "son":
         start_date = dt.datetime(year=2019, month=9, day=1)
@@ -928,7 +928,7 @@ if __name__ == "__main__":
         grid_aggregator.apply_cloud_slice()
     grid_aggregator.calc_seasonal_means()
 
-    out_file = path.join(args.out_dir, 'tropomi-ut-gc_data-'+args.cloud_product
+    out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+ args.cloud_product
                          + '-' + args.cloud_threshold
                          + '-' + args.grid_res
                          + '-' + args.season
