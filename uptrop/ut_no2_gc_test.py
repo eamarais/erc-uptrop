@@ -18,7 +18,6 @@
 # tropomi_ut_no2
 
 # Import relevant packages:
-import glob
 import numpy as np
 from netCDF4 import Dataset
 from scipy import stats
@@ -28,6 +27,8 @@ import argparse
 from sklearn.linear_model import LinearRegression
 import sys
 import os
+import datetime as dt
+from dateutil import rrule as rr
 
 # Import hack
 sys.path.append(
@@ -35,6 +36,7 @@ sys.path.append(
         os.path.dirname(os.path.abspath(__file__)),
         '..'))
 
+from uptrop.date_file_utils import get_gc_file_list, season_to_date
 from uptrop.constants import AVOGADRO
 from uptrop.constants import G
 from uptrop.constants import MW_AIR
@@ -778,75 +780,62 @@ class GeosChemDay:
                                 * 1e-5 * self.t_adn[tppind:, y, x]
                                 * self.t_bx_hgt[tppind:, y, x])
 
-def get_file_list(gcdir, REGION, YEARS_TO_PROCESS):
-    """Gets a list of geoschem files for a given region and set of years
-
-    :param gcdir: The directory containing the geoschem files
-    :type gcdir: str
-    :param REGION: Can be NA, EU or CH
-    :type REGION: str
-    :param YEARS_TO_PROCESS: A list of years to process as string (eg ['2019', '2020'])
-    :type YEARS_TO_PROCESS: list of str
-
-    :returns: A sorted list of geoschem files
-    :rtype: list of str
-    """
-    # Define target grid:
-    if REGION == 'NA':
-        dirreg = '_na_'
-    elif REGION == 'EU':
-        dirreg = '_eu_naei_'
-    elif REGION == 'CH':
-        dirreg = '_ch_'
-    else:
-        print("Invalid region; valid regions are 'NA','EU','CH'.")
-        raise InvalidRegionException
-        # NOTE FOR LATER: This snippet turns up in fresco_cld_err; a candidate for the library.
-    gcdir=gcdir+'geosfp'+dirreg+'iccw/'
-    # TODO: Rework after you've looked at the files
-    files = glob.glob(gcdir + 'nc_sat_files_47L/ts_12_15.' + REGION + '.' + YEARS_TO_PROCESS[0] + '06*')
-    mon = ["07", "08"]
-    for i in mon:
-        for filename in glob.glob(gcdir + 'nc_sat_files_47L/ts_12_15.' + REGION + \
-                                  '.' + YEARS_TO_PROCESS[0] + i + '*'):
-            files.append(filename)
-    # 2017:
-    mon = ["06", "07", "08"]
-    for i in mon:
-        for filename in glob.glob(gcdir + 'nc_sat_files_47L/ts_12_15.' + REGION + \
-                                  '.' + YEARS_TO_PROCESS[1] + i + '*'):
-            files.append(filename)
-    return sorted(files)
-
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     # Shorten directory name to up to "GC/", then define the subdirectory
     # as 'geosfp' + dirreg + 'iccw/' in get_file_list.
-    parser.add_argument("--gc_dir", default='/data/uptrop/Projects/DEFRA-NH3/GC/')
-    parser.add_argument("--out_path", default='/home/j/jfr10/eos_library/uptrop_comparison/test.nc2')
+    # This is now done in get_gc_file_list
+    parser.add_argument("--gc_dir")
+    parser.add_argument("--out_dir")
     parser.add_argument('--resolution', default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
     parser.add_argument('--region', default="EU", help="Can be EU, NA, or CH")
-    parser.add_argument('--strat_filter_threshold', default="0.02")
+    parser.add_argument('--strat_filter_threshold', default="0.02", help="")
+    parser.add_argument('--season')
+    parser.add_argument("--start_date")
+    parser.add_argument("--end_date")
     parser.add_argument("-p", "--plot", type=bool)
     parser.add_argument("--do_temp_correct", type=bool)
     parser.add_argument("--do_error_weight", type=bool)
     parser.add_argument("--apply_cld_frac_filter", type=bool)
     args = parser.parse_args()
 
-    if len(YEARS_TO_PROCESS) == 1:
-        yrrange = YEARS_TO_PROCESS[0]
-    if len(YEARS_TO_PROCESS) == 2:
-        yrrange = '2016-2017'
-
     # Get files:
     gc_dir = args.gc_dir
     STR_RES = args.resolution
     REGION = args.region
-    out_path = args.out_path
+
+    if args.season:
+        start_date, end_date = season_to_date(args.season)
+    else:
+        if args.start_date and args.end_date:
+            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
+            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+        else:
+            print("Please provide either --season or --start_date and --end_date")
+            sys.exit(1)
+    if start_date.year == end_date.year:
+        yrrange = str(start_date.year)
+    else:
+        yrrange = str(start_date.year) + "-" + str(end_date.year)
+
+    out_file = os.path.join(args.out_dir, 'ut_no2_gc_test'
+                         + '-' + args.region
+                         + '-' + args.strat_filter_threshold
+                         + '-' + args.resolution
+                         + '-' + yrrange)
+    if args.do_temp_correct:
+        out_file += "-temp_correct"
+    if args.do_error_weight:
+        out_file += "-error_weight"
+    if args.apply_cld_frac_filter:
+        out_file += "-cld_frac"
+    out_file += ".nc4"
+
     strat_filter_threshold = float(args.strat_filter_threshold)
-    files = get_file_list(gc_dir, REGION, YEARS_TO_PROCESS)
+    date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
+    files = get_gc_file_list(gc_dir, args.region, date_range)
     print('Number of files:', len(files), flush=True)
 
     rolling_total = ProcessedData(REGION, STR_RES, strat_filter_threshold,
@@ -854,14 +843,12 @@ if __name__ == "__main__":
                                   do_error_weighting=args.do_error_weight,
                                   do_cld_frac_filter=args.apply_cld_frac_filter)
 
-    # Loop over files:
     for file_path in files:
         rolling_total.process_geoschem_day(file_path)
 
     rolling_total.get_weighted_mean()
     rolling_total.print_data_report()
     rolling_total.plot_data()
-    out_path = args.out_path
-    rolling_total.save_to_netcdf(out_path)
+    rolling_total.save_to_netcdf(out_file)
 
 
