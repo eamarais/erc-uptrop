@@ -524,7 +524,7 @@ class TropomiData:
         tgeotropvcd = np.where(ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
         # Bias correct the troposphere:
-        tgeotropvcd = np.where( self.tgeotropvcd != self.fillval, self.tgeotropvcd / 1.9, np.nan )
+        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / 1.9, np.nan )
 
         # Get total column as the sum of the bias-corrected stratosphere and troposphere:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
