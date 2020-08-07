@@ -27,6 +27,8 @@ import argparse
 import sys
 import os
 from os import path
+import datetime as dt
+from dateutil import rrule as rr
 
 # Import hack
 sys.path.append(
@@ -36,6 +38,7 @@ sys.path.append(
 
 from uptrop.gamap_colormap import WhGrYlRd
 from uptrop.convert_height_to_press import alt2pres
+from uptrop.date_file_utils import get_ocra_file_list, get_tropomi_file_list, season_to_date
 
 # Turn off warnings:
 # np.warnings.filterwarnings('ignore')
@@ -651,6 +654,29 @@ def process_file(tdfile, tffile, running_total_container):
     return
 
 
+def get_files_for_period(sen_5_p_dir, start_date, end_date):
+     
+    year = date.strftime(r"%Y")
+    month = date.strftime(r"%m")
+    datestamp = date.strftime(r"%Y%m%dT")
+    td_file_list = glob.glob(
+        path.join(sen_5_p_dir,
+                  'CLOUD_OFFL',
+                  StrYY,
+                  StrMM,
+                  'S5P_OFFL_L2__CLOUD__' + StrYY + StrMM + '*'))
+    td_file_list = sorted(td_file_list)
+    # Get FRESCO file names:
+    tf_file_list = glob.glob(
+        path.join(sen_5_p_dir,
+                  'NO2_OFFL',
+                  StrYY,
+                  StrMM ,
+                  'S5P_OFFL_L2__NO2____' + StrYY + StrMM + '*'))
+    tf_file_list = sorted(tf_file_list)
+    
+
+
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
     """Gets fresco an
     For a given month index (jan-may 2020 being 1-5, jun-dec 2019 being 6-12), returns every DLR and Fresco
@@ -738,6 +764,7 @@ if __name__ == "__main__":
     parser.add_argument("--out_res", default="1x1")
     parser.add_argument("--dlr_cld_top", default="height")
     parser.add_argument("--file_version", default="v1")
+    parser.add_argument("--ref_cld_prod", default="fresco")
     args = parser.parse_args()
 
     s5p_data_dir = path.expanduser(args.s5p_data_dir)
@@ -745,6 +772,16 @@ if __name__ == "__main__":
     plot_dir = path.expanduser(args.plot_dir)
     dlr_cld_top = path.expanduser(args.dlr_cld_top)
     ref_cld_prod = path.expanduser(args.ref_cld_prod)
+
+    if args.season:
+        start_date, end_date = season_to_date(args.season)
+    else:
+        if args.start_date and args.end_date:
+            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
+            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+        else:
+            print("Please provide either --season or --start_date and --end_date")
+            sys.exit(1)
 
     # TODO: Make this a member of CloudVariableStore
     if args.out_res == '1x1':
@@ -762,8 +799,10 @@ if __name__ == "__main__":
     X, Y = np.meshgrid(out_lon, out_lat, indexing='ij')
 
     out_res = path.expanduser(args.out_res)
-
-    td_file_list, tf_file_list = get_files_for_month(s5p_data_dir, args.month, args.number_of_days)
+    
+    date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
+    td_file_list = get_ocra_file_list(args.s5p_data_dir, date_range)
+    tf_file_list = get_tropomi_file_list(args.s5p_data_dir, date_range)
     running_cloud_total = CloudVariableStore(X.shape)
 
     # Loop over files:
@@ -774,8 +813,8 @@ if __name__ == "__main__":
     running_cloud_total.calc_cloud_statistics()
 
     # Print number of observations to screen:
-    print('No. of FRESCO obs for '+MMName+' = ',running_cloud_total.nobs_fresco)
-    print('No. of DLR obs for '+MMName+' = ',running_cloud_total.nobs_dlr)
+    print('No. of FRESCO obs between {} and {} = {}'.format(start_date, end_date, running_cloud_total.nobs_fresco))
+    print('No. of DLR obs for between {} and {} = {}'.format(start_date, end_date, running_cloud_total.nobs_dlr))
     print("Writing to NetCDF at {}".format(args.output_dir))
     running_cloud_total.write_to_netcdf(output_dir)
     print("Creating plots at {}".format(args.plot_dir))
