@@ -786,7 +786,7 @@ if __name__ == "__main__":
     parser.add_argument("--pandora_site", default="izana", help="options are izana,mauna_loa,altzomoni; default is izana")
     parser.add_argument("--str_diff_deg", default="02", help="options are: 03,02,01,005; default is 02")
     parser.add_argument("--str_diff_min", default="30", help="options are: 60,30,15; default is 30")
-    parser.add_argument("--apply_bias_correction", default=False)
+    parser.add_argument("--apply_bias_correction", type=bool, default=False)
     parser.add_argument("--start_date", default="2019-06-01", help="Start date of processing window (yyyy-mm-dd)")
     parser.add_argument("--end_date", default="2020-05-31", help="End date of processing window (yyyy-mm-dd)")
     args = parser.parse_args()
