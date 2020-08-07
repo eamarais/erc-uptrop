@@ -741,7 +741,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     s5p_data_dir = path.expanduser(args.s5p_data_dir)
-    output_dir = path.expanduser(args.output_dir)
+    output_dir = path.expanduser(args.out_dir)
     plot_dir = path.expanduser(args.plot_dir)
     dlr_cld_top = path.expanduser(args.dlr_cld_top)
     ref_cld_prod = path.expanduser(args.ref_cld_prod)
