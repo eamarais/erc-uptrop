@@ -768,7 +768,7 @@ def get_pandora_file(pan_dir, pandora_site, site_num, c_site, no2_col, fv):
 
 
 def get_days_since_data_start(date, data_start = None):
-    """Returns the number of days since the start date. If no start date is given, assumed 01/05/2019"""
+    """Returns the number of days since the start date. If no start date is given, assumed 01/06/2019"""
     if not data_start:
         data_start = dt.datetime(year=2019, month=6, day=1)
     delta = date - data_start
@@ -845,45 +845,43 @@ if __name__ == "__main__":
     pandora_data = PandoraData(panfile,args.no2_col)
     data_aggregator = DataCollector(start_date, end_date)
 
-    # In the below code, dt_month and processing_day are Python date objects
-    # They are generated using dateutil's rrule (relative rule) and rdelta(relaitve delta) functions:
+    # In the below code, processing_day is a Python date object
+    # They are generated using dateutil's rrule (relative rule) and rdelta(relative delta) functions:
     # https://dateutil.readthedocs.io/en/stable/rrule.html
     # https://dateutil.readthedocs.io/en/stable/relativedelta.html
-    # For every month in the year
-    for dt_month in rr.rrule(freq=rr.MONTHLY, dtstart=start_date, until=end_date):
-        print('Processing month: ', dt_month.month)
-        # For every day in the month (probably a better way to express this)
-        # TODO: Known bug; this will fail if end_date is not the last day of a month
-        for processing_day in rr.rrule(freq=rr.DAILY, dtstart=dt_month, until=dt_month + rd(months=1, days=-1)):
-            tomi_files_on_day = get_tropomi_files_on_day(args.trop_dir, processing_day)
+    # For every day in the time period
+    for processing_day in rr.rrule(freq=rr.DAILY, dtstart=start_date, until=end_date):
 
-            if args.cloud_product== 'dlr-ocra':
-                cloud_files_on_day = get_ocra_files_on_day(args.trop_dir, processing_day)
-                # Check for inconsistent number of files:
-                if len(cloud_files_on_day) != len(tomi_files_on_day):
-                    print('NO2 files = ', len(tomi_files_on_day), flush=True)
-                    print('CLOUD files = ', len(cloud_files_on_day), flush=True)
-                    print('unequal number of files', flush=True)
-                    raise UnequalFileException
-            elif args.cloud_product == "fresco":
-                cloud_files_on_day = tomi_files_on_day
-            else:
-                raise InvalidCloudProductException
+        print("Processing {}".format(processing_day))
+        tomi_files_on_day = get_tropomi_files_on_day(args.trop_dir, processing_day)
 
-            for tomi_file_on_day, cloud_file_on_day in zip(tomi_files_on_day, cloud_files_on_day):
-                try:
-                    trop_data = TropomiData(tomi_file_on_day, args.apply_bias_correction, args.no2_col)
-                    trop_data.preprocess()
-                    cloud_data = CloudData(cloud_file_on_day, args.cloud_product, trop_data)
-                    trop_data.apply_cloud_filter(cloud_data)
-                    data_aggregator.set_trop_ind_for_day(processing_day, DIFF_DEG, trop_data, pandora_data)
-                    data_aggregator.add_trop_data_to_day(processing_day, trop_data)
-                    for hour in range(data_aggregator.nhrs):
-                        data_aggregator.add_pandora_data_to_day(processing_day, hour, DIFF_HH, pandora_data)
-                except NoDataException:
-                    continue
-                except NoPandoraException:
-                    continue
+        if args.cloud_product== 'dlr-ocra':
+            cloud_files_on_day = get_ocra_files_on_day(args.trop_dir, processing_day)
+            # Check for inconsistent number of files:
+            if len(cloud_files_on_day) != len(tomi_files_on_day):
+                print('NO2 files = ', len(tomi_files_on_day), flush=True)
+                print('CLOUD files = ', len(cloud_files_on_day), flush=True)
+                print('unequal number of files', flush=True)
+                raise UnequalFileException
+        elif args.cloud_product == "fresco":
+            cloud_files_on_day = tomi_files_on_day
+        else:
+            raise InvalidCloudProductException
+
+        for tomi_file_on_day, cloud_file_on_day in zip(tomi_files_on_day, cloud_files_on_day):
+            try:
+                trop_data = TropomiData(tomi_file_on_day, args.apply_bias_correction, args.no2_col)
+                trop_data.preprocess()
+                cloud_data = CloudData(cloud_file_on_day, args.cloud_product, trop_data)
+                trop_data.apply_cloud_filter(cloud_data)
+                data_aggregator.set_trop_ind_for_day(processing_day, DIFF_DEG, trop_data, pandora_data)
+                data_aggregator.add_trop_data_to_day(processing_day, trop_data)
+                for hour in range(data_aggregator.nhrs):
+                    data_aggregator.add_pandora_data_to_day(processing_day, hour, DIFF_HH, pandora_data)
+            except NoDataException:
+                continue
+            except NoPandoraException:
+                continue
 
     data_aggregator.apply_weight_to_means()
     data_aggregator.plot_data()
