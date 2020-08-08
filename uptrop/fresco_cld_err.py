@@ -86,7 +86,7 @@ class CloudVariableStore:
     """
     Class containing the running results of various datas for this project; also saving to netCDF and plotting.
     """
-    def __init__(self, data_shape):
+    def __init__(self, data_shape, start_date, end_date, res, cloud_prod):
         """Creates an empty CloudVariableStore of shape data_shape
 
         :param data_shape: Tuple of (presumably) two elements for shape of cloud data
@@ -119,6 +119,11 @@ class CloudVariableStore:
         self.latbin = np.arange(-90, 90 + 15, 15)
         self.knmi_cf_freq = np.zeros((len(self.latbin), len(self.cldbin)))
         self.dlr_cf_freq = np.zeros((len(self.latbin), len(self.cldbin)))
+
+        self.start_date = start_date
+        self.end_date = end_date
+        self.res = res
+        self.cloud_prod = cloud_prod
 
     def update_pixel(self, tropomi_data, trop_i, trop_j):
         """Updates the appropriate pixel of running cloud variables with the tropomi data at trop_i, trop_j.
@@ -251,6 +256,13 @@ class CloudVariableStore:
         :type out_dir: str
         """
         out_dir = path.abspath(out_dir)
+        
+        MMName = self.start_date.strftime("%b")
+        StrYY = self.start_date.strftime("%y")
+        StrMM = self.start_date.strftime("%m")
+        out_res = self.res
+        res_cld_prod = self.cloud_prod
+        
 
         # Write data to file:
         outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + MMName + '-' + StrYY + '-' + out_res + '-ref-' + ref_cld_prod + '-v3.nc')
@@ -345,6 +357,15 @@ class CloudVariableStore:
 
         :param plot_dir: The directory that will contain the plots
         :type plot_dir: str"""
+
+
+        MMName = self.start_date.strftime("%b")
+        StrYY = self.start_date.strftime("%y")
+        StrMM = self.start_date.strftime("%m")
+        out_res = self.res
+        res_cld_prod = self.cloud_prod
+ 
+
         # TODO: Get MMName and StrYY from file_path instead of the global at the bottom of the script
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
@@ -798,12 +819,14 @@ if __name__ == "__main__":
     # Convert output lats and long to 2D:
     X, Y = np.meshgrid(out_lon, out_lat, indexing='ij')
 
-    out_res = path.expanduser(args.out_res)
-    
     date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
     td_file_list = get_ocra_file_list(args.s5p_data_dir, date_range)
     tf_file_list = get_tropomi_file_list(args.s5p_data_dir, date_range)
-    running_cloud_total = CloudVariableStore(X.shape)
+    if len(td_file_list) != len(tf_file_list):
+        print("Unequal number of FRESCO and Ocra files")
+        sys.exit(1)
+    running_cloud_total = CloudVariableStore(X.shape, start_date, end_date,
+                                             args.out_res, ref_cld_prod)
 
     # Loop over files:
     for td_file, tf_file in zip(td_file_list, tf_file_list):
@@ -815,8 +838,8 @@ if __name__ == "__main__":
     # Print number of observations to screen:
     print('No. of FRESCO obs between {} and {} = {}'.format(start_date, end_date, running_cloud_total.nobs_fresco))
     print('No. of DLR obs for between {} and {} = {}'.format(start_date, end_date, running_cloud_total.nobs_dlr))
-    print("Writing to NetCDF at {}".format(args.output_dir))
-    running_cloud_total.write_to_netcdf(output_dir)
+    print("Writing to NetCDF at {}".format(args.out_dir))
+    running_cloud_total.write_to_netcdf(args.out_dir)
     print("Creating plots at {}".format(args.plot_dir))
     running_cloud_total.plot_clouds_products(plot_dir)
     print("Processing complete.")
