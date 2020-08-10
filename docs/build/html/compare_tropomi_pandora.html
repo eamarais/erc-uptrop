@@ -57,6 +57,38 @@ sites to assess skill of TROPOMI at reproducing Pandora observations
 of free tropospheric NO2.</p>
 <p>Code is set up to process Pandora total or tropospheric column NO2
 at the Mauna Loa, Izana, or Altzomoni sites.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: compare_tropomi_pandora.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--trop_dir TROP_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--pan_dir PAN_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--no2_col NO2_COL<span class="o">]</span>
+                                  <span class="o">[</span>--cloud_product CLOUD_PRODUCT<span class="o">]</span>
+                                  <span class="o">[</span>--pandora_site PANDORA_SITE<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_deg STR_DIFF_DEG<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_min STR_DIFF_MIN<span class="o">]</span>
+                                  <span class="o">[</span>--apply_bias_correction APPLY_BIAS_CORRECTION<span class="o">]</span>
+                                  <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                                  <span class="o">[</span>--end_date END_DATE<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --trop_dir TROP_DIR
+  --pan_dir PAN_DIR
+  --out_dir OUT_DIR
+  --no2_col NO2_COL     Either Tot or Trop<span class="p">;</span> default is Tot
+  --cloud_product CLOUD_PRODUCT
+                        options are fresco, dlr-ocra<span class="p">;</span> default is fresco
+  --pandora_site PANDORA_SITE
+                        options are izana,mauna_loa,altzomoni<span class="p">;</span> default is
+                        izana
+  --str_diff_deg STR_DIFF_DEG
+                        options are: <span class="m">03</span>,02,01,005<span class="p">;</span> default is <span class="m">02</span>
+  --str_diff_min STR_DIFF_MIN
+                        options are: <span class="m">60</span>,30,15<span class="p">;</span> default is <span class="m">30</span>
+  --apply_bias_correction APPLY_BIAS_CORRECTION
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+</pre></div>
+</div>
 <dl class="py exception">
 <dt id="uptrop.compare_tropomi_pandora.BadCloudShapeException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">BadCloudShapeException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.BadCloudShapeException" title="Permalink to this definition"> </a></dt>
@@ -110,7 +142,7 @@ NO2 and error are converted from DU to molec/cm2</p>
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.add_trop_data_to_day">
 <code class="sig-name descname">add_trop_data_to_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">trop_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.add_trop_data_to_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Adds the tropomi no2, no2 error, cloud pressure and cloud fraction to a date in this object
+<dd><p>Adds the tropomi gc_data, gc_data error, cloud pressure and cloud fraction to a date in this object
 Call set_trop_ind_for_day before this function
 :param date: The date to add the data to.
 :type date: DateTime
@@ -191,7 +223,7 @@ Call set_trop_ind_for_day before this function
 <dt id="uptrop.compare_tropomi_pandora.TropomiData.preprocess">
 <code class="sig-name descname">preprocess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.TropomiData.preprocess" title="Permalink to this definition"> </a></dt>
 <dd><p>Prepares the Tropomi data for use. Applies bias correction if needed here.
-REFERNCE HERE</p>
+Bias correction to stratosphere and troposphere is obtained in this work from comparison of TROPOMI to Pandora over Mauna Loa (stratospheric column) and Izana and Altzomoni (tropospheric column). The correction is confirmed by also comparing TROPOMI and MAX-DOAS tropospheric columns at Izana.</p>
 </dd></dl>
 
 </dd></dl>
@@ -204,7 +236,7 @@ REFERNCE HERE</p>
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_days_since_data_start">
 <code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_days_since_data_start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">data_start</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_days_since_data_start" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns the number of days since the start date. If no start date is given, assumed 01/05/2019</p>
+<dd><p>Returns the number of days since the start date. If no start date is given, assumed 01/06/2019</p>
 </dd></dl>
 
 <dl class="py function">
@@ -221,7 +253,7 @@ REFERNCE HERE</p>
 
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_pandora_file">
-<code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_pandora_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pandir</span></em>, <em class="sig-param"><span class="n">pandora_site</span></em>, <em class="sig-param"><span class="n">site_num</span></em>, <em class="sig-param"><span class="n">c_site</span></em>, <em class="sig-param"><span class="n">no2_col</span></em>, <em class="sig-param"><span class="n">fv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_pandora_file" title="Permalink to this definition"> </a></dt>
+<code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_pandora_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pan_dir</span></em>, <em class="sig-param"><span class="n">pandora_site</span></em>, <em class="sig-param"><span class="n">site_num</span></em>, <em class="sig-param"><span class="n">c_site</span></em>, <em class="sig-param"><span class="n">no2_col</span></em>, <em class="sig-param"><span class="n">fv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_pandora_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Gets the pandora file for the given set of parameters</p>
 </dd></dl>
 

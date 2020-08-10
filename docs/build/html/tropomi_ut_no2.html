@@ -55,6 +55,29 @@
 <p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
 <p>The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction &gt;=0.7 and within the cloud top pressure range of 450-180 hPa.</p>
 <p>Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage:
+       <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--trop_dir TROP_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span> <span class="o">[</span>--season SEASON<span class="o">]</span>
+       <span class="o">[</span>--start_date START_DATE<span class="o">]</span> <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>--grid_res GRID_RES<span class="o">]</span>
+       <span class="o">[</span>--cloud_product CLOUD_PRODUCT<span class="o">]</span> <span class="o">[</span>--cloud_threshold CLOUD_THRESHOLD<span class="o">]</span>
+       <span class="o">[</span>--pmin PMIN<span class="o">]</span> <span class="o">[</span>--pmax PMAX<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --trop_dir TROP_DIR   Directory containing tropomi data
+  --out_dir OUT_DIR     Directory to contain finished netcdf4
+  --season SEASON       Can be jja, son, djf, mam
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --grid_res GRID_RES   Can be 1x1, 2x25, 4x5
+  --cloud_product CLOUD_PRODUCT
+                        can be fresco or dlr-ocra
+  --cloud_threshold CLOUD_THRESHOLD
+                        recommended value is <span class="m">07</span>. Can also <span class="nb">test</span> <span class="m">08</span>, <span class="m">09</span>, <span class="m">10</span>
+  --pmin PMIN           Lower bound on cloud height. Defaults to <span class="m">180</span>.
+  --pmax PMAX           Upper bound on cloud height. Defaults to <span class="m">450</span>.
+</pre></div>
+</div>
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.CloudData">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData" title="Permalink to this definition"> </a></dt>
@@ -119,10 +142,10 @@ pressure values for cross-compatability with fresco data.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.add_slice">
 <code class="sig-name descname">add_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">t_cld</span></em>, <em class="sig-param"><span class="n">t_col_no2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.add_slice" title="Permalink to this definition"> </a></dt>
-<dd><p>Extracts the upper troposphere no2, no2 error and mean cloud pressure for grid square [i,j]</p>
-<p>This method uses the cloud-slicing function [ref]cld
+<dd><p>Extracts the upper troposphere gc_data, gc_data error and mean cloud pressure for grid square [i,j]</p>
+<p>This method uses the cloud-slicing function <span class="xref std std-ref">uptrop.cloud_slice_ut_no2.cldslice</span>
 Once calculated, the a weighting is derived from cloud pressure.
-The weighted upper tropospheric no2 and error is added to the rolling total for this season.
+The weighted upper tropospheric gc_data and error is added to the rolling total for this season.
 If the cloud slicing fails, then the reason is added to loss_count for the end report.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -130,7 +153,7 @@ If the cloud slicing fails, then the reason is added to loss_count for the end r
 <li><p><strong>i</strong> (<em>int</em>) – X-index of grid square</p></li>
 <li><p><strong>j</strong> (<em>int</em>) – Y-index of grid square</p></li>
 <li><p><strong>t_cld</strong> (<em>list of floats</em>) – A list of cloud pressures</p></li>
-<li><p><strong>t_col_no2</strong> (<em>list of floats</em>) – A list of no2 values, of same length as t_cld</p></li>
+<li><p><strong>t_col_no2</strong> (<em>list of floats</em>) – A list of gc_data values, of same length as t_cld</p></li>
 </ul>
 </dd>
 </dl>
@@ -158,17 +181,17 @@ run on the pixel’s entire dataset.</p>
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means">
 <code class="sig-name descname">calc_seasonal_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.calc_seasonal_means" title="Permalink to this definition"> </a></dt>
-<dd><p>Calculates the mean no2 mixing ratio using Gaussian weights or counts.</p>
-<p>This is to be applied at the end of processing to get the final data that will be saved and plotted.</p>
+<dd><p>Calculates the mean no2 mixing ratio using Gaussian weights or counts.
+This is to be applied at the end of processing to get the final data that will be saved and plotted.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.grid_trop_data">
 <code class="sig-name descname">grid_trop_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.grid_trop_data" title="Permalink to this definition"> </a></dt>
-<dd><p>Allocates the strat, no2 and cloud pressure in trop_data into the gno2, gstrat and gcldp grid</p>
+<dd><p>Allocates the strat, gc_data and cloud pressure in trop_data into the gno2, gstrat and gcldp grid</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>trop_data</strong> (<em>uptrop.tropomi_ut.no2.TropomiData</em>) – an instance of TropomiData</p>
+<dd class="field-odd"><p><strong>trop_data</strong> (<em>uptrop.tropomi_ut.gc_data.TropomiData</em>) – an instance of TropomiData</p>
 </dd>
 </dl>
 </dd></dl>
@@ -210,22 +233,18 @@ run on the pixel’s entire dataset.</p>
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">TropomiData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for extracting, preprocessing and containing data from a s5p tropomi file.</p>
 <dl class="py method">
-<dt id="uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction">
-<code class="sig-name descname">apply_bias_correction</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.apply_bias_correction" title="Permalink to this definition"> </a></dt>
-<dd><p>Applies bias corrections to this data. These are obtaind from comparing TROPOMI to Pandora surface observations. 
-The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
-[</p>
-</dd></dl>
-
-<dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.calc_geo_column">
 <code class="sig-name descname">calc_geo_column</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.calc_geo_column" title="Permalink to this definition"> </a></dt>
-<dd><p>Calculates the geometric AMF and tropospheric vertical column of this data</p>
+<dd><p>Calculates the geometric AMF and tropospheric vertical column of this data.
+Includes application of a bias correction to the stratospheric and tropospheric columns. These are obtaind from comparing TROPOMI to Pandora surface observations.</p>
+<blockquote>
+<div><p>The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.</p>
+</div></blockquote>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess">
-<code class="sig-name descname">cloud_filter_and_preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cloud_data</span></em>, <em class="sig-param"><span class="n">cldthld</span></em>, <em class="sig-param"><span class="n">pmin</span></em>, <em class="sig-param"><span class="n">pmax</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess" title="Permalink to this definition"> </a></dt>
+<code class="sig-name descname">cloud_filter_and_preprocess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cloud_data</span></em>, <em class="sig-param"><span class="n">cldthld</span></em>, <em class="sig-param"><span class="n">pmax</span></em>, <em class="sig-param"><span class="n">pmin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.cloud_filter_and_preprocess" title="Permalink to this definition"> </a></dt>
 <dd><p>Filters this tropomi data using the cloud information in cloud_data</p>
 <dl class="simple">
 <dt>Removes data where</dt><dd><ul class="simple">
@@ -233,7 +252,6 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 <li><p>The fraction of cloud is less than the specified cloud threshold</p></li>
 <li><p>Cloud heights are not in the range pmin-pmax</p></li>
 <li><p>Quality value is greater than 0.45</p></li>
-<li><p>Aerosol Absorbing Index (AAI) is &gt; 1</p></li>
 </ul>
 </dd>
 </dl>
@@ -266,111 +284,6 @@ The correction addresses an underestimate in TROPOMI stratospheric NO2 variance 
 <dt id="uptrop.tropomi_ut_no2.UnequalColumnException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
-
-<dl class="py function">
-<dt id="uptrop.tropomi_ut_no2.get_date">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">time_stamp_index</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_date" title="Permalink to this definition"> </a></dt>
-<dd><p>Extracts a datetime object from a filename with a Sentinel timestamp</p>
-<p>See <a class="reference external" href="https://regex101.com/r/QNG11l/1">https://regex101.com/r/QNG11l/1</a> for examples</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>file_name</strong> (<em>str</em>) – The filename to extract the date from</p></li>
-<li><p><strong>time_stamp_index</strong> (<em>int</em>) – Which time-stamp to get the date from if more than one. Defaults to 0.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A DateTime object of the date of the file</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>DateTime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="uptrop.tropomi_ut_no2.get_ocra_file_list">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ocra_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_file_list" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns an alphabetically sorted list of Ocra files
-within a range of dates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ocra_dir</strong> (<em>str</em>) – The directory containing the ocra files</p></li>
-<li><p><strong>date_range</strong> (<em>list</em><em>(</em><em>datetime</em><em>)</em>) – A list of dates. Generation using DateUtil’s rrule function is recommended.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of filepaths to ocra data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="uptrop.tropomi_ut_no2.get_ocra_files_on_day">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_ocra_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_ocra_files_on_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns a list of ocra files on a given date.</p>
-<p>Uses the <span class="xref std std-ref">uptrop.tropomi_ut_no2.get_date</span> function to extract each candidate file’s date from it’s filename</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tomidir</strong> (<em>str</em>) – The directory containing the ocra files (usually packaged with tropomi data)</p></li>
-<li><p><strong>date</strong> (<em>DateTime</em>) – The date to search for</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of filepaths to ocra data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="uptrop.tropomi_ut_no2.get_tropomi_file_list">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_file_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trop_dir</span></em>, <em class="sig-param"><span class="n">date_range</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_file_list" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns an alphabetically sorted list of Tropomi files
-within a range of dates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>trop_dir</strong> (<em>str</em>) – The directory containing the tropomi files</p></li>
-<li><p><strong>date_range</strong> (<em>list</em><em>(</em><em>datetime</em><em>)</em>) – A list of dates. Generation using DateUtil’s rrule function is recommended.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of filepaths to tropomi data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt id="uptrop.tropomi_ut_no2.get_tropomi_files_on_day">
-<code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">get_tropomi_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tomidir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.get_tropomi_files_on_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns a list of tropomi files on a given date.</p>
-<p>Uses the <span class="xref std std-ref">get_date</span> function to extract each candidate file’s date from it’s filename</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tomidir</strong> (<em>str</em>) – The directory containing the tropomi files</p></li>
-<li><p><strong>date</strong> (<em>DateTime</em>) – The date to search for</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A list of filepaths to tropomi data</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>list of str</p>
-</dd>
-</dl>
-</dd></dl>
 
 </div>
 

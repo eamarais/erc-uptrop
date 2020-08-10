@@ -5,6 +5,31 @@ The default is to obtain seasonal means at 1x1 for partial columns above clouds 
 
 Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.
 
+.. code-block:: bash
+
+    usage:
+           [-h] [--trop_dir TROP_DIR] [--out_dir OUT_DIR] [--season SEASON]
+           [--start_date START_DATE] [--end_date END_DATE] [--grid_res GRID_RES]
+           [--cloud_product CLOUD_PRODUCT] [--cloud_threshold CLOUD_THRESHOLD]
+           [--pmin PMIN] [--pmax PMAX]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --trop_dir TROP_DIR   Directory containing tropomi data
+      --out_dir OUT_DIR     Directory to contain finished netcdf4
+      --season SEASON       Can be jja, son, djf, mam
+      --start_date START_DATE
+                            Start date of processing window (yyyy-mm-dd)
+      --end_date END_DATE   End date of processing window (yyyy-mm-dd)
+      --grid_res GRID_RES   Can be 1x1, 2x25, 4x5
+      --cloud_product CLOUD_PRODUCT
+                            can be fresco or dlr-ocra
+      --cloud_threshold CLOUD_THRESHOLD
+                            recommended value is 07. Can also test 08, 09, 10
+      --pmin PMIN           Lower bound on cloud height. Defaults to 180.
+      --pmax PMAX           Upper bound on cloud height. Defaults to 450.
+
+
 """
 
 import glob
@@ -757,8 +782,8 @@ if __name__ == "__main__":
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
     parser.add_argument("--cloud_product", default = "fresco", help="can be fresco or dlr-ocra")
     parser.add_argument("--cloud_threshold", default = "07", help="recommended value is 07. Can also test 08, 09, 10")
-    parser.add_argument("--pmin", default=180, type=int)
-    parser.add_argument("--pmax", default=450, type=int)
+    parser.add_argument("--pmin", default=180, type=int, help="Lower bound on cloud height. Defaults to 180.")
+    parser.add_argument("--pmax", default=450, type=int, help="Upper bound on cloud height. Defaults to 450.")
     args = parser.parse_args()
 
     if args.season:

@@ -1,15 +1,40 @@
 #!/usr/bin/python
 
-''' Read and regrid cloud information from the official TROPOMI CLOUD product 
-    and from the FRESCO cloud product in the TROPOMI NO2 data product file.
+'''
+Read and regrid cloud information from the official TROPOMI CLOUD product
+and from the FRESCO cloud product in the TROPOMI NO2 data product file.
 
-    Output from this code includes a NetCDF file with:
-    (1) Data regridded to a 1 deg x 1 deg global grid and saved as monthly 
-        means for scenes with the reference cloud product (specied as input 
-        argument) cloud fraction > 0.7 and cloud tops in the upper 
-        troposphere (450-180 hPa).
-    (2) Meridional frequency of upper tropospheric (450-180 hPa) cloud 
-        fractions > 0.7 for each product.
+Output from this code includes a NetCDF file with:
+
+1. Data regridded to a 1 deg x 1 deg global grid and saved as monthly means for scenes with the reference cloud product
+   (specied as input argument) cloud fraction > 0.7 and cloud tops in the upper troposphere (450-180 hPa).
+2. Meridional frequency of upper tropospheric (450-180 hPa) cloud fractions > 0.7 for each product.
+
+.. code-block:: bash
+
+    usage: fresco_cld_err.py [-h] [--s5p_data_dir S5P_DATA_DIR]
+                             [--out_dir OUT_DIR] [--season SEASON]
+                             [--start_date START_DATE] [--end_date END_DATE]
+                             [--plot_dir PLOT_DIR] [--out_res OUT_RES]
+                             [--dlr_cld_top DLR_CLD_TOP]
+                             [--file_version FILE_VERSION]
+                             [--ref_cld_prod REF_CLD_PROD]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --s5p_data_dir S5P_DATA_DIR
+      --out_dir OUT_DIR
+      --season SEASON       Can be jja, son, djf, mam. Overrides
+                            start_date/end_date
+      --start_date START_DATE
+                            Start date of processing window (yyyy-mm-dd)
+      --end_date END_DATE   End date of processing window (yyyy-mm-dd)
+      --plot_dir PLOT_DIR
+      --out_res OUT_RES
+      --dlr_cld_top DLR_CLD_TOP
+      --file_version FILE_VERSION
+      --ref_cld_prod REF_CLD_PROD
+
 
 '''
 

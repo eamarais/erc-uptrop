@@ -48,16 +48,42 @@
             
   <div class="section" id="module-uptrop.ut_no2_gc_test">
 <span id="ut-no2-gc-test"></span><h1>ut_no2_gc_test<a class="headerlink" href="#module-uptrop.ut_no2_gc_test" title="Permalink to this headline"> </a></h1>
-<p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced 
+<p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced
 NO2 in the upper troposphere and compare this to UT NO2 obtained if
-simply average the NO2 mixing ratios from the model over the same 
-pressure range (the “truth”). Both are obtained by Gaussian 
+simply average the NO2 mixing ratios from the model over the same
+pressure range (the “truth”). Both are obtained by Gaussian
 weighting toward the pressure center.</p>
-<p>GEOS-Chem partial columns are obtained over Europe, North America, 
+<p>GEOS-Chem partial columns are obtained over Europe, North America,
 and China at the GEOS-FP meteorology native resolution (0.25x0.3125)
 (latxlon) for June-August 2016-2017.</p>
-<p>Input options to process the data include the region, the horizontal 
+<p>Input options to process the data include the region, the horizontal
 resolution, and model simulation years.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: ut_no2_gc_test.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--gc_dir GC_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
+                     <span class="o">[</span>--resolution RESOLUTION<span class="o">]</span> <span class="o">[</span>--region REGION<span class="o">]</span>
+                     <span class="o">[</span>--strat_filter_threshold STRAT_FILTER_THRESHOLD<span class="o">]</span>
+                     <span class="o">[</span>--season SEASON<span class="o">]</span> <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                     <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>-p PLOT<span class="o">]</span>
+                     <span class="o">[</span>--do_temp_correct DO_TEMP_CORRECT<span class="o">]</span>
+                     <span class="o">[</span>--do_error_weight DO_ERROR_WEIGHT<span class="o">]</span>
+                     <span class="o">[</span>--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --gc_dir GC_DIR
+  --out_dir OUT_DIR
+  --resolution RESOLUTION
+                        Can be 8x10, 4x5, 2x25 or 1x1
+  --region REGION       Can be EU, NA, or CH
+  --strat_filter_threshold STRAT_FILTER_THRESHOLD
+  --season SEASON
+  --start_date START_DATE
+  --end_date END_DATE
+  -p PLOT, --plot PLOT
+  --do_temp_correct DO_TEMP_CORRECT
+  --do_error_weight DO_ERROR_WEIGHT
+  --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+</pre></div>
+</div>
 <dl class="py exception">
 <dt id="uptrop.ut_no2_gc_test.CloudSliceException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">CloudSliceException</code><a class="headerlink" href="#uptrop.ut_no2_gc_test.CloudSliceException" title="Permalink to this definition"> </a></dt>
@@ -68,6 +94,27 @@ resolution, and model simulation years.</p>
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">DomainIssueException</code><a class="headerlink" href="#uptrop.ut_no2_gc_test.DomainIssueException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
 
+<dl class="py class">
+<dt id="uptrop.ut_no2_gc_test.GeosChemDay">
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">GeosChemDay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">error_weight</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay" title="Permalink to this definition"> </a></dt>
+<dd><p>A class for reading, preprocessing and accessing Geoschem data on a given day</p>
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.GeosChemDay.prepare_no2_pixel">
+<code class="sig-name descname">prepare_no2_pixel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay.prepare_no2_pixel" title="Permalink to this definition"> </a></dt>
+<dd><p>Extracts preprocesed no2 from the geoschem pixel at x,y</p>
+<p>TODO: MORE HERE</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>int</em>) – The x index of the pixel</p></li>
+<li><p><strong>y</strong> (<em>int</em>) – The y index of the pixel</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py exception">
 <dt id="uptrop.ut_no2_gc_test.InvalidRegionException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">InvalidRegionException</code><a class="headerlink" href="#uptrop.ut_no2_gc_test.InvalidRegionException" title="Permalink to this definition"> </a></dt>
@@ -77,6 +124,110 @@ resolution, and model simulation years.</p>
 <dt id="uptrop.ut_no2_gc_test.InvalidResolutionException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">InvalidResolutionException</code><a class="headerlink" href="#uptrop.ut_no2_gc_test.InvalidResolutionException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
+
+<dl class="py class">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData">
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">ProcessedData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em>, <em class="sig-param"><span class="n">strat_thld</span></em>, <em class="sig-param"><span class="n">do_temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_error_weighting</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_frac_filter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData" title="Permalink to this definition"> </a></dt>
+<dd><p>A class for comparing geoschem and tropomi data</p>
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.add_slice">
+<code class="sig-name descname">add_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">t_cld</span></em>, <em class="sig-param"><span class="n">t_col_no2</span></em>, <em class="sig-param"><span class="n">t_mr_no2</span></em>, <em class="sig-param"><span class="n">t_fr_c</span></em>, <em class="sig-param"><span class="n">t_grad_no2</span></em>, <em class="sig-param"><span class="n">t_o3</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.add_slice" title="Permalink to this definition"> </a></dt>
+<dd><dl class="simple">
+<dt>Extracts the upper troposphere gc_data, gc_data error, ozone data, ozone error,</dt><dd><p>and mean cloud pressure for grid square [i,j]</p>
+</dd>
+</dl>
+<p>This method uses the cloud-slicing function <span class="xref std std-ref">uptrop.cloud_slice_ut_no2.cldslice</span>
+Once calculated, the a weighting is derived from cloud pressure.
+The weighted upper tropospheric gc_data and error is added to the rolling total for this season.
+If the cloud slicing fails, then the reason is added to loss_count for the end report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>i</strong> (<em>int</em>) – X-index of grid square</p></li>
+<li><p><strong>j</strong> (<em>int</em>) – Y-index of grid square</p></li>
+<li><p><strong>t_cld</strong> (<em>float</em>) – Tropospheric cloud</p></li>
+<li><p><strong>t_col_no2</strong> (<em>float</em>) – Total (stratosphere+troposphere) column no2</p></li>
+<li><p><strong>t_mr_no2</strong> (<em>float</em>) – NO2 mixing ratio between pmax and pmin</p></li>
+<li><p><strong>t_fr_c</strong> (<em>float</em>) – Cloud fraction between pmax and pmin</p></li>
+<li><p><strong>t_grad_no2</strong> (<em>float</em>) – NO2 gradient between pmax and pmin in pptv/hPa</p></li>
+<li><p><strong>t_o3</strong> (<em>float</em>) – O3 mixing ratio to test influence from stratosphere</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.define_grid">
+<code class="sig-name descname">define_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.define_grid" title="Permalink to this definition"> </a></dt>
+<dd><p>Defines a grid based on a set of regional bounding boxes and a resolution</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>str</em>) – The region to aggregate geoschem over; can be NA, EU or CH.</p></li>
+<li><p><strong>str_res</strong> (<em>str</em>) – The resolution of the grid around the region to analyse; can be 8x10, 4x5, 2x25 or 1x1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.get_weighted_mean">
+<code class="sig-name descname">get_weighted_mean</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.get_weighted_mean" title="Permalink to this definition"> </a></dt>
+<dd><p>Applies weighting to the aggregated means.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.plot_data">
+<code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.plot_data" title="Permalink to this definition"> </a></dt>
+<dd><p>Plots the present state of the gridded data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.print_data_report">
+<code class="sig-name descname">print_data_report</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.print_data_report" title="Permalink to this definition"> </a></dt>
+<dd><p>Prints a set of reasons for missing data</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.process_geoschem_day">
+<code class="sig-name descname">process_geoschem_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.process_geoschem_day" title="Permalink to this definition"> </a></dt>
+<dd><p>Aggregates geoschem data into the processing grid for a file on a given day.</p>
+<p>Calls <span class="xref std std-ref">regrid_and_process</span> for each pixel in the geoschem file, then calls
+<span class="xref std std-ref">process_grid_square</span> for each square of the grid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – Path to the geoschem file to load into the processing grid</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.regrid_and_process">
+<code class="sig-name descname">regrid_and_process</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">gc_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.regrid_and_process" title="Permalink to this definition"> </a></dt>
+<dd><p>Inserts data from pixel x,y from geoschem data into the appropriate grid cell</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>int</em>) – X index of geoschem grid cell</p></li>
+<li><p><strong>y</strong> (<em>int</em>) – Y index of geoschem grid cell</p></li>
+<li><p><strong>gc_data</strong> (<a class="reference internal" href="#uptrop.ut_no2_gc_test.GeosChemDay" title="uptrop.ut_no2_gc_test.GeosChemDay"><em>GeosChemDay</em></a>) – An instance of GeosChemDay data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="uptrop.ut_no2_gc_test.ProcessedData.save_to_netcdf">
+<code class="sig-name descname">save_to_netcdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.save_to_netcdf" title="Permalink to this definition"> </a></dt>
+<dd><p>Saves the present state of the grid to a netCDF4 file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>out_path</strong> (<em>str</em>) – Path to the output file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="py exception">
 <dt id="uptrop.ut_no2_gc_test.ProcessingException">

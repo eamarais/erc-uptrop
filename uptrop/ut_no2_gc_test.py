@@ -1,18 +1,47 @@
 #!/usr/bin/python
 
-''' Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced 
-    NO2 in the upper troposphere and compare this to UT NO2 obtained if
-    simply average the NO2 mixing ratios from the model over the same 
-    pressure range (the "truth"). Both are obtained by Gaussian 
-    weighting toward the pressure center.
+r'''
+Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced
+NO2 in the upper troposphere and compare this to UT NO2 obtained if
+simply average the NO2 mixing ratios from the model over the same
+pressure range (the "truth"). Both are obtained by Gaussian
+weighting toward the pressure center.
 
-    GEOS-Chem partial columns are obtained over Europe, North America, 
-    and China at the GEOS-FP meteorology native resolution (0.25x0.3125)
-    (latxlon) for June-August 2016-2017.
+GEOS-Chem partial columns are obtained over Europe, North America,
+and China at the GEOS-FP meteorology native resolution (0.25x0.3125)
+(latxlon) for June-August 2016-2017.
 
-    Input options to process the data include the region, the horizontal 
-    resolution, and model simulation years.
-    '''
+Input options to process the data include the region, the horizontal
+resolution, and model simulation years.
+
+.. code-block:: bash
+
+    usage: ut_no2_gc_test.py [-h] [--gc_dir GC_DIR] [--out_dir OUT_DIR]
+                         [--resolution RESOLUTION] [--region REGION]
+                         [--strat_filter_threshold STRAT_FILTER_THRESHOLD]
+                         [--season SEASON] [--start_date START_DATE]
+                         [--end_date END_DATE] [-p PLOT]
+                         [--do_temp_correct DO_TEMP_CORRECT]
+                         [--do_error_weight DO_ERROR_WEIGHT]
+                         [--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --gc_dir GC_DIR
+      --out_dir OUT_DIR
+      --resolution RESOLUTION
+                            Can be 8x10, 4x5, 2x25 or 1x1
+      --region REGION       Can be EU, NA, or CH
+      --strat_filter_threshold STRAT_FILTER_THRESHOLD
+      --season SEASON
+      --start_date START_DATE
+      --end_date END_DATE
+      -p PLOT, --plot PLOT
+      --do_temp_correct DO_TEMP_CORRECT
+      --do_error_weight DO_ERROR_WEIGHT
+      --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+
+'''
 
 # Note for the future; most of this can probably be replaced with a modification of the GridAggregator class from
 # tropomi_ut_no2
