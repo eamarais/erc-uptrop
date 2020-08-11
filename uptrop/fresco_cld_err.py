@@ -701,7 +701,7 @@ def process_file(tdfile, tffile, running_total_container):
 
 
 def get_files_for_period(sen_5_p_dir, start_date, end_date):
-     
+
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
@@ -720,7 +720,7 @@ def get_files_for_period(sen_5_p_dir, start_date, end_date):
                   StrMM ,
                   'S5P_OFFL_L2__NO2____' + StrYY + StrMM + '*'))
     tf_file_list = sorted(tf_file_list)
-    
+
 
 
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
