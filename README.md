@@ -35,8 +35,13 @@ Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at
 For a more advanced example bash script that runs each script over a given date range, see ``tests/integration_test.sh`` in your Uptrop folder.
 See https://pages.github.io/erc-uptrop/docs/build/html/index.html?#scripts for detailed explanations of each function.
 
-Documentation at https://pages.github.io/erc-uptrop/docs/build/html/index.html
 
+Documentation
+-------------
+Documentation is hosted at https://maraisresearchgroup.co.uk/erc-uptrop/build/html/index.html
+
+Sources and citations
+---------------------
 Files copied from eam-group repo (https://github.com/eamarais/eam-group/tree/master/eloise/uptrop)
 
 Citation where details of the method, and interpretation and visualization of the data is Marais et al., 2020.
