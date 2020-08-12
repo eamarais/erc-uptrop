@@ -78,10 +78,41 @@ optional arguments:
   --pmax PMAX           Upper bound on cloud height. Defaults to <span class="m">450</span>.
 </pre></div>
 </div>
+<dl class="py exception">
+<dt id="uptrop.tropomi_ut_no2.CloudFileDateMismatch">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileDateMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileDateMismatch" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.tropomi_ut_no2.CloudFileShapeMismatch">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileShapeMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileShapeMismatch" title="Permalink to this definition"> </a></dt>
+<dd><p>Raised when FRESCO and DLR files are not the same shape</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.tropomi_ut_no2.UnequalColumnException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.CloudData">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData" title="Permalink to this definition"> </a></dt>
 <dd><p>Class for containing the data for cloud filtering and analysis.</p>
+<dl class="py method">
+<dt id="uptrop.tropomi_ut_no2.CloudData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">data_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Reads either the tropomi file (if data_type = ‘fresco’) or the ocra file (if data_type = ‘dlr-ocra’)
+at file_path and returns an instance of CloudData. Calls either read_fresco_file or read_ocra_file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>str</em>) – Path to the file containing cloud_data</p></li>
+<li><p><strong>data_type</strong> (<em>str</em>) – Can be ‘fresco’ or ‘dlr-ocra’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.CloudData.read_fresco_file">
 <code class="sig-name descname">read_fresco_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_fresco_file" title="Permalink to this definition"> </a></dt>
@@ -124,21 +155,30 @@ pressure values for cross-compatability with fresco data.</p>
 
 </dd></dl>
 
-<dl class="py exception">
-<dt id="uptrop.tropomi_ut_no2.CloudFileDateMismatch">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileDateMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileDateMismatch" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.tropomi_ut_no2.CloudFileShapeMismatch">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileShapeMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileShapeMismatch" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when FRESCO and DLR files are not the same shape</p>
-</dd></dl>
-
 <dl class="py class">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">GridAggregator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dellat</span></em>, <em class="sig-param"><span class="n">dellon</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for aggregating higher-resolution data into grid squares</p>
+<dl class="py method">
+<dt id="uptrop.tropomi_ut_no2.GridAggregator.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dellat</span></em>, <em class="sig-param"><span class="n">dellon</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Creates a grid aggregator across the entire world of resolution dellon, dellat</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dellat</strong> (<em>float</em>) – vertical size of the aggregation grid in decimal degrees</p></li>
+<li><p><strong>dellon</strong> (<em>float</em>) – Horizontal size of the aggregation grid in decimal degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A GridAggregator object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#uptrop.tropomi_ut_no2.GridAggregator" title="uptrop.tropomi_ut_no2.GridAggregator">GridAggregator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.GridAggregator.add_slice">
 <code class="sig-name descname">add_slice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">j</span></em>, <em class="sig-param"><span class="n">t_cld</span></em>, <em class="sig-param"><span class="n">t_col_no2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.GridAggregator.add_slice" title="Permalink to this definition"> </a></dt>
@@ -233,6 +273,17 @@ This is to be applied at the end of processing to get the final data that will b
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">TropomiData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for extracting, preprocessing and containing data from a s5p tropomi file.</p>
 <dl class="py method">
+<dt id="uptrop.tropomi_ut_no2.TropomiData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Reads the tropomi file at file_path and prepares it for processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – Path to the netcdf4 file containing the tropomi data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="uptrop.tropomi_ut_no2.TropomiData.calc_geo_column">
 <code class="sig-name descname">calc_geo_column</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.TropomiData.calc_geo_column" title="Permalink to this definition"> </a></dt>
 <dd><p>Calculates the geometric AMF and tropospheric vertical column of this data.
@@ -279,11 +330,6 @@ Includes application of a bias correction to the stratospheric and tropospheric 
 </dd></dl>
 
 </dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.tropomi_ut_no2.UnequalColumnException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
 
 </div>
 
