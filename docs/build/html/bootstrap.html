@@ -52,24 +52,41 @@
             
   <div class="section" id="module-uptrop.bootstrap">
 <span id="bootstrap"></span><h1>bootstrap<a class="headerlink" href="#module-uptrop.bootstrap" title="Permalink to this headline"> </a></h1>
-<dl>
+<dl class="simple">
 <dt>Description: uses jackknife resampling to estimate the reduced major axis</dt><dd><p>regression slopes and intercepts and the errors of these.
 Relevant reference is: Hirsch and Gilroy, Water Res. Bull., 
 20(5), Oct 1984.</p>
 </dd>
-<dt>Input: x: 1D array of x values</dt><dd><p>y: 1D array of y values
-n: number of elements of x array (equivalent to the number of elements</p>
-<blockquote>
-<div><p>of the y array)</p>
-</div></blockquote>
-<p>ntrials: the number of trials of randomly selected data</p>
+</dl>
+<dl class="py function">
+<dt id="uptrop.bootstrap.rma">
+<code class="sig-prename descclassname">uptrop.bootstrap.</code><code class="sig-name descname">rma</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">n</span></em>, <em class="sig-param"><span class="n">ntrials</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.bootstrap.rma" title="Permalink to this definition"> </a></dt>
+<dd><p>Performs jackknife resampling</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em>) – 1D array of x values</p></li>
+<li><p><strong>y</strong> (<em>list</em>) – 1D array of y values</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – number of elements of x array (equivalent to the number of elements
+of the y array)</p></li>
+<li><p><strong>ntrials</strong> (<em>int</em>) – the number of trials of randomly selected data</p></li>
+</ul>
 </dd>
-<dt>Return: grad_arr, cept_arr: 1D arrays of slope and intercept estimates </dt><dd><p>the same size as the number of trials (ntrials). Mean of these is the
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>grad_arr, cept_arr: 1D arrays of slope and intercept estimates
+the same size as the number of trials (ntrials). Mean of these is the
 slope and intercept value and standard deviation is the error on
 the slope and intercept.</p>
 </dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+<dt class="field-even">Notes</dt>
+<dd class="field-even"><p>Original code on which this is based: GAMAP package bootstrap.pro</p>
+</dd>
 </dl>
-<p>Original code on which this is based: GAMAP package bootstrap.pro</p>
+</dd></dl>
+
 </div>
 
 

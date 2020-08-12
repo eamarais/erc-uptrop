@@ -56,14 +56,17 @@ def cldslice(pcolno2,cldtophgt):
     Determine NO2 mixing ratio by regressing NO2 partial columns
     against cloud-top heights over cloudy scenes.
 
-    INPUT: vectors of partial columns in molec/m2 and corresponding
-           cloud top heights in hPa.
+    :param pcolno2: vectors of partial columns in molec/m2
+    :type pcolno2: list of floats
+    :param cldtophgt: corresponding cloud top heights in hPa.
+    :type cldtophgt: list of floats
 
-    OUTPUT: NO2 volumetric mixing ratio, corresponding estimated error on the
+    :return: NO2 volumetric mixing ratio, corresponding estimated error on the
             cloud-sliced NO2 value, a number to identify which filtering
             criteria led to loss of data in the case that the cloud-sliced
             NO2 value ia nan, and the mean cloud pressure of data retained
             after 10th and 90th percentile filtering.
+    :rtype: tuple
     """
     # Initialize:
     utmrno2=0.0

@@ -99,6 +99,7 @@ class DataCollector:
     """Collates tropomi and pandora data for a region around a Pandora site"""
     def __init__(self, start_date, end_date):
         """Creates a collator between two dates.
+
         :param start_date: The start date (inclusive)
         :type start_date: DateTime
         :param end_date: The end date (inclusive)
@@ -126,6 +127,7 @@ class DataCollector:
     def add_trop_data_to_day(self, date, trop_data):
         """Adds the tropomi gc_data, gc_data error, cloud pressure and cloud fraction to a date in this object
         Call set_trop_ind_for_day before this function
+
         :param date: The date to add the data to.
         :type date: DateTime
         :param trop_data: The tropomi data on a day
@@ -144,6 +146,7 @@ class DataCollector:
 
     def set_trop_ind_for_day(self, date, diff_deg, trop_data, pandora_data):
         """Sets tomiind (the index for processing) for a date and area around a pandora site
+
         :param date: The date of data to find
         :type date: DateTime
         :param diff_deg: The size of the grid square over the Pandora site to extract Tropomi data from
@@ -382,6 +385,7 @@ class TropomiData:
         """Returns a new instance of CloudComparisonData containing the data from file_path.
         You can also choose whether to apply bias correction and whethere you want the total or troposphere only
         column of this data
+
         :param filepath: The path to the Tropomi netcdf file
         :type filepath: str
         :param apply_bias_correction: Whether to apply bias correction
@@ -553,6 +557,7 @@ class TropomiData:
 
     def apply_cloud_filter(self, cloud_product):
         """Applies a cloud filter and finishes preprocessing.
+
         :param cloud_product: An instance of CloudData for filtering with
         :type cloud_product: CloudData
         :raises BadCloudShapeException: Raised if  the cloud_product is not the same shape as the Tropomi slice
@@ -617,6 +622,7 @@ class CloudData:
     def __init__(self, filepath, product_type, tropomi_data=None):
         """Returns an instance of the cloud data needed from filtering. This can come from either a freco cloud product
         (part of Tropomi) or a dlr-ocra file
+
         :param filepath: Path to the file
         :type filepath: str
         :param product_type: Can be 'dlr-ocra' or 'fresco'
@@ -705,6 +711,7 @@ class PandoraData:
     def __init__(self, file_path, col_type):
         """Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to gc_data and no2_err
         to bring the product up to 'pseudo 1.8'. Also applies corrections for Manua Loa if needed
+
         :param file_path: Path to the pandora file
         :type file_path: str
         :param col_type: Can be 'Tot' or 'Trop'
@@ -754,6 +761,7 @@ class PandoraData:
 
 def get_tropomi_files_on_day(tropomi_dir, date):
     """Gets a sorted list of tropomi files in tropomi_dir on date
+
     :param tropomi_dir: The directory containing tropomi files
     :type tropomi_dir: str
     :param date: The date to search for
@@ -776,6 +784,7 @@ def get_tropomi_files_on_day(tropomi_dir, date):
 
 def get_ocra_files_on_day(tropomi_dir, date):
     """Gets a sorted list of tropomi files in tropomi_dir on date
+
     :param tropomi_dir: The directory containing tropomi files
     :type tropomi_dir: str
     :param date: The date to search for
