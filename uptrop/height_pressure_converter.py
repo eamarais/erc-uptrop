@@ -34,7 +34,24 @@ def alt2pres(height):
     tval2=np.divide(np.multiply(lapse,height),t_zero)
     pressure=np.multiply(p_zero,(np.power(np.subtract(1.0,tval2),tval1)))    
 
-    # Output goes here:
+    # Output:
     return (pressure)
+
+def pres2alt(pressure):
+    """Convert pressure provided in Pa to altitude in m.
+
+    :param pressure: Pressure in Pa.
+
+    :return: Height in m.
+    """
+
+    # Define additional constants:
+    p_zero=101325    #Pa
+
+    # Calculate height:
+    height=(1 - ((pressure/p_zero)**0.190284)) * 145366.45 * 0.3048
+
+    # Output:
+    return (height)
 
  
