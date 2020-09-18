@@ -3,6 +3,7 @@ import glob
 import re
 from os import path
 
+import sys
 
 class InvalidSeasonException(Exception):
     print("Invalid season")
@@ -23,10 +24,10 @@ def season_to_date(season):
         end_date = dt.datetime(year=2019, month=11, day=30)
     elif season == "djf":
         start_date = dt.datetime(year=2019, month=12, day=1)
-        end_date = dt.datetime(year=2020, month=2, day=29)  # Beware the leap year here
+        end_date = dt.datetime(year=2020, month=2, day=29)  # Leap year
     elif season == "mam":
         start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=6, day=29)
+        end_date = dt.datetime(year=2020, month=5, day=31)
     elif season == "test":
         start_date = dt.datetime(year=2020, month=3, day=1)
         end_date = dt.datetime(year=2020, month=3, day=3)
@@ -92,7 +93,7 @@ def get_tropomi_files_on_day(tomidir, date):
     datestamp = date.strftime(r"%Y%m%dT")
     tomi_glob_string = path.join(tomidir, 'NO2_OFFL', year, month,'S5P_OFFL_L2__NO2____'+ datestamp + '*')
     tomi_files_on_day = glob.glob(tomi_glob_string)
-    print('Found {} tropomi files for {}: '.format(len(tomi_files_on_day), date))
+    print('Found {} tropomi no2 files for {}: '.format(len(tomi_files_on_day), date))
     tomi_files_on_day = sorted(tomi_files_on_day)
     return tomi_files_on_day
 
@@ -117,8 +118,9 @@ def get_ocra_files_on_day(tomidir,date):
     cld_glob_string = path.join(tomidir, "CLOUD_OFFL", year, month,
                                    'S5P_OFFL_L2__CLOUD__' + datestamp + '*')
     cldfile = glob.glob(cld_glob_string)
+    print('Found {} tropomi cloud files for {}: '.format(len(cldfile), date))
     # Order the files:
-    cldfile = sorted(cldfile)
+    cldfile = sorted(cldfile)    
     return cldfile
 
 
@@ -143,17 +145,15 @@ def get_date(file_name, time_stamp_index = 0):
     return dt.datetime.strptime(date_string, r"%Y%m%dT%H%M%S")
 
 
-def get_gc_files_on_day(gcdir, region, date):
-    # Get string of day:
-    datestamp = date.strftime(r"%Y%m%d")
-    cld_glob_string = path.join(gcdir, 'nc_sat_files_47L', 'ts_12_15.{}.{}.nc'.format(region, datestamp))
-    cldfile = glob.glob(cld_glob_string)
-    # Order the files:
-    cldfile = sorted(cldfile)
-    return cldfile
+def get_gc_files_in_month(gcdir, region, date):
+    gc_glob_string = path.join(gcdir, 'nc_sat_files_47L', 'ts_12_15.{}.{}'.format(region, date)+'*')
+    # get string of files for this month:
+    gcfiles = glob.glob(gc_glob_string)
+    
+    return sorted(gcfiles)
 
 
-def get_gc_file_list(gc_dir, region, date_range):
+def get_gc_file_list(gc_dir, region):
     """Gets a list of geoschem files for a given region and set of years
 
     :param gc_dir: The directory containing the geoschem files
@@ -166,19 +166,30 @@ def get_gc_file_list(gc_dir, region, date_range):
     :returns: A sorted list of geoschem files
     :rtype: list of str
     """
+
     # Define target grid:
     if region == 'NA':
-        dirreg = '_na_'
+        dirreg = '_na'
     elif region == 'EU':
-        dirreg = '_eu_naei_'
+        dirreg = '_eu'
     elif region == 'CH':
-        dirreg = '_ch_'
+        dirreg = '_ch'
     else:
         print("Invalid region; valid regions are 'NA','EU','CH'.")
         raise InvalidRegionException
 
-    gc_dir = path.join(gc_dir,'geosfp'+dirreg+'iccw')
+    # Hard code years and days to process, as it is 2 years of data for
+    # one specific season:
+    gc_year  = ['2016', '2017']
+    gc_month = ['06', '07', '08']
+
+    gc_dir = path.join(gc_dir,'geosfp'+dirreg)
     out_files = []
-    for date in date_range:
-        out_files += get_gc_files_on_day(gc_dir, region, date)
+    for y in gc_year:
+        for m in gc_month:
+            date = y+m
+            day_file = get_gc_files_in_month(gc_dir, region, date)
+            # Append to output files:
+            for i in range(len(day_file)):
+                out_files.append(day_file[i])  
     return sorted(out_files)
