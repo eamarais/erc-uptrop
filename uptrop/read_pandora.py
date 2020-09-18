@@ -104,7 +104,7 @@ def get_lat_lon(pandora_filepath):
             elif current_line.startswith("Location longitude [deg]:"):
                 lon = float(current_line.split(":")[1])
             elif current_line.startswith("--------"):
-                # TODO: Maybe change for exception if this might happen
+                # Future improvements to code: Change for exception if this might happen
                 print("Lat/lon not found in file {}".format(pandora_filepath))
                 return
     return {"lat": lat, "lon": lon}
@@ -169,7 +169,7 @@ def read_pandora(pandora_filepath, no2col):
     columns = [dateind, jdayind, szaind, no2ind, errind, qaflagind, fitflagind]
     columns = [column -1 for column in columns]  # Pandora columns are 1-indexed, Pandas are 0
 
-    # TODO: Maybe set ut_date up as an index for easier slicing of data for the future
+    # Future improvements to code: Set ut_date up as an index for easier slicing of data
     df = pd.read_csv(pandora_filepath,
                      sep=" ",
                      skiprows=data_start,
