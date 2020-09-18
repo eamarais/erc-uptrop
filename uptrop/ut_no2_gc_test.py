@@ -725,8 +725,6 @@ class GeosChemDay:
     def prepare_no2_pixel(self, x, y):
         """Extracts preprocesed no2 from the geoschem pixel at x,y
 
-        TODO: MORE HERE
-
         :param x: The x index of the pixel
         :type x: int
         :param y: The y index of the pixel
