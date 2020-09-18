@@ -62,7 +62,7 @@ sys.path.append(
         '..'))
 
 from uptrop.gamap_colormap import WhGrYlRd
-from uptrop.convert_height_to_press import alt2pres
+from uptrop.height_pressure_converter import alt2pres
 from uptrop.date_file_utils import get_ocra_file_list, get_tropomi_file_list, season_to_date
 
 # Turn off warnings:
@@ -117,7 +117,6 @@ class CloudVariableStore:
         :param data_shape: Tuple of (presumably) two elements for shape of cloud data
         :type data_shape: List of length 2
         """
-        # TODO Find out from Eloise what these stand for for better variable names
         # Variables explained:
         # KNMI is the cloud product provied with the TROPOMI NO2 data.
         # DLR is the standalone TROPOMI cloud product.
@@ -160,7 +159,7 @@ class CloudVariableStore:
         :type trop_i: int
         :type trop_j: int
         """
-        # TODO: Make this vectorised
+        # Future improvements to code: Make this vectorised
         # Skip where FRESCO cloud product is NAN:
         if np.isnan(tropomi_data.tffrc[trop_i, trop_j]) or \
            np.isnan(tropomi_data.tdfrc[trop_i, trop_j]):
@@ -168,7 +167,7 @@ class CloudVariableStore:
             return
 
         # Find corresponding gridsquare
-        # TODO: Find a better place to put out_lon
+        # Future improvements to code: Find a better place to put out_lon
         p = np.argmin(abs(out_lon - tropomi_data.tdlons[trop_i, trop_j]))
         q = np.argmin(abs(out_lat - tropomi_data.tdlats[trop_i, trop_j]))
 
@@ -292,7 +291,7 @@ class CloudVariableStore:
         # Write data to file:
         outfile = path.join(out_dir, 'fresco-dlr-cloud-products-' + MMName + '-' + StrYY + '-' + out_res + '-ref-' + ref_cld_prod + '-v3.nc')
         ncfile = Dataset(outfile, 'w', format='NETCDF4_CLASSIC')
-        ncfile.createDimension('xdim', len(out_lon))    # TODO: Make this a member
+        ncfile.createDimension('xdim', len(out_lon))    # Future improvements to code: Make this a member
         ncfile.createDimension('ydim', len(out_lat))
         ncfile.createDimension('frdim', len(self.cldbin))
         ncfile.createDimension('lbdim', len(self.latbin))
@@ -391,7 +390,7 @@ class CloudVariableStore:
         res_cld_prod = self.cloud_prod
  
 
-        # TODO: Get MMName and StrYY from file_path instead of the global at the bottom of the script
+        # Future improvements to code: Get MMName and StrYY from file_path instead of the global at the bottom of the script
         # PLOT THE DATA:
         m = Basemap(resolution='l', projection='merc', lat_0=0, lon_0=0,
                     llcrnrlon=MIN_LON, llcrnrlat=-70,
@@ -740,13 +739,13 @@ def get_files_for_month(sen_5_p_dir, month_index, ndays=31):
     :return: The list of dlr files and the list of fresco files
     :rtype: tuple(dlr files, fresco files)
     """
-    # TODO Roll the string manufacturing into the CloudVariableStore class
+    # Future improvements to code: Roll the string manufacturing into the CloudVariableStore class
     global StrMM, StrYY, MMName
 
 
     # Input parameter (to selet month of interest):
     # Define month of interest as string 2 characters in length:
-    # TODO: Change this entire section into datetime
+    # Future improvements to code: Change this entire section into datetime
     StrMM = str(month_index)
     # Define string of year and first 3 letters of month name based on above entry:
     if StrMM == '01': StrYY, MMName = '2020', 'jan'
@@ -829,7 +828,7 @@ if __name__ == "__main__":
             print("Please provide either --season or --start_date and --end_date")
             sys.exit(1)
 
-    # TODO: Make this a member of CloudVariableStore
+    # Future improvements to code: Make this a member of CloudVariableStore
     if args.out_res == '1x1':
         DELTA_LAT = 1
         DELTA_LON = 1
