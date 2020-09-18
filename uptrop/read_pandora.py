@@ -6,7 +6,7 @@ The main function in this module is read_pandora: ::
 
     from uptrop.read_pandora import read_pandora
     location, pandora_df = read_pandora("pandora_file", "Tot")
-    pandora_df.plot('day', 'gc_data')
+    pandora_df.plot('day', 'no2col')
 
 The rest are ancillary functions for reading pandora data files.
 """
@@ -116,13 +116,13 @@ def read_pandora(pandora_filepath, no2col):
 
     Returns two values: a dictionary of position and a dataframe of Pandora data
 
-    Pandora data can be either all values or troposphere only
+    Pandora data can be either total column or troposphere column
 
     The dictionary has key {'lat,'lon'}
 
     The dataframe has column headings:
 
-    jday, sza, gc_data, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
+    jday, sza, no2col, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
 
 
     :param pandora_filepath: The path to the pandora file
