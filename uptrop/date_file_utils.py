@@ -9,7 +9,6 @@ class InvalidSeasonException(Exception):
     print("Invalid season")
     pass
 
-# TODO: Clean up exceptions
 class InvalidRegionException(Exception):
     print("Invalid region")
     pass
