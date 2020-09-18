@@ -14,7 +14,7 @@ Options are available to use cloud information from either the FRESCO-S or ROCIN
            [--pmin PMIN] [--pmax PMAX]
 
     optional arguments:
-      -h, --help            show this help message and exit
+      -h, --help            show this help message and ext
       --trop_dir TROP_DIR   Directory containing tropomi data
       --out_dir OUT_DIR     Directory to contain finished netcdf4
       --season SEASON       Can be jja, son, djf, mam
@@ -53,20 +53,13 @@ sys.path.append(
         os.path.dirname(os.path.abspath(__file__)),
         '..'))
 
-from uptrop.convert_height_to_press import alt2pres
+from uptrop.height_pressure_converter import alt2pres
 from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
 from uptrop.date_file_utils import season_to_date, get_tropomi_file_list, get_ocra_file_list, get_date
 
 
 class CloudFileDateMismatch(Exception):
     pass
-
-
-class CloudFileShapeMismatch(Exception):
-    """
-    Raised when FRESCO and DLR files are not the same shape
-    """
-
 
 class UnequalColumnException(Exception):
     pass
@@ -140,7 +133,7 @@ class GridAggregator:
             # at low concentrations of UT NO2:
             if geo_tot_value < strat_no2_val:
                 continue
-
+            
             # Find nearest gridsquare in output grid:
             p = np.argmin(abs(self.out_lon - trop_lon))
             q = np.argmin(abs(self.out_lat - trop_lat))
@@ -387,7 +380,7 @@ class GridAggregator:
 class TropomiData:
     """A class for extracting, preprocessing and containing data from a s5p tropomi file."""
 
-    #This time, I'm initialising _everything_ first before the first read.
+    # Initialize _everything_ before the first read.
     def __init__(self, file_path):
         """Reads the tropomi file at file_path and prepares it for processing.
 
@@ -407,8 +400,8 @@ class TropomiData:
         self.tlats = None
         self.tscdno2 = None
         self.stratno2_og = None
-        self.tscdno2err = None
-        self.stratno2err = None
+        #self.tscdno2err = None  # preserve for future use
+        #self.stratno2err = None # preserve for future use
         self.tstratamf = None
         self.qaval = None
         #self.aai = None
@@ -475,14 +468,14 @@ class TropomiData:
                         variables['nitrogendioxide_stratospheric_column'][:]
         stratno2_og = gstratno2.data[0, :, :]
 
-        # Precisions/Uncertainties of column data:
+        # Precisions/Uncertainties of column data (preserve for future use)
         # (1) Total slant column uncertainty:
-        gscdno2err = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
-                         variables['nitrogendioxide_slant_column_density_precision'][:]
-        tscdno2err = gscdno2err.data[0, :, :]
+        #gscdno2err = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
+        #                 variables['nitrogendioxide_slant_column_density_precision'][:]
+        #tscdno2err = gscdno2err.data[0, :, :]
         # (2) Stratospheric vertical column uncertainty:
-        stratno2err = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
-                          variables['nitrogendioxide_stratospheric_column_precision'][0, :, :]
+        #stratno2err = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
+        #                  variables['nitrogendioxide_stratospheric_column_precision'][0, :, :]
         # Stratospheric AMF:
         gstratamf = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
                         variables['air_mass_factor_stratosphere'][:]
@@ -516,11 +509,11 @@ class TropomiData:
         self.tlats = tlats
         self.tscdno2 = tscdno2
         self.stratno2_og = stratno2_og
-        self.tscdno2err = tscdno2err
-        self.stratno2err = stratno2err
+        #self.tscdno2err = tscdno2err   # Preserve for future use
+        #self.stratno2err = stratno2err # Preserve for future use
         self.tstratamf = tstratamf
         self.qaval = qaval
-        #self.aai = aai
+        #self.aai = aai  # Preserve for future use
         self.sza = sza
         self.vza = vza
 
@@ -530,34 +523,39 @@ class TropomiData:
            The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
            """
 
-        # Calculate the geometric AMF:
+        # Calculate the geometric AMF for calculating the tropospheric column:
         tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
 
-        # Bias correct the stratosphere:
-        tstratno2 = np.where(self.stratno2_og != self.fillval,
-                     ((self.stratno2_og / 0.86) - (7.6e14 / self.no2sfac)), np.nan)
+        # Bias correct stratospheric column variance:
+        tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.stratno2_og / 0.87) - (2.8e15 / self.no2sfac)), self.fillval )
 
         # Get VCD under cloudy conditions. This is done as the current
         # tropospheric NO2 VCD product includes influence from the prior
         # below clouds:
-        # Calculate the stratospheric slant columns using the original stratospheric column:
-        tscdstrat = np.where(self.stratno2_og != self.fillval, (np.multiply(self.stratno2_og, self.tstratamf)), self.fillval )
+        # Calculate the stratospheric slant columns using the bias corrected stratospheric column:
+        tscdstrat = np.where(self.stratno2_og != self.fillval, (np.multiply(tstratno2, self.tstratamf)), self.fillval )
         # Calculate the tropospheric slant columns:
         ttropscd = np.where(tscdstrat != self.fillval, (np.subtract(self.tscdno2, tscdstrat)), self.fillval )
         # Calculate the tropospheric vertical column using the geometric AMF:
         tgeotropvcd = np.where(ttropscd != self.fillval, (np.divide(ttropscd, tamf_geo)), self.fillval )
 
-        # Bias correct the troposphere:
-        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / 1.9, np.nan )
+        # Decrease tropospheric column by 50% to correct for overestimate
+        # compared to Pandora and MAX-DOAS tropospheric columns at Izana:
+        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / 1.5, np.nan )
+        # The above bias correction has a null effect on the total column, as
+        # it just redistributes the relative contribution of the troposphere
+        # and the stratosphere.
+        # Calculate the correction to the stratospheric column:
+        tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (tstratno2 / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
 
-        # Get total column as the sum of the bias-corrected stratosphere and troposphere:
+        # Calculate the total bias corrected column:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
 
         # Calculate updated errors after bias correcting.
         # Determine by scaling it by the relative change in stratospheric vertical
         # colum NO2 after applying a bias correction:
-        tstratno2err = np.where(self.stratno2err != self.fillval, np.multiply(self.stratno2err, np.divide(tstratno2, self.stratno2_og)), np.nan)
+        #tstratno2err = np.where(self.stratno2err != self.fillval, np.multiply(self.stratno2err, np.divide(tstratno2, self.stratno2_og)), np.nan)
 
         # Setting members
         self.tamf_geo = tamf_geo
@@ -583,7 +581,8 @@ class TropomiData:
         :param pmin: The minimum cloud height to be used in processing
         :type pmin: float
         """
-        # Do date check
+        # Do date check. This should have already been addressed, but this
+        # is an error check in case:
         if self.date != cloud_data.date:
             print('NO2 file: {}, Cloud file: {}'.format(self.date, cloud_data.date), flush=True)
             print('EXITING: Files are not for the same date!', flush=True)
@@ -708,7 +707,7 @@ class CloudData:
     def read_ocra_file(self, file_path):
         """Reads, filters and preprocesses the data in a dlr-ocra file.
 
-        :ref:`uptrop.convert_height_to_pressure` is called to convert ocra cloud-top heights to
+        :ref:`uptrop.height_pressure_converter` is called to convert ocra cloud-top heights to
         pressure values for cross-compatability with fresco data.
 
         Pixels are dropped if
@@ -735,7 +734,7 @@ class CloudData:
         tcldpres = np.zeros(tcldhgt.shape)
 
         # Calculate pressure assuming dry atmosphere using external
-        # conversion code (convert_height_to_press.py). There's a cloud
+        # conversion code (height_pressure_converter.py). There's a cloud
         # top pressure entry in the data file, but this is obtained using
         # ECMWF pressure and might have errors. Diego (DLR cloud product PI
         # recommended I use cloud altitude rather than pressure data):
@@ -769,7 +768,7 @@ class CloudData:
             print(self.cldfrac.shape, trop_data.sza.shape, flush=True)
             print('Skipping this swath', flush=True)
             self.data_parity=False
-
+            pass        
 
 if __name__ == "__main__":
 
@@ -792,6 +791,15 @@ if __name__ == "__main__":
         if args.start_date and args.end_date:
             start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
             end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+        else:
+            print("Please provide either --season or --start_date and --end_date")
+
+    if args.start_date and args.end_date:
+            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
+            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
+    else:
+        if args.season:
+            start_date, end_date = season_to_date(args.season)
         else:
             print("Please provide either --season or --start_date and --end_date")
             sys.exit(1)
@@ -827,6 +835,31 @@ if __name__ == "__main__":
 
     grid_aggregator = GridAggregator(dellat, dellon)
 
+    # Check for instances where there are cloud files for a TROPOMI swath, but
+    # no NO2 files and vice versa:
+    # Only do this when using CLOUD_OFFL product:
+    if args.cloud_product == "dlr-ocra":
+        if len(cloud_files)!=len(trop_files):
+            for i, (trop_file, cloud_file) in enumerate(zip(trop_files, cloud_files)):
+                # Extract dates for these files:
+                trop_date=get_date(trop_file)
+                cloud_date=get_date(cloud_file)
+                # Check that dates are consistent 
+                if ( cloud_date != trop_date ):
+                #    if ( cloud_date > trop_date ):
+                    # No instances of this found, but preserve in case. Not tested, so commented out:
+                    #    # Remove no2 file with no matching cloud file for this
+                    #    # swath/orbit:
+                    #    del [no2_files[i]]
+                    #    # Restart iteration:
+                    #    i=0
+                    if ( cloud_date < trop_date ):
+                        # Remove cloud file with no matching no2 file for this
+                        # swath/orbit:
+                        del [cloud_files[i]]
+                        # Restart iteration:
+                        i=0
+
     for trop_file, cloud_file in zip(trop_files, cloud_files):
         trop_data = TropomiData(trop_file)
         cloud_data = CloudData(cloud_file, data_type=args.cloud_product)
@@ -841,9 +874,8 @@ if __name__ == "__main__":
     out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+ args.cloud_product
                          + '-' + args.cloud_threshold
                          + '-' + args.grid_res
-                         + '-' + str(start_date)
-                         + '-' + str(end_date)
-                         + '-' + yrrange+'-v2.nc')
+                         + '-' + args.season
+                         + '-' + yrrange+'-v5.nc')
     grid_aggregator.print_report()
     grid_aggregator.save_to_netcdf(out_file)
     grid_aggregator.plot_data()

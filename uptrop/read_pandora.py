@@ -6,7 +6,7 @@ The main function in this module is read_pandora: ::
 
     from uptrop.read_pandora import read_pandora
     location, pandora_df = read_pandora("pandora_file", "Tot")
-    pandora_df.plot('day', 'gc_data')
+    pandora_df.plot('day', 'no2col')
 
 The rest are ancillary functions for reading pandora data files.
 """
@@ -104,7 +104,7 @@ def get_lat_lon(pandora_filepath):
             elif current_line.startswith("Location longitude [deg]:"):
                 lon = float(current_line.split(":")[1])
             elif current_line.startswith("--------"):
-                # TODO: Maybe change for exception if this might happen
+                # Future improvements to code: Change for exception if this might happen
                 print("Lat/lon not found in file {}".format(pandora_filepath))
                 return
     return {"lat": lat, "lon": lon}
@@ -116,13 +116,13 @@ def read_pandora(pandora_filepath, no2col):
 
     Returns two values: a dictionary of position and a dataframe of Pandora data
 
-    Pandora data can be either all values or troposphere only
+    Pandora data can be either total column or troposphere column
 
     The dictionary has key {'lat,'lon'}
 
     The dataframe has column headings:
 
-    jday, sza, gc_data, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
+    jday, sza, no2col, no2err, qaflag, fitflag, year, month, day, hour_utc, minute
 
 
     :param pandora_filepath: The path to the pandora file
@@ -169,7 +169,7 @@ def read_pandora(pandora_filepath, no2col):
     columns = [dateind, jdayind, szaind, no2ind, errind, qaflagind, fitflagind]
     columns = [column -1 for column in columns]  # Pandora columns are 1-indexed, Pandas are 0
 
-    # TODO: Maybe set ut_date up as an index for easier slicing of data for the future
+    # Future improvements to code: Set ut_date up as an index for easier slicing of data
     df = pd.read_csv(pandora_filepath,
                      sep=" ",
                      skiprows=data_start,
