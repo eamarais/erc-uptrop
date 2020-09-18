@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-r'''
+'''
 Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced
 NO2 in the upper troposphere and compare this to UT NO2 obtained if
 simply average the NO2 mixing ratios from the model over the same
@@ -19,11 +19,11 @@ resolution, and model simulation years.
     usage: ut_no2_gc_test.py [-h] [--gc_dir GC_DIR] [--out_dir OUT_DIR]
                          [--resolution RESOLUTION] [--region REGION]
                          [--strat_filter_threshold STRAT_FILTER_THRESHOLD]
-                         [--season SEASON] [--start_date START_DATE]
+                         [--start_date START_DATE]
                          [--end_date END_DATE] [-p PLOT]
                          [--do_temp_correct DO_TEMP_CORRECT]
-                         [--do_error_weight DO_ERROR_WEIGHT]
                          [--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER]
+                         [--do_cld_hght_test DO_CLD_HGHT_TEST]
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -33,13 +33,12 @@ resolution, and model simulation years.
                             Can be 8x10, 4x5, 2x25 or 1x1
       --region REGION       Can be EU, NA, or CH
       --strat_filter_threshold STRAT_FILTER_THRESHOLD
-      --season SEASON
       --start_date START_DATE
       --end_date END_DATE
       -p PLOT, --plot PLOT
       --do_temp_correct DO_TEMP_CORRECT
-      --do_error_weight DO_ERROR_WEIGHT
       --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+      --do_cld_hght_test DO_CLD_HGHT_TEST
 
 '''
 
@@ -65,12 +64,13 @@ sys.path.append(
         os.path.dirname(os.path.abspath(__file__)),
         '..'))
 
-from uptrop.date_file_utils import get_gc_file_list, season_to_date
+from uptrop.date_file_utils import get_gc_file_list
 from uptrop.constants import AVOGADRO
 from uptrop.constants import G
 from uptrop.constants import MW_AIR
 from uptrop.bootstrap import rma
 from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
+from uptrop.height_pressure_converter import alt2pres, pres2alt
 
 
 # Turn off warnings:
@@ -81,10 +81,6 @@ np.warnings.filterwarnings('ignore')
 # These are fixed, so can be constants, as opposed to inputs.
 P_MIN=180     
 P_MAX=450     
-
-
-# Define years of interest:
-YEARS_TO_PROCESS=['2016', '2017']
 
 
 class ProcessingException(Exception):
@@ -111,7 +107,7 @@ class ProcessedData:
     """A class for comparing geoschem and tropomi data"""
     # Note for anyone reading this; this performs very similar functions to the GridAggregator class, but in a different
     # way. I prefer the method in GridAggregator, but this is fine for now. -John Roberts
-    def __init__(self, region, str_res, strat_thld, do_temperature_correction=False, do_error_weighting=False, do_cld_frac_filter=False):
+    def __init__(self, region, str_res, strat_thld, do_temperature_correction=False, do_cld_frac_filter=False, do_cld_hght_test=False):
         """Creates and returns an instance of ProcessedData for a given region
 
         This class aggregates geoschem data over a grid defined by the :ref:`define_grid method`.
@@ -122,8 +118,6 @@ class ProcessedData:
         :type str_res: str
         :param do_temperature_correction: Whether to perform the temperature correction step
         :type do_temperature_correction: bool
-        :param do_error_weighting: Whether to weight errors
-        :type do_error_weighting: bool
         :param do_cld_frac_filter: Whether to perform fractional filtering of clouds
         :type do_cld_frac_filter: bool
 
@@ -132,8 +126,8 @@ class ProcessedData:
         """
 
         self.temperature_correction = do_temperature_correction
-        self.error_weight = do_error_weighting
         self.cld_frac_filter = do_cld_frac_filter
+        self.cloud_height_test = do_cld_hght_test
         
         # Filtering threshold for stratosphere:
         self.strat_filt = strat_thld
@@ -196,19 +190,16 @@ class ProcessedData:
             self.maxlat = 62.
             self.minlon = -140.
             self.maxlon = -55.
-            self.dirreg = '_na_'
         elif region == 'EU':
             self.minlat = 26.
             self.maxlat = 66.
             self.minlon = -25.
             self.maxlon = 45.
-            self.dirreg = '_eu_naei_'
         elif region == 'CH':
             self.minlat = 6.
             self.maxlat = 62.
             self.minlon = 60.
             self.maxlon = 140.
-            self.dirreg = '_ch_'
         else:
             print("Invalid region; valid regions are 'NA','EU','CH'.")
             raise InvalidRegionException
@@ -258,8 +249,8 @@ class ProcessedData:
         self.g_true_no2 = [[[] for n in range(self.ydim)] for m in range(self.xdim)]
 
         this_geoschem_day = GeosChemDay(file_path,
-                                        error_weight=self.error_weight,
-                                        temperature_correction=self.temperature_correction)
+                                        temperature_correction=self.temperature_correction,
+                                        cloud_height_test=self.cloud_height_test)
         # Get column values:
         for y in range(len(this_geoschem_day.t_lat)):
             for x in range(len(this_geoschem_day.t_lon)):
@@ -399,9 +390,6 @@ class ProcessedData:
         """
         utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
         
-        # Calculate weights:
-        #err_wgt = 1.0 / (utmrno2err ** 2)
-        gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
         # Skip if approach didn't work (i.e. cloud-sliced UT NO2 is NaN):
         # Drop out after the reason for data loss is added to loss_count.
         if np.isnan(utmrno2) or np.isnan(utmrno2err):
@@ -417,7 +405,11 @@ class ProcessedData:
             #print("Cloud-slice exception {} in pixel i:{} j:{}".format(
             #    CLOUD_SLICE_ERROR_ENUM[stage_reached], i, j))
         else:
-            # Print error range:
+            # Calculate weights:
+            #err_wgt = 1.0 / (utmrno2err ** 2)  # not use, but preserve anyway
+            gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
+            
+            # Get and track error range:
             nerr = utmrno2err / utmrno2
             if nerr > self.maxerr:
                 self.maxerr = nerr
@@ -425,9 +417,11 @@ class ProcessedData:
             if nerr < self.minerr:
                 self.minerr = nerr
                 print('Min rel. cloud-sliced NO2 error: ', self.minerr, flush=True)
+                
             # Track non-uniform NO2 retained:
             grad_ind=np.where(t_grad_no2 >= 0.33)[0]
             self.grad_retain += len(grad_ind)
+            
             # Weighted mean for each pass of cldslice:
             weight_mean = np.mean(t_mr_no2 * 1e3) * gaus_wgt 
             self.true_no2[i, j] += weight_mean
@@ -484,7 +478,7 @@ class ProcessedData:
         print('(9) Total possible points: ', (sum(self.loss_count.values()) + self.cloud_slice_count), flush=True)
         print('Non-uniform NO2 retained = ', self.grad_retain)
         print('Non-uniform NO2 removed = ', self.grad_remove)
-        print('Error range of cloud-sliced UT NO2: ', np.nanmin(self.slope_err), np.nanmax(self.slope_err))
+        print('Error range of cloud-sliced UT NO2: ', np.nanmin(self.g_slope_err), np.nanmax(self.g_slope_err))
 
     def plot_data(self):
         """Plots the present state of the gridded data
@@ -662,23 +656,23 @@ class ProcessedData:
 class GeosChemDay:
     """A class for reading, preprocessing and accessing Geoschem data on a given day
     """
-    def __init__(self, file_path, error_weight=False, temperature_correction=False):
+    def __init__(self, file_path, temperature_correction=False, cloud_height_test=False):
         """Reads the data at file_path and returns a GeosChemDay object containing that data
 
         :param file_path: Path to the netcdf4 file containing the GeosChem data
         :type file_path: str
-        :param error_weight: Whether to apply error weighting
-        :type error_weight: bool
         :param temperature_correction: Whether to apply temperature correction
         :type temperature_correction: bool
+        :param cloud_height_test: Whether to test effect of systematic underestimate in cloud height
+        :type cloud_height_test: bool
 
         :returns: A GeosChemDay class
         :rtype: GeosChemDay
         """
-        print(file_path, flush=True)
+        print('File path: ',file_path, flush=True)
 
-        self.error_weight = error_weight
         self.temperature_correction = temperature_correction
+        self.cloud_height_test = cloud_height_test
 
         # Read dataset:
         fh = Dataset(file_path, mode='r')
@@ -703,6 +697,18 @@ class GeosChemDay:
         self.t_deg_k = tdegk[:]
         # Convert box height from m to cm:
         self.t_bx_hgt = self.t_bx_hgt * 1e2
+
+        if self.cloud_height_test:
+            # Lower cloud heights by 1 km to roughly mimic lower altitude
+            # clouds retrieved for TROPOMI assuming clouds are reflective
+            # boundaries with uniform reflectivity:
+            # Calculate cloud top height in m:
+            t_cld_hgt = pres2alt(self.t_cld_hgt*1e2)
+            # Lower the clouds by 1 km (1000 m) (this won't work for low-altitude
+            # clouds):
+            t_cld_hgt = t_cld_hgt - 1e3
+            # Convert back to Pa and convert that to hPa:
+            self.t_cld_hgt = alt2pres(t_cld_hgt)*1e-2
 
         #Get outputs ready here for tidyness:
         self.no2_2d = None
@@ -753,14 +759,11 @@ class GeosChemDay:
             #print("Tropopause less than P_MAX in geoschem pixel x:{}, y:{}".format(x,y))
             return  # continue
 
-        # Get Guassian weights that allocated higher weights to points
+        # Get Guassian weights that allocate higher weights to points
         # closest to the pressure centre (315 hPa):
         # Equation is:
         #   w = exp(-(p-315)^2/2*135^2 ) where 315 hPa is the centre and
         #         135 hPa is the standard deviation.
-        #if self.error_weight:
-        #self.twgt = np.ones(len(self.askind))
-        #else:
         self.twgt = np.exp((-(tp_mid[self.askind] - 315) ** 2) / (2 * 135 ** 2))
 
         # Get model level of cloud top height closest to lowest
@@ -818,59 +821,51 @@ if __name__ == "__main__":
     # This is now done in get_gc_file_list
     parser.add_argument("--gc_dir")
     parser.add_argument("--out_dir")
-    parser.add_argument('--resolution', default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
-    parser.add_argument('--region', default="EU", help="Can be EU, NA, or CH")
-    parser.add_argument('--strat_filter_threshold', default="0.02", help="")
-    parser.add_argument('--season')
-    parser.add_argument("--start_date")
-    parser.add_argument("--end_date")
+    parser.add_argument("--resolution", default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
+    parser.add_argument("--region", default="EU", help="Can be EU, NA, or CH")
+    parser.add_argument("--strat_filter_threshold", default="002", help="")
+    parser.add_argument("--start_date", default="2016-06-01")
+    parser.add_argument("--end_date", default="2017-08-31")
     parser.add_argument("-p", "--plot", type=bool)
     parser.add_argument("--do_temp_correct", type=bool)
-    parser.add_argument("--do_error_weight", type=bool)
     parser.add_argument("--apply_cld_frac_filter", type=bool)
+    parser.add_argument("--do_cld_hght_test", type=bool)
     args = parser.parse_args()
 
     # Get files:
     gc_dir = args.gc_dir
     STR_RES = args.resolution
     REGION = args.region
+    
+    # Hard code for GEOS-Chem synthetic experiment:
+    yrrange = '2016-2017'
 
-    if args.season:
-        start_date, end_date = season_to_date(args.season)
-    else:
-        if args.start_date and args.end_date:
-            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
-            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-        else:
-            print("Please provide either --season or --start_date and --end_date")
-            sys.exit(1)
-    if start_date.year == end_date.year:
-        yrrange = str(start_date.year)
-    else:
-        yrrange = str(start_date.year) + "-" + str(end_date.year)
+    # Define output file depending on input arguments:
+    out_file = os.path.join(args.out_dir, 'gc-v12-1-0-ut-no2'
+                            + '-' + args.region
+                            + '-' + args.resolution
+                            + '-jja-' + yrrange
+                            + '-' + "-gaus-wgt" )
 
-    out_file = os.path.join(args.out_dir, 'ut_no2_gc_test'
-                         + '-' + args.region
-                         + '-' + args.strat_filter_threshold
-                         + '-' + args.resolution
-                         + '-' + yrrange)
+    if args.do_cld_hght_test:
+        out_file += "-cldtop"
+    if args.strat_filter_threshold != "002":
+        out_file += '-' + args.strat_filter_threshold +'strat'
     if args.do_temp_correct:
-        out_file += "-temp_correct"
-    if args.do_error_weight:
-        out_file += "-error_weight"
+        out_file += "-temp-corr"
     if args.apply_cld_frac_filter:
-        out_file += "-cld_frac"
-    out_file += ".nc4"
+        out_file += "-cld-filt"
+        
+    out_file += "-v4.nc"
 
-    strat_filter_threshold = float(args.strat_filter_threshold)
-    date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
-    files = get_gc_file_list(gc_dir, args.region, date_range)
+    strat_filter_threshold = float(args.strat_filter_threshold)/100
+    files = get_gc_file_list(gc_dir, args.region)
     print('Number of files:', len(files), flush=True)
 
     rolling_total = ProcessedData(REGION, STR_RES, strat_filter_threshold,
                                   do_temperature_correction=args.do_temp_correct,
-                                  do_error_weighting=args.do_error_weight,
-                                  do_cld_frac_filter=args.apply_cld_frac_filter)
+                                  do_cld_frac_filter=args.apply_cld_frac_filter,
+                                  do_cld_hght_test=args.do_cld_hght_test)
 
     for file_path in files:
         rolling_total.process_geoschem_day(file_path)
