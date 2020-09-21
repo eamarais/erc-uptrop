@@ -547,7 +547,7 @@ class TropomiData:
             self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.tstratno2_og / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
 
             # Step 1: calculate stratospheric SCD (not in data product):
-            self.tscdstrat = np.multiply(self.tstratno2, stratamf)
+            self.tscdstrat = np.multiply(self.tstratno2, self.tstratamf)
             # Step 2: calculate tropospheric NO2 SCD:
             self.ttropscd = np.subtract(self.tscdno2, self.tscdstrat)
             # Step 3: calculate tropospheric NO2 VCD:

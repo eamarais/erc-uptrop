@@ -14,7 +14,7 @@ Options are available to use cloud information from either the FRESCO-S or ROCIN
            [--pmin PMIN] [--pmax PMAX]
 
     optional arguments:
-      -h, --help            show this help message and ext
+      -h, --help            show this help message and exit
       --trop_dir TROP_DIR   Directory containing tropomi data
       --out_dir OUT_DIR     Directory to contain finished netcdf4
       --season SEASON       Can be jja, son, djf, mam
