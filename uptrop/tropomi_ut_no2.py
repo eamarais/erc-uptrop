@@ -48,10 +48,7 @@ import matplotlib.pyplot as plt
 from dateutil import rrule as rr
 
 # Import hack
-sys.path.append(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
 
 from uptrop.height_pressure_converter import alt2pres
 from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
