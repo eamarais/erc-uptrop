@@ -787,22 +787,16 @@ if __name__ == "__main__":
 
     if args.season:
         start_date, end_date = season_to_date(args.season)
+        date_string = args.season
     else:
-        if args.start_date and args.end_date:
+        if args.start_date is not None and args.end_date is not None:
             start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
             end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-        else:
-            print("Please provide either --season or --start_date and --end_date")
-
-    if args.start_date and args.end_date:
-            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
-            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-    else:
-        if args.season:
-            start_date, end_date = season_to_date(args.season)
+            date_string = "{}_{}".format(args.start_date, args.end_date)
         else:
             print("Please provide either --season or --start_date and --end_date")
             sys.exit(1)
+
     if start_date.year == end_date.year:
         yrrange = str(start_date.year)
     else:
@@ -874,7 +868,7 @@ if __name__ == "__main__":
     out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+ args.cloud_product
                          + '-' + args.cloud_threshold
                          + '-' + args.grid_res
-                         + '-' + args.season
+                         + '-' + date_string
                          + '-' + yrrange+'-v5.nc')
     grid_aggregator.print_report()
     grid_aggregator.save_to_netcdf(out_file)
