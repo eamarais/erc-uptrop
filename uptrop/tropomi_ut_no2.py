@@ -784,12 +784,10 @@ if __name__ == "__main__":
 
     if args.season:
         start_date, end_date = season_to_date(args.season)
-        date_string = args.season
     else:
         if args.start_date is not None and args.end_date is not None:
             start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
             end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-            date_string = "{}_{}".format(args.start_date, args.end_date)
         else:
             print("Please provide either --season or --start_date and --end_date")
             sys.exit(1)
@@ -862,11 +860,20 @@ if __name__ == "__main__":
         grid_aggregator.apply_cloud_slice()
     grid_aggregator.calc_seasonal_means()
 
-    out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+ args.cloud_product
-                         + '-' + args.cloud_threshold
-                         + '-' + args.grid_res
-                         + '-' + date_string
-                         + '-' + yrrange+'-v5.nc')
+    out_filename = 'tropomi-ut-no2-'\
+                   + args.cloud_product \
+                   + '-' + args.cloud_threshold \
+                   + '-' + args.grid_res
+    if args.season is not None:
+        out_filename += '-' + args.season
+        out_filename += '-' + yrrange + '-v5.nc'
+    else:
+        out_filename += '-' + str(start_date.month) + str(start_date.day) \
+                      + '-' + str(end_date.month) + str(end_date.day) \
+                      + '-' + yrrange + '-v5.nc'
+
+
+    out_file = path.join(args.out_dir, out_filename)
     grid_aggregator.print_report()
     grid_aggregator.save_to_netcdf(out_file)
     grid_aggregator.plot_data()
