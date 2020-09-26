@@ -6,7 +6,7 @@ A library for applying the cloud-slicing technique to TROPOMI total columns to o
 Examples of use
 ---------------
 
-Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5 in Spring:
+Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5 in boreal spring:
 
 ```bash
 
@@ -20,7 +20,7 @@ Co-sample daily Pandora and TROPOMI total NO2 columns at Izana in the first week
    python compare_tropomi_pandora.py --trop_dir "/path/to/tropomi/data" --pan_dir "/path/to/pandora/data" --out_dir "/path/to/output/dir" --start_date 01-05-2019 --end_date 07-05-2019 --apply_bias_correction True --no2_col Trop --pandora_site izana
 ```
    
-Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product in Summer:
+Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product in boreal summer:
 
 ```bash
    python tropomi_ut_no2.py --trop_dir "/path/to/tropomi/data/folder/" --out_dir "/path/to/output/folder/" --cloud_product fresco --season jja
