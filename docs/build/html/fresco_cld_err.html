@@ -52,16 +52,87 @@
             
   <div class="section" id="module-uptrop.fresco_cld_err">
 <span id="fresco-cld-err"></span><h1>fresco_cld_err<a class="headerlink" href="#module-uptrop.fresco_cld_err" title="Permalink to this headline"> </a></h1>
-<p>Read and regrid cloud information from the official TROPOMI CLOUD product 
+<p>Read and regrid cloud information from the official TROPOMI CLOUD product
 and from the FRESCO cloud product in the TROPOMI NO2 data product file.</p>
-<p>Data are regridded to a 2x2.5 degree global grid and saved as monthly 
-means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
-0.7 and clouds top (centroid) pressure in the upper troposphere 
-(180-450 hPa).</p>
+<p>Output from this code includes a NetCDF file with:</p>
+<ol class="arabic simple">
+<li><p>Data regridded to a 1 deg x 1 deg global grid and saved as monthly means for scenes with the reference cloud product
+(specified as input argument) cloud fraction &gt; 0.7 and cloud tops in the upper troposphere (450-180 hPa).</p></li>
+<li><p>Meridional frequency of upper tropospheric (450-180 hPa) cloud fractions &gt; 0.7 for each product.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: fresco_cld_err.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--s5p_data_dir S5P_DATA_DIR<span class="o">]</span>
+                         <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span> <span class="o">[</span>--season SEASON<span class="o">]</span>
+                         <span class="o">[</span>--start_date START_DATE<span class="o">]</span> <span class="o">[</span>--end_date END_DATE<span class="o">]</span>
+                         <span class="o">[</span>--plot_dir PLOT_DIR<span class="o">]</span> <span class="o">[</span>--out_res OUT_RES<span class="o">]</span>
+                         <span class="o">[</span>--dlr_cld_top DLR_CLD_TOP<span class="o">]</span>
+                         <span class="o">[</span>--file_version FILE_VERSION<span class="o">]</span>
+                         <span class="o">[</span>--ref_cld_prod REF_CLD_PROD<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --s5p_data_dir S5P_DATA_DIR
+  --out_dir OUT_DIR
+  --season SEASON       Can be jja, son, djf, mam. Overrides
+                        start_date/end_date
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --plot_dir PLOT_DIR
+  --out_res OUT_RES
+  --dlr_cld_top DLR_CLD_TOP
+  --file_version FILE_VERSION
+  --ref_cld_prod REF_CLD_PROD
+</pre></div>
+</div>
+<dl class="py exception">
+<dt id="uptrop.fresco_cld_err.FileMismatchException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">FileMismatchException</code><a class="headerlink" href="#uptrop.fresco_cld_err.FileMismatchException" title="Permalink to this definition"> </a></dt>
+<dd><p>Raised when there are an unequal number of cloud and N02 files</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.fresco_cld_err.LatLonException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">LatLonException</code><a class="headerlink" href="#uptrop.fresco_cld_err.LatLonException" title="Permalink to this definition"> </a></dt>
+<dd><p>Raised when there is a LatLon mismatch</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.fresco_cld_err.NanInDataException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">NanInDataException</code><a class="headerlink" href="#uptrop.fresco_cld_err.NanInDataException" title="Permalink to this definition"> </a></dt>
+<dd><p>Raised when filtering has failed</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.fresco_cld_err.ShapeMismatchException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">ShapeMismatchException</code><a class="headerlink" href="#uptrop.fresco_cld_err.ShapeMismatchException" title="Permalink to this definition"> </a></dt>
+<dd><p>Raised when a FRESCO and DLR file are not the same shape</p>
+</dd></dl>
+
 <dl class="py class">
 <dt id="uptrop.fresco_cld_err.CloudComparisonData">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">CloudComparisonData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">td_file_path</span></em>, <em class="sig-param"><span class="n">tf_file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData" title="Permalink to this definition"> </a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">CloudComparisonData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">td_file_path</span></em>, <em class="sig-param"><span class="n">tf_file_path</span></em>, <em class="sig-param"><span class="n">ref_cld_prd</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData" title="Permalink to this definition"> </a></dt>
 <dd><p>Class for holding the data for a fresco-dlr file pair. Applies data filters on creation.</p>
+<dl class="py method">
+<dt id="uptrop.fresco_cld_err.CloudComparisonData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">td_file_path</span></em>, <em class="sig-param"><span class="n">tf_file_path</span></em>, <em class="sig-param"><span class="n">ref_cld_prd</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Returns an instance of CloudComparisonData for comparing fresco and dlr files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>td_file_path</strong> (<em>str</em>) – The path to the DLR file</p></li>
+<li><p><strong>tf_file_path</strong> (<em>str</em>) – The path to the Fresco file</p></li>
+<li><p><strong>ref_cld_prd</strong> (<em>str</em>) – The reference cloud product for identifying optically thick clouds in the upper troposphere</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A filtered and sanity-checked cloud comparison</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#uptrop.fresco_cld_err.CloudComparisonData" title="uptrop.fresco_cld_err.CloudComparisonData">CloudComparisonData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.fresco_cld_err.CloudComparisonData.check_parity">
 <code class="sig-name descname">check_parity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData.check_parity" title="Permalink to this definition"> </a></dt>
@@ -76,7 +147,17 @@ means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
 <dl class="py method">
 <dt id="uptrop.fresco_cld_err.CloudComparisonData.filter_tdfile">
 <code class="sig-name descname">filter_tdfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData.filter_tdfile" title="Permalink to this definition"> </a></dt>
-<dd><p>Filters DLR data for fill values, quality less than 0.5 and snow cover.</p>
+<dd><p>Filters DLR data</p>
+<p>Applies the following filters to the dlr data
+Snow: Drops values flagged as snow
+Poor quality data: quality flag is &lt; 0.5
+Drop the following values if DLR-OCRA is the reference cloud product:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>cloud fraction &lt; 0.7</p></li>
+<li><p>cloud top pressure is between PMAX and PMIN</p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Raises</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#uptrop.fresco_cld_err.NanInDataException" title="uptrop.fresco_cld_err.NanInDataException"><strong>NanInDataException</strong></a> – Raised when any NaNs remain in data</p>
@@ -89,14 +170,13 @@ means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
 <code class="sig-name descname">filter_tffile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudComparisonData.filter_tffile" title="Permalink to this definition"> </a></dt>
 <dd><p>Filters fresco data</p>
 <p>Applies the following filters to the fresco data
-Snow: Drops values for snow, coastline, misclassified clouds (snow between 80 and 104)
-Cloud fraction: Drop values where</p>
+Snow: Drops values for snow, coastline, snow/ice misclassified as clouds
+Poor quality data: quality flag is &lt; 0.45
+Drop the following values if FRESCO is the reference cloud product:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>cloud fraction &lt; 0.7</p></li>
-<li><p>quality is &lt; 0.45</p></li>
 <li><p>cloud top pressure is between PMAX and PMIN</p></li>
-<li><p>Cloudmask is not 0</p></li>
 </ul>
 </div></blockquote>
 </dd></dl>
@@ -151,8 +231,19 @@ A valid observation has:</p>
 
 <dl class="py class">
 <dt id="uptrop.fresco_cld_err.CloudVariableStore">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">CloudVariableStore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudVariableStore" title="Permalink to this definition"> </a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">CloudVariableStore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_shape</span></em>, <em class="sig-param"><span class="n">start_date</span></em>, <em class="sig-param"><span class="n">end_date</span></em>, <em class="sig-param"><span class="n">res</span></em>, <em class="sig-param"><span class="n">cloud_prod</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudVariableStore" title="Permalink to this definition"> </a></dt>
 <dd><p>Class containing the running results of various datas for this project; also saving to netCDF and plotting.</p>
+<dl class="py method">
+<dt id="uptrop.fresco_cld_err.CloudVariableStore.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data_shape</span></em>, <em class="sig-param"><span class="n">start_date</span></em>, <em class="sig-param"><span class="n">end_date</span></em>, <em class="sig-param"><span class="n">res</span></em>, <em class="sig-param"><span class="n">cloud_prod</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudVariableStore.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Creates an empty CloudVariableStore of shape data_shape</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data_shape</strong> (<em>List of length 2</em>) – Tuple of (presumably) two elements for shape of cloud data</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.fresco_cld_err.CloudVariableStore.bin_cloud_fraction">
 <code class="sig-name descname">bin_cloud_fraction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tropomi_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudVariableStore.bin_cloud_fraction" title="Permalink to this definition"> </a></dt>
@@ -215,7 +306,7 @@ DLR) cloud base pressure. Cloud pressure is given in Pa.</p>
 <dt id="uptrop.fresco_cld_err.CloudVariableStore.write_to_netcdf">
 <code class="sig-name descname">write_to_netcdf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">out_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.fresco_cld_err.CloudVariableStore.write_to_netcdf" title="Permalink to this definition"> </a></dt>
 <dd><p>Given an out_directory, writes totalled data to netcdf.</p>
-<p>The file will be named ‘fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-[file_version].nc’</p>
+<p>The file will be named ‘fresco-dlr-cloud-products-[MMName]-[StrYY]-[out_res]-ref-[ref_cld_prod]-v3.nc’</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>out_dir</strong> (<em>str</em>) – The directory that will contain the file.</p>
@@ -223,30 +314,6 @@ DLR) cloud base pressure. Cloud pressure is given in Pa.</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.fresco_cld_err.FileMismatchException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">FileMismatchException</code><a class="headerlink" href="#uptrop.fresco_cld_err.FileMismatchException" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when there are an unequal number of cloud and N02 files</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.fresco_cld_err.LatLonException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">LatLonException</code><a class="headerlink" href="#uptrop.fresco_cld_err.LatLonException" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when there is a LatLon mismatch</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.fresco_cld_err.NanInDataException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">NanInDataException</code><a class="headerlink" href="#uptrop.fresco_cld_err.NanInDataException" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when filtering has failed</p>
-</dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.fresco_cld_err.ShapeMismatchException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.fresco_cld_err.</code><code class="sig-name descname">ShapeMismatchException</code><a class="headerlink" href="#uptrop.fresco_cld_err.ShapeMismatchException" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when a FRESCO and DLR file are not the same shape</p>
 </dd></dl>
 
 <dl class="py function">

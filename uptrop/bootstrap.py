@@ -5,18 +5,7 @@ Description: uses jackknife resampling to estimate the reduced major axis
              Relevant reference is: Hirsch and Gilroy, Water Res. Bull., 
              20(5), Oct 1984.
 
-Input: x: 1D array of x values
-       y: 1D array of y values
-       n: number of elements of x array (equivalent to the number of elements 
-          of the y array)
-       ntrials: the number of trials of randomly selected data
 
-Return: grad_arr, cept_arr: 1D arrays of slope and intercept estimates 
-        the same size as the number of trials (ntrials). Mean of these is the
-        slope and intercept value and standard deviation is the error on
-        the slope and intercept.
-
-Original code on which this is based: GAMAP package bootstrap.pro
 '''
 
 # Import relevant packages:
@@ -26,6 +15,27 @@ import numpy as np
 import random
 
 def rma(x,y,n,ntrials):
+    """
+    Performs jackknife resampling
+
+    :param x: 1D array of x values
+    :type x: list
+    :param y: 1D array of y values
+    :type y: list
+    :param n: number of elements of x array (equivalent to the number of elements
+          of the y array)
+    :type n: int
+    :param ntrials: the number of trials of randomly selected data
+    :type ntrials: int
+
+    :return: grad_arr, cept_arr: 1D arrays of slope and intercept estimates
+            the same size as the number of trials (ntrials). Mean of these is the
+            slope and intercept value and standard deviation is the error on
+            the slope and intercept.
+    :rtype: tuple
+
+    :notes: Original code on which this is based: GAMAP package bootstrap.pro
+    """
 
     apply_y_scale_factor=False
 

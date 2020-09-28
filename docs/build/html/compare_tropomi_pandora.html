@@ -57,6 +57,38 @@ sites to assess skill of TROPOMI at reproducing Pandora observations
 of free tropospheric NO2.</p>
 <p>Code is set up to process Pandora total or tropospheric column NO2
 at the Mauna Loa, Izana, or Altzomoni sites.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: compare_tropomi_pandora.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--trop_dir TROP_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--pan_dir PAN_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--no2_col NO2_COL<span class="o">]</span>
+                                  <span class="o">[</span>--cloud_product CLOUD_PRODUCT<span class="o">]</span>
+                                  <span class="o">[</span>--pandora_site PANDORA_SITE<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_deg STR_DIFF_DEG<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_min STR_DIFF_MIN<span class="o">]</span>
+                                  <span class="o">[</span>--apply_bias_correction APPLY_BIAS_CORRECTION<span class="o">]</span>
+                                  <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                                  <span class="o">[</span>--end_date END_DATE<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --trop_dir TROP_DIR
+  --pan_dir PAN_DIR
+  --out_dir OUT_DIR
+  --no2_col NO2_COL     Either Tot or Trop<span class="p">;</span> default is Tot
+  --cloud_product CLOUD_PRODUCT
+                        options are fresco, dlr-ocra<span class="p">;</span> default is fresco
+  --pandora_site PANDORA_SITE
+                        options are izana,mauna_loa,altzomoni<span class="p">;</span> default is
+                        izana
+  --str_diff_deg STR_DIFF_DEG
+                        options are: <span class="m">03</span>,02,01,005<span class="p">;</span> default is <span class="m">02</span>
+  --str_diff_min STR_DIFF_MIN
+                        options are: <span class="m">60</span>,30,15<span class="p">;</span> default is <span class="m">30</span>
+  --apply_bias_correction APPLY_BIAS_CORRECTION
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+</pre></div>
+</div>
 <dl class="py exception">
 <dt id="uptrop.compare_tropomi_pandora.BadCloudShapeException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">BadCloudShapeException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.BadCloudShapeException" title="Permalink to this definition"> </a></dt>
@@ -67,10 +99,46 @@ at the Mauna Loa, Izana, or Altzomoni sites.</p>
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">BadNo2ColException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.BadNo2ColException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
 
+<dl class="py exception">
+<dt id="uptrop.compare_tropomi_pandora.InvalidCloudProductException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">InvalidCloudProductException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.InvalidCloudProductException" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.compare_tropomi_pandora.NoDataException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">NoDataException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.NoDataException" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.compare_tropomi_pandora.NoPandoraException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">NoPandoraException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.NoPandoraException" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="uptrop.compare_tropomi_pandora.UnequalFileException">
+<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">UnequalFileException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.UnequalFileException" title="Permalink to this definition"> </a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt id="uptrop.compare_tropomi_pandora.CloudData">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">CloudData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em>, <em class="sig-param"><span class="n">product_type</span></em>, <em class="sig-param"><span class="n">tropomi_data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.CloudData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class containing cloud data extracted from either tropomi data or ocra data.</p>
+<dl class="py method">
+<dt id="uptrop.compare_tropomi_pandora.CloudData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em>, <em class="sig-param"><span class="n">product_type</span></em>, <em class="sig-param"><span class="n">tropomi_data</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.CloudData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Returns an instance of the cloud data needed from filtering. This can come from either a freco cloud product
+(part of Tropomi) or a dlr-ocra file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – Path to the file</p></li>
+<li><p><strong>product_type</strong> (<em>str</em>) – Can be ‘dlr-ocra’ or ‘fresco’</p></li>
+<li><p><strong>tropomi_data</strong> (<a class="reference internal" href="#uptrop.compare_tropomi_pandora.TropomiData" title="uptrop.compare_tropomi_pandora.TropomiData"><em>TropomiData</em></a>) – An instance of CloudComparisonData. Required if type is ‘fresco’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.CloudData.read_fresco_data">
 <code class="sig-name descname">read_fresco_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em>, <em class="sig-param"><span class="n">tropomi_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.CloudData.read_fresco_data" title="Permalink to this definition"> </a></dt>
@@ -89,6 +157,20 @@ at the Mauna Loa, Izana, or Altzomoni sites.</p>
 <dt id="uptrop.compare_tropomi_pandora.DataCollector">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">DataCollector</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_date</span></em>, <em class="sig-param"><span class="n">end_date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector" title="Permalink to this definition"> </a></dt>
 <dd><p>Collates tropomi and pandora data for a region around a Pandora site</p>
+<dl class="py method">
+<dt id="uptrop.compare_tropomi_pandora.DataCollector.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start_date</span></em>, <em class="sig-param"><span class="n">end_date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Creates a collator between two dates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start_date</strong> (<em>DateTime</em>) – The start date (inclusive)</p></li>
+<li><p><strong>end_date</strong> (<em>DateTime</em>) – The end date (inclusive)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.add_pandora_data_to_day">
 <code class="sig-name descname">add_pandora_data_to_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">hour</span></em>, <em class="sig-param"><span class="n">diff_hh</span></em>, <em class="sig-param"><span class="n">pandora_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.add_pandora_data_to_day" title="Permalink to this definition"> </a></dt>
@@ -110,39 +192,47 @@ NO2 and error are converted from DU to molec/cm2</p>
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.add_trop_data_to_day">
 <code class="sig-name descname">add_trop_data_to_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">trop_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.add_trop_data_to_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Adds the tropomi no2, no2 error, cloud pressure and cloud fraction to a date in this object
-Call set_trop_ind_for_day before this function
-:param date: The date to add the data to.
-:type date: DateTime
-:param trop_data: The tropomi data on a day
-:type trop_date: TropomiData</p>
+<dd><p>Adds the tropomi gc_data, gc_data error, cloud pressure and cloud fraction to a date in this object
+Call set_trop_ind_for_day before this function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> (<em>DateTime</em>) – The date to add the data to.</p></li>
+<li><p><strong>trop_data</strong> – The tropomi data on a day</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.apply_weight_to_means">
 <code class="sig-name descname">apply_weight_to_means</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.apply_weight_to_means" title="Permalink to this definition"> </a></dt>
-<dd><p>Applies weighting to every aggregated varaibles. Call at end of processing.</p>
+<dd><p>Applies weighting to every aggregated variable. Call at end of processing.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.plot_data">
 <code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.plot_data" title="Permalink to this definition"> </a></dt>
-<dd><p>Plots all aggregated variables on a world map</p>
+<dd><p>Time series of daily means</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.DataCollector.set_trop_ind_for_day">
 <code class="sig-name descname">set_trop_ind_for_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">diff_deg</span></em>, <em class="sig-param"><span class="n">trop_data</span></em>, <em class="sig-param"><span class="n">pandora_data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.DataCollector.set_trop_ind_for_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Sets tomiind (the index for processing) for a date and area around a pandora site
-:param date: The date of data to find
-:type date: DateTime
-:param diff_deg: The size of the grid square over the Pandora site to extract Tropomi data from
-:type grid_square: float
-:param trop_data: The CloudComparisonData object containing tropomi data
-:type trop_data: TropomiData
-:param pandora_data: The PandoraData object containining Pandora data for date
-:type pandora_data: PandoraData
-:raises NoDataException: Raised if there is no tropomi data for date</p>
+<dd><p>Sets tomiind (the index for processing) for a date and area around a pandora site</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> (<em>DateTime</em>) – The date of data to find</p></li>
+<li><p><strong>diff_deg</strong> – The size of the grid square over the Pandora site to extract Tropomi data from</p></li>
+<li><p><strong>trop_data</strong> (<a class="reference internal" href="#uptrop.compare_tropomi_pandora.TropomiData" title="uptrop.compare_tropomi_pandora.TropomiData"><em>TropomiData</em></a>) – The CloudComparisonData object containing tropomi data</p></li>
+<li><p><strong>pandora_data</strong> (<a class="reference internal" href="#uptrop.compare_tropomi_pandora.PandoraData" title="uptrop.compare_tropomi_pandora.PandoraData"><em>PandoraData</em></a>) – The PandoraData object containining Pandora data for date</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#uptrop.compare_tropomi_pandora.NoDataException" title="uptrop.compare_tropomi_pandora.NoDataException"><strong>NoDataException</strong></a> – Raised if there is no tropomi data for date</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -153,25 +243,25 @@ Call set_trop_ind_for_day before this function
 
 </dd></dl>
 
-<dl class="py exception">
-<dt id="uptrop.compare_tropomi_pandora.InvalidCloudProductException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">InvalidCloudProductException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.InvalidCloudProductException" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.compare_tropomi_pandora.NoDataException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">NoDataException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.NoDataException" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.compare_tropomi_pandora.NoPandoraException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">NoPandoraException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.NoPandoraException" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
-
 <dl class="py class">
 <dt id="uptrop.compare_tropomi_pandora.PandoraData">
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">PandoraData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">col_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.PandoraData" title="Permalink to this definition"> </a></dt>
 <dd><p>Extracts and preprocesses pandora data from a pandora datafile. See docs for read_pandora for file details</p>
+<dl class="py method">
+<dt id="uptrop.compare_tropomi_pandora.PandoraData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">col_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.PandoraData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to gc_data and no2_err
+to bring the product up to ‘pseudo 1.8’. Also applies corrections for Manua Loa if needed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>str</em>) – Path to the pandora file</p></li>
+<li><p><strong>col_type</strong> (<em>str</em>) – Can be ‘Tot’ or ‘Trop’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -179,62 +269,101 @@ Call set_trop_ind_for_day before this function
 <em class="property">class </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">TropomiData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em>, <em class="sig-param"><span class="n">apply_bias_correction</span></em>, <em class="sig-param"><span class="n">no2_col</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.TropomiData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for reading, preprocessing and cloud-masking Tropomi data files</p>
 <dl class="py method">
+<dt id="uptrop.compare_tropomi_pandora.TropomiData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filepath</span></em>, <em class="sig-param"><span class="n">apply_bias_correction</span></em>, <em class="sig-param"><span class="n">no2_col</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.TropomiData.__init__" title="Permalink to this definition"> </a></dt>
+<dd><p>Returns a new instance of CloudComparisonData containing the data from file_path.
+You can also choose whether to apply bias correction and whethere you want the total or troposphere only
+column of this data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filepath</strong> (<em>str</em>) – The path to the Tropomi netcdf file</p></li>
+<li><p><strong>apply_bias_correction</strong> (<em>bool</em>) – Whether to apply bias correction</p></li>
+<li><p><strong>no2_col</strong> (<em>str</em><em> (</em><em>can be 'Tot'</em><em> or </em><em>'Trop'</em><em>)</em>) – Whether to use all atmospheric data or just the troposphere</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns a new CloudComparisonData instance.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#uptrop.compare_tropomi_pandora.TropomiData" title="uptrop.compare_tropomi_pandora.TropomiData">TropomiData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.TropomiData.apply_cloud_filter">
 <code class="sig-name descname">apply_cloud_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cloud_product</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.TropomiData.apply_cloud_filter" title="Permalink to this definition"> </a></dt>
-<dd><p>Applies a cloud filter and finishes preprocessing.
-:param cloud_product: An instance of CloudData for filtering with
-:type cloud_product: CloudData
-:raises BadCloudShapeException: Raised if  the cloud_product is not the same shape as the Tropomi slice</p>
+<dd><p>Applies a cloud filter and finishes preprocessing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cloud_product</strong> (<a class="reference internal" href="#uptrop.compare_tropomi_pandora.CloudData" title="uptrop.compare_tropomi_pandora.CloudData"><em>CloudData</em></a>) – An instance of CloudData for filtering with</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#uptrop.compare_tropomi_pandora.BadCloudShapeException" title="uptrop.compare_tropomi_pandora.BadCloudShapeException"><strong>BadCloudShapeException</strong></a> – Raised if  the cloud_product is not the same shape as the Tropomi slice</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="uptrop.compare_tropomi_pandora.TropomiData.preprocess">
 <code class="sig-name descname">preprocess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.TropomiData.preprocess" title="Permalink to this definition"> </a></dt>
 <dd><p>Prepares the Tropomi data for use. Applies bias correction if needed here.
-REFERNCE HERE</p>
+Bias correction to stratosphere and troposphere is obtained in this work from comparison of TROPOMI to Pandora over Mauna Loa (stratospheric column) and Izana and Altzomoni (tropospheric column). The correction is confirmed by also comparing TROPOMI and MAX-DOAS tropospheric columns at Izana.</p>
 </dd></dl>
 
 </dd></dl>
-
-<dl class="py exception">
-<dt id="uptrop.compare_tropomi_pandora.UnequalFileException">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">UnequalFileException</code><a class="headerlink" href="#uptrop.compare_tropomi_pandora.UnequalFileException" title="Permalink to this definition"> </a></dt>
-<dd></dd></dl>
 
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_days_since_data_start">
 <code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_days_since_data_start</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">data_start</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_days_since_data_start" title="Permalink to this definition"> </a></dt>
-<dd><p>Returns the number of days since the start date. If no start date is given, assumed 01/05/2019</p>
+<dd><p>Returns the number of days since the start date. If no start date is given, assumed 01/06/2019</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_ocra_files_on_day">
 <code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_ocra_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tropomi_dir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_ocra_files_on_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Gets a sorted list of tropomi files in tropomi_dir on date
-:param tropomi_dir: The directory containing tropomi files
-:type tropomi_dir: str
-:param date: The date to search for
-:type date: DateTime
-:return: A list of filepaths to ocra files in the tropomi dir
-:rtype: list of str</p>
+<dd><p>Gets a sorted list of tropomi files in tropomi_dir on date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tropomi_dir</strong> (<em>str</em>) – The directory containing tropomi files</p></li>
+<li><p><strong>date</strong> (<em>DateTime</em>) – The date to search for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of filepaths to ocra files in the tropomi dir</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_pandora_file">
-<code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_pandora_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pandir</span></em>, <em class="sig-param"><span class="n">pandora_site</span></em>, <em class="sig-param"><span class="n">site_num</span></em>, <em class="sig-param"><span class="n">c_site</span></em>, <em class="sig-param"><span class="n">no2_col</span></em>, <em class="sig-param"><span class="n">fv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_pandora_file" title="Permalink to this definition"> </a></dt>
+<code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_pandora_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pan_dir</span></em>, <em class="sig-param"><span class="n">pandora_site</span></em>, <em class="sig-param"><span class="n">site_num</span></em>, <em class="sig-param"><span class="n">c_site</span></em>, <em class="sig-param"><span class="n">no2_col</span></em>, <em class="sig-param"><span class="n">fv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_pandora_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Gets the pandora file for the given set of parameters</p>
 </dd></dl>
 
 <dl class="py function">
 <dt id="uptrop.compare_tropomi_pandora.get_tropomi_files_on_day">
 <code class="sig-prename descclassname">uptrop.compare_tropomi_pandora.</code><code class="sig-name descname">get_tropomi_files_on_day</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tropomi_dir</span></em>, <em class="sig-param"><span class="n">date</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.compare_tropomi_pandora.get_tropomi_files_on_day" title="Permalink to this definition"> </a></dt>
-<dd><p>Gets a sorted list of tropomi files in tropomi_dir on date
-:param tropomi_dir: The directory containing tropomi files
-:type tropomi_dir: str
-:param date: The date to search for
-:type date: DateTime
-:return: A list of filepaths to tropomi files
-:rtype: list of str</p>
+<dd><p>Gets a sorted list of tropomi files in tropomi_dir on date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tropomi_dir</strong> (<em>str</em>) – The directory containing tropomi files</p></li>
+<li><p><strong>date</strong> (<em>DateTime</em>) – The date to search for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of filepaths to tropomi files</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

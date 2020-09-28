@@ -79,6 +79,7 @@
 <p>A library for applying the cloud-slicing technique to TROPOMI total columns to obtain upper tropospheric (450-180 hPa) mixing ratios of NO2. This includes a feasibility test of the technique using synthetic observations from GEOS-Chem, validation and quantification of bias corrections by comparing TROPOMI and Pandora total columns at high-altitide sites, application of cloud-slicing using either the FRESCO-S or ROCINN-CAL cloud products, and comparison of effective cloud fractions and cloud top pressures from the two cloud products.</p>
 <p>In the modules, the FRESCO-S product is referred to as FRESCO and the ROCINN-CAL product as DLR.</p>
 <p>A description of the data used, the sources of the data, the details of the GEOS-Chem model simulations, and other relevant information for developing the codes can be found in Marais et al. (2020).</p>
+<p>The easiest way to use the library is to call the scripts from a terminal; see the rest of this page for examples. You can also import the components into your own scripts - see the individual module descriptions linked in the sidebar.</p>
 <div class="section" id="requirements">
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline"> </a></h2>
 <ul class="simple">
@@ -93,56 +94,204 @@
 </div>
 <div class="section" id="examples-of-use">
 <h2>Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this headline"> </a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5:
-     python ut_no2_gc_test.py --out_path<span class="o">=</span><span class="s2">&quot;/path/to/output/file&quot;</span> --resolution<span class="o">=</span><span class="s2">&quot;4x5&quot;</span> --region<span class="o">=</span><span class="s2">&quot;NA&quot;</span>
-
-Co-sample daily Pandora and TROPOMI total NO2 columns at Izana:
-     python compare_tropomi_pandora.py /path/to/tropomi/data/folder/ /path/to/pandora/data/folder/
-          /path/to/output/folder/ --no2_col<span class="o">=</span><span class="s2">&quot;Tot&quot;</span> --pandora_site<span class="o">=</span><span class="s2">&quot;izana&quot;</span>
-
-Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product:
-     python tropomi_ut_no2 /path/to/tropomi/data/folder/ /path/to/output/folder/ --cloud_product<span class="o">=</span><span class="s2">&quot;fresco&quot;</span>
-          --season<span class="o">=</span><span class="s2">&quot;jja&quot;</span>
-
-Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at 1x1:
-     python fresco_cld_err.py --month<span class="o">=</span><span class="s2">&quot;01&quot;</span> --number_of_days<span class="o">=</span><span class="m">31</span> --out_res<span class="o">=</span><span class="s2">&quot;1x1&quot;</span> --dlr_cld_top<span class="o">=</span><span class="s2">&quot;height&quot;</span>
+<p>Cloud-slice synthetic partial columns from GEOS-Chem over North America at 4x5 in Spring:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python ut_no2_gc_test.py --gc_dir <span class="s2">&quot;path/to/geoschem/data&quot;</span>  --out_path <span class="s2">&quot;/path/to/output/file&quot;</span> --resolution 4x5 --season mam --region NA
 </pre></div>
 </div>
+<p>Co-sample daily Pandora and TROPOMI total NO2 columns at Izana in the first week of May:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python compare_tropomi_pandora.py --trop_dir <span class="s2">&quot;/path/to/tropomi/data&quot;</span> --pan_dir <span class="s2">&quot;/path/to/pandora/data&quot;</span> --out_dir <span class="s2">&quot;/path/to/output/dir&quot;</span> --start_date <span class="m">01</span>-05-2019 --end_date <span class="m">07</span>-05-2019 --apply_bias_correction True --no2_col Trop --pandora_site izana
+</pre></div>
+</div>
+<p>Cloud-slice Jun-Aug TROPOMI partial NO2 columns using the FRESCO-S cloud product in Summer:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python tropomi_ut_no2.py --trop_dir <span class="s2">&quot;/path/to/tropomi/data/folder/&quot;</span> --out_dir <span class="s2">&quot;/path/to/output/folder/&quot;</span> --cloud_product fresco --season jja
+</pre></div>
+</div>
+<p>Obtain January mean FRESCO-S and ROCINN-CAL cloud top pressures and fractions at 1x1:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python fresco_cld_err.py  --trop_dir <span class="s2">&quot;/path/to/tropomi/data/folder/&quot;</span> --out_dir <span class="s2">&quot;/path/to/output/folder/&quot;</span> --start_date <span class="m">01</span>-01-2019 --end_date <span class="m">31</span>-01-2019 --out_res 1x1 --dlr_cld_top height
+</pre></div>
+</div>
+<p>For a more advanced example bash script that runs each script over a given date range, see <code class="docutils literal notranslate"><span class="pre">tests/integration_test.sh</span></code> in your Uptrop folder.</p>
+</div>
+<div class="section" id="conventions">
+<h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline"> </a></h2>
+<ul>
+<li><p>All scripts take a path to a directory containing the relevant data (<code class="docutils literal notranslate"><span class="pre">--trop_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">--pan_dir</span></code> and <code class="docutils literal notranslate"><span class="pre">--gc_dir</span></code>)</p></li>
+<li><p>All scripts need either a <code class="docutils literal notranslate"><span class="pre">--season</span></code> or a <code class="docutils literal notranslate"><span class="pre">--start_date</span></code> and <code class="docutils literal notranslate"><span class="pre">--end_date</span></code> provided. If all are given, <code class="docutils literal notranslate"><span class="pre">--season</span></code> will override start_date/end_date</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">--season</span></code> is given, then this script runs for that season 2019-2020:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">djf</span></code>; dececmber-januarary-februray 2019-2020</p>
+<p><code class="docutils literal notranslate"><span class="pre">mam</span></code>; march-april-may 2020</p>
+<p><code class="docutils literal notranslate"><span class="pre">jja</span></code>; june-july-august 2020</p>
+<p><code class="docutils literal notranslate"><span class="pre">son</span></code>; september-october-november 2020</p>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--start_date</span></code> and <code class="docutils literal notranslate"><span class="pre">--end_date</span></code> are given as dd-mm-yyyy; for example, 20th Januarary 2019 is 20-01-2019</p></li>
+</ul>
 </div>
 <div class="section" id="scripts">
 <h2>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline"> </a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ut_no2_gc_test</span></code></p>
-<span class="target" id="module-uptrop.ut_no2_gc_test"></span><p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced 
+<div class="section" id="module-uptrop.ut_no2_gc_test">
+<span id="ut-no2-gc-test"></span><h3>ut_no2_gc_test<a class="headerlink" href="#module-uptrop.ut_no2_gc_test" title="Permalink to this headline"> </a></h3>
+<p>Use synthetic partial columns from GEOS-Chem to obtain cloud-sliced
 NO2 in the upper troposphere and compare this to UT NO2 obtained if
-simply average the NO2 mixing ratios from the model over the same 
-pressure range (the “truth”). Both are obtained by Gaussian 
+simply average the NO2 mixing ratios from the model over the same
+pressure range (the “truth”). Both are obtained by Gaussian
 weighting toward the pressure center.</p>
-<p>GEOS-Chem partial columns are obtained over Europe, North America, 
+<p>GEOS-Chem partial columns are obtained over Europe, North America,
 and China at the GEOS-FP meteorology native resolution (0.25x0.3125)
 (latxlon) for June-August 2016-2017.</p>
-<p>Input options to process the data include the region, the horizontal 
+<p>Input options to process the data include the region, the horizontal
 resolution, and model simulation years.</p>
-<p><code class="docutils literal notranslate"><span class="pre">cloud_slice_ut_no2</span></code></p>
-<span class="target" id="module-uptrop.cloud_slice_ut_no2"></span><p>Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: ut_no2_gc_test.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--gc_dir GC_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
+                     <span class="o">[</span>--resolution RESOLUTION<span class="o">]</span> <span class="o">[</span>--region REGION<span class="o">]</span>
+                     <span class="o">[</span>--strat_filter_threshold STRAT_FILTER_THRESHOLD<span class="o">]</span>
+                     <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                     <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>-p PLOT<span class="o">]</span>
+                     <span class="o">[</span>--do_temp_correct DO_TEMP_CORRECT<span class="o">]</span>
+                     <span class="o">[</span>--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER<span class="o">]</span>
+                     <span class="o">[</span>--do_cld_hght_test DO_CLD_HGHT_TEST<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --gc_dir GC_DIR
+  --out_dir OUT_DIR
+  --resolution RESOLUTION
+                        Can be 8x10, 4x5, 2x25 or 1x1
+  --region REGION       Can be EU, NA, or CH
+  --strat_filter_threshold STRAT_FILTER_THRESHOLD
+  --start_date START_DATE
+  --end_date END_DATE
+  -p PLOT, --plot PLOT
+  --do_temp_correct DO_TEMP_CORRECT
+  --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+  --do_cld_hght_test DO_CLD_HGHT_TEST
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-uptrop.cloud_slice_ut_no2">
+<span id="cloud-slice-ut-no2"></span><h3>cloud_slice_ut_no2<a class="headerlink" href="#module-uptrop.cloud_slice_ut_no2" title="Permalink to this headline"> </a></h3>
+<p>Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa.</p>
 <p>If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.</p>
 <p>If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided.</p>
-<p><code class="docutils literal notranslate"><span class="pre">compare_tropomi_pandora</span></code></p>
-<span class="target" id="module-uptrop.compare_tropomi_pandora"></span><p>Code to compare TROPOMI and Pandora column NO2 at high altitude
+<p>Use as part of a Python script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uptrop.cloud_slice_ut_no2</span> <span class="kn">import</span> <span class="n">cldslice</span><span class="p">,</span> <span class="n">CLOUD_SLICE_ERROR_ENUM</span>
+<span class="c1"># Dummy functions</span>
+<span class="n">partial_columns</span> <span class="o">=</span> <span class="n">get_partial_cloud_columns</span><span class="p">()</span>
+<span class="n">cloud_top_heights</span> <span class="o">=</span> <span class="n">get_cloud_top_heights</span><span class="p">()</span>
+
+<span class="n">ratio</span><span class="p">,</span> <span class="n">ratio_error</span><span class="p">,</span> <span class="n">exception_number</span><span class="p">,</span> <span class="n">mean_cloud_error</span> <span class="o">=</span> <span class="n">cldslice</span><span class="p">(</span><span class="n">partial_columns</span><span class="p">,</span> <span class="n">cloud_top_heights</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">exception_number</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">CLOUD_SLICE_ERROR_ENUM</span><span class="p">[</span><span class="n">exception_number</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cloud ratio: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cloud ratio error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio_error</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean cloud error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mean_cloud_error</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-uptrop.compare_tropomi_pandora">
+<span id="compare-tropomi-pandora"></span><h3>compare_tropomi_pandora<a class="headerlink" href="#module-uptrop.compare_tropomi_pandora" title="Permalink to this headline"> </a></h3>
+<p>Code to compare TROPOMI and Pandora column NO2 at high altitude
 sites to assess skill of TROPOMI at reproducing Pandora observations
 of free tropospheric NO2.</p>
 <p>Code is set up to process Pandora total or tropospheric column NO2
 at the Mauna Loa, Izana, or Altzomoni sites.</p>
-<p><code class="docutils literal notranslate"><span class="pre">fresco_cld_err</span></code></p>
-<span class="target" id="module-uptrop.fresco_cld_err"></span><p>Read and regrid cloud information from the official TROPOMI CLOUD product 
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: compare_tropomi_pandora.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--trop_dir TROP_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--pan_dir PAN_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
+                                  <span class="o">[</span>--no2_col NO2_COL<span class="o">]</span>
+                                  <span class="o">[</span>--cloud_product CLOUD_PRODUCT<span class="o">]</span>
+                                  <span class="o">[</span>--pandora_site PANDORA_SITE<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_deg STR_DIFF_DEG<span class="o">]</span>
+                                  <span class="o">[</span>--str_diff_min STR_DIFF_MIN<span class="o">]</span>
+                                  <span class="o">[</span>--apply_bias_correction APPLY_BIAS_CORRECTION<span class="o">]</span>
+                                  <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                                  <span class="o">[</span>--end_date END_DATE<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --trop_dir TROP_DIR
+  --pan_dir PAN_DIR
+  --out_dir OUT_DIR
+  --no2_col NO2_COL     Either Tot or Trop<span class="p">;</span> default is Tot
+  --cloud_product CLOUD_PRODUCT
+                        options are fresco, dlr-ocra<span class="p">;</span> default is fresco
+  --pandora_site PANDORA_SITE
+                        options are izana,mauna_loa,altzomoni<span class="p">;</span> default is
+                        izana
+  --str_diff_deg STR_DIFF_DEG
+                        options are: <span class="m">03</span>,02,01,005<span class="p">;</span> default is <span class="m">02</span>
+  --str_diff_min STR_DIFF_MIN
+                        options are: <span class="m">60</span>,30,15<span class="p">;</span> default is <span class="m">30</span>
+  --apply_bias_correction APPLY_BIAS_CORRECTION
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-uptrop.fresco_cld_err">
+<span id="fresco-cld-err"></span><h3>fresco_cld_err<a class="headerlink" href="#module-uptrop.fresco_cld_err" title="Permalink to this headline"> </a></h3>
+<p>Read and regrid cloud information from the official TROPOMI CLOUD product
 and from the FRESCO cloud product in the TROPOMI NO2 data product file.</p>
-<p>Data are regridded to a 2x2.5 degree global grid and saved as monthly 
-means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
-0.7 and clouds top (centroid) pressure in the upper troposphere 
-(180-450 hPa).</p>
-<p><code class="docutils literal notranslate"><span class="pre">tropomi_ut_no2</span></code></p>
-<span class="target" id="module-uptrop.tropomi_ut_no2"></span><p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
+<p>Output from this code includes a NetCDF file with:</p>
+<ol class="arabic simple">
+<li><p>Data regridded to a 1 deg x 1 deg global grid and saved as monthly means for scenes with the reference cloud product
+(specified as input argument) cloud fraction &gt; 0.7 and cloud tops in the upper troposphere (450-180 hPa).</p></li>
+<li><p>Meridional frequency of upper tropospheric (450-180 hPa) cloud fractions &gt; 0.7 for each product.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: fresco_cld_err.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--s5p_data_dir S5P_DATA_DIR<span class="o">]</span>
+                         <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span> <span class="o">[</span>--season SEASON<span class="o">]</span>
+                         <span class="o">[</span>--start_date START_DATE<span class="o">]</span> <span class="o">[</span>--end_date END_DATE<span class="o">]</span>
+                         <span class="o">[</span>--plot_dir PLOT_DIR<span class="o">]</span> <span class="o">[</span>--out_res OUT_RES<span class="o">]</span>
+                         <span class="o">[</span>--dlr_cld_top DLR_CLD_TOP<span class="o">]</span>
+                         <span class="o">[</span>--file_version FILE_VERSION<span class="o">]</span>
+                         <span class="o">[</span>--ref_cld_prod REF_CLD_PROD<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --s5p_data_dir S5P_DATA_DIR
+  --out_dir OUT_DIR
+  --season SEASON       Can be jja, son, djf, mam. Overrides
+                        start_date/end_date
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --plot_dir PLOT_DIR
+  --out_res OUT_RES
+  --dlr_cld_top DLR_CLD_TOP
+  --file_version FILE_VERSION
+  --ref_cld_prod REF_CLD_PROD
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-uptrop.tropomi_ut_no2">
+<span id="tropomi-ut-no2"></span><h3>tropomi_ut_no2<a class="headerlink" href="#module-uptrop.tropomi_ut_no2" title="Permalink to this headline"> </a></h3>
+<p>Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.</p>
 <p>The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction &gt;=0.7 and within the cloud top pressure range of 450-180 hPa.</p>
 <p>Options are available to use cloud information from either the FRESCO-S or ROCINN-CAL cloud product, to obtain seasonal means at 2x2.5 or 4x5, and to use a cloud fraction threshold of 0.8, 0.9, or 1.0.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage:
+       <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--trop_dir TROP_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span> <span class="o">[</span>--season SEASON<span class="o">]</span>
+       <span class="o">[</span>--start_date START_DATE<span class="o">]</span> <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>--grid_res GRID_RES<span class="o">]</span>
+       <span class="o">[</span>--cloud_product CLOUD_PRODUCT<span class="o">]</span> <span class="o">[</span>--cloud_threshold CLOUD_THRESHOLD<span class="o">]</span>
+       <span class="o">[</span>--pmin PMIN<span class="o">]</span> <span class="o">[</span>--pmax PMAX<span class="o">]</span>
+
+optional arguments:
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
+  --trop_dir TROP_DIR   Directory containing tropomi data
+  --out_dir OUT_DIR     Directory to contain finished netcdf4
+  --season SEASON       Can be jja, son, djf, mam
+  --start_date START_DATE
+                        Start date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --end_date END_DATE   End date of processing window <span class="o">(</span>yyyy-mm-dd<span class="o">)</span>
+  --grid_res GRID_RES   Can be 1x1, 2x25, 4x5
+  --cloud_product CLOUD_PRODUCT
+                        can be fresco or dlr-ocra
+  --cloud_threshold CLOUD_THRESHOLD
+                        recommended value is <span class="m">07</span>. Can also <span class="nb">test</span> <span class="m">08</span>, <span class="m">09</span>, <span class="m">10</span>
+  --pmin PMIN           Lower bound on cloud height. Defaults to <span class="m">180</span>.
+  --pmax PMAX           Upper bound on cloud height. Defaults to <span class="m">450</span>.
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 
@@ -162,7 +311,15 @@ means in NetCDF format for scenes with TROPOMI FRESCO cloud fraction &gt;
 <li><a class="reference internal" href="#introduction">Introduction</a><ul>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#examples-of-use">Examples of use</a></li>
-<li><a class="reference internal" href="#scripts">Scripts</a></li>
+<li><a class="reference internal" href="#conventions">Conventions</a></li>
+<li><a class="reference internal" href="#scripts">Scripts</a><ul>
+<li><a class="reference internal" href="#module-uptrop.ut_no2_gc_test">ut_no2_gc_test</a></li>
+<li><a class="reference internal" href="#module-uptrop.cloud_slice_ut_no2">cloud_slice_ut_no2</a></li>
+<li><a class="reference internal" href="#module-uptrop.compare_tropomi_pandora">compare_tropomi_pandora</a></li>
+<li><a class="reference internal" href="#module-uptrop.fresco_cld_err">fresco_cld_err</a></li>
+<li><a class="reference internal" href="#module-uptrop.tropomi_ut_no2">tropomi_ut_no2</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

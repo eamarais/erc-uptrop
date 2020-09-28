@@ -1,5 +1,6 @@
-# IDL/gamap's default WhGrYlRd color scheme
-# From https://github.com/geoschem/GEOSChem-python-tutorial/blob/master/gamap_colormap.py
+"""IDL/gamap's default WhGrYlRd color scheme
+ From https://github.com/geoschem/GEOSChem-python-tutorial/blob/master/gamap_colormap.py
+"""
 
 WhGrYlRd_RBG_string = """
 255 255 255

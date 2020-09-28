@@ -4,8 +4,22 @@
 
 If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.
 
-If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided. 
-   '''
+If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided.
+
+Use as part of a Python script:
+::
+    from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
+    # Dummy functions
+    partial_columns = get_partial_cloud_columns()
+    cloud_top_heights = get_cloud_top_heights()
+
+    ratio, ratio_error, exception_number, mean_cloud_error = cldslice(partial_columns, cloud_top_heights)
+    if exception_number != 0:
+        print(CLOUD_SLICE_ERROR_ENUM[exception_number])
+    print("Cloud ratio: {}".format(ratio))
+    print("Cloud ratio error: {}".format(ratio_error))
+    print("Mean cloud error: {}".format(mean_cloud_error))
+'''
 
 # Import relevant packages:
 import sys
@@ -42,14 +56,17 @@ def cldslice(pcolno2,cldtophgt):
     Determine NO2 mixing ratio by regressing NO2 partial columns
     against cloud-top heights over cloudy scenes.
 
-    INPUT: vectors of partial columns in molec/m2 and corresponding
-           cloud top heights in hPa.
+    :param pcolno2: vectors of partial columns in molec/m2
+    :type pcolno2: list of floats
+    :param cldtophgt: corresponding cloud top heights in hPa.
+    :type cldtophgt: list of floats
 
-    OUTPUT: NO2 volumetric mixing ratio, corresponding estimated error on the
+    :return: NO2 volumetric mixing ratio, corresponding estimated error on the
             cloud-sliced NO2 value, a number to identify which filtering
             criteria led to loss of data in the case that the cloud-sliced
             NO2 value ia nan, and the mean cloud pressure of data retained
             after 10th and 90th percentile filtering.
+    :rtype: tuple
     """
     # Initialize:
     utmrno2=0.0
@@ -162,5 +179,3 @@ def cldslice(pcolno2,cldtophgt):
         return (utmrno2, utmrno2err, error_state, mean_cld_pres)
     else:
         return (utmrno2, utmrno2err, error_state, mean_cld_pres)
-
-    

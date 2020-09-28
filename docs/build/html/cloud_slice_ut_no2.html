@@ -55,6 +55,20 @@
 <p>Cloud-slicing steps applied to a cluster of data using as input the partial NO2 columns in molecules/m2 and cloud top heights in hPa.</p>
 <p>If successful, the output is NO2 mixing ratios in pptv. Other output is the estimated error on the NO2 mixing ratio and the mean cloud top pressure (hPa) for the cluster.</p>
 <p>If the cloud-slicing step is unsuccessful, all values are NaN and a reason the cloud-slicing failed is provided.</p>
+<p>Use as part of a Python script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">uptrop.cloud_slice_ut_no2</span> <span class="kn">import</span> <span class="n">cldslice</span><span class="p">,</span> <span class="n">CLOUD_SLICE_ERROR_ENUM</span>
+<span class="c1"># Dummy functions</span>
+<span class="n">partial_columns</span> <span class="o">=</span> <span class="n">get_partial_cloud_columns</span><span class="p">()</span>
+<span class="n">cloud_top_heights</span> <span class="o">=</span> <span class="n">get_cloud_top_heights</span><span class="p">()</span>
+
+<span class="n">ratio</span><span class="p">,</span> <span class="n">ratio_error</span><span class="p">,</span> <span class="n">exception_number</span><span class="p">,</span> <span class="n">mean_cloud_error</span> <span class="o">=</span> <span class="n">cldslice</span><span class="p">(</span><span class="n">partial_columns</span><span class="p">,</span> <span class="n">cloud_top_heights</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">exception_number</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">CLOUD_SLICE_ERROR_ENUM</span><span class="p">[</span><span class="n">exception_number</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cloud ratio: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cloud ratio error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ratio_error</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean cloud error: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mean_cloud_error</span><span class="p">))</span>
+</pre></div>
+</div>
 <dl class="py function">
 <dt id="uptrop.cloud_slice_ut_no2.cldslice">
 <code class="sig-prename descclassname">uptrop.cloud_slice_ut_no2.</code><code class="sig-name descname">cldslice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pcolno2</span></em>, <em class="sig-param"><span class="n">cldtophgt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.cloud_slice_ut_no2.cldslice" title="Permalink to this definition"> </a></dt>
@@ -62,13 +76,22 @@
 cloudy scenes.</p>
 <p>Determine NO2 mixing ratio by regressing NO2 partial columns
 against cloud-top heights over cloudy scenes.</p>
-<dl class="simple">
-<dt>INPUT: vectors of partial columns in molec/m2 and corresponding</dt><dd><p>cloud top heights in hPa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pcolno2</strong> (<em>list of floats</em>) – vectors of partial columns in molec/m2</p></li>
+<li><p><strong>cldtophgt</strong> (<em>list of floats</em>) – corresponding cloud top heights in hPa.</p></li>
+</ul>
 </dd>
-<dt>OUTPUT: NO2 volumetric mixing ratio, corresponding estimated error on the</dt><dd><p>cloud-sliced NO2 value, a number to identify which filtering
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>NO2 volumetric mixing ratio, corresponding estimated error on the
+cloud-sliced NO2 value, a number to identify which filtering
 criteria led to loss of data in the case that the cloud-sliced
 NO2 value ia nan, and the mean cloud pressure of data retained
 after 10th and 90th percentile filtering.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>

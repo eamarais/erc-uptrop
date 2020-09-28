@@ -15,6 +15,15 @@ import sys
 # sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../..'))
 
+# -- Arcane thing to include __init__ functions in docs
+def skip(app, what, name, obj, skip, options):
+    if name == "__init__":
+        return False
+    return skip
+
+def setup(app):
+    app.connect("autodoc-skip-member", skip)
+
 
 # -- Project information -----------------------------------------------------
 
@@ -42,6 +51,9 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
+
+# Order for autodoc members
+autodoc_member_order = 'groupwise'
 
 
 # -- Options for HTML output -------------------------------------------------
