@@ -1,5 +1,7 @@
+#!/usr/bin/python
+
 """
-Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to May 2020.
+Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to November 2020.
 
 The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction >=0.7 and within the cloud top pressure range of 450-180 hPa.
 
@@ -42,8 +44,11 @@ import datetime as dt
 import re
 
 import numpy as np
-from netCDF4 import Dataset
-from mpl_toolkits.basemap import Basemap
+#from mpl_toolkits.basemap import Basemap
+import cartopy
+import cartopy.crs as ccrs
+from cartopy.io.shapereader import Reader
+from cartopy.feature import ShapelyFeature
 import matplotlib.pyplot as plt
 from dateutil import rrule as rr
 
@@ -90,6 +95,7 @@ class GridAggregator:
         self.gerr = np.zeros((self.xdim, self.ydim))  # Weighted error
         self.gwgt = np.zeros((self.xdim, self.ydim))  # Weights
         self.pcld_range = np.zeros((self.xdim, self.ydim))  # Cloud top pressure range used for cloud-slicing
+        self.pcld_ceil = np.zeros((self.xdim, self.ydim))  # Ceiling (min pressure) of the cloud top pressure range
 
         self.file_count = 0
         self.current_max_points = 0
@@ -190,6 +196,7 @@ class GridAggregator:
                 # Convert from Pa to hPa for intput to the cloud-slicing algorithm:
                 tcolno2 = np.multiply(tcolno2, 1e4)
                 tcld = np.multiply(tcld, 1e-2)
+                strat = np.array(strat)
 
                 # Error check that the sizes of the arrays are equal:
                 if (len(tcld) != len(tcolno2)):
@@ -258,6 +265,7 @@ class GridAggregator:
             gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
             self.gno2vmr[i, j] += np.multiply(utmrno2, gaus_wgt)
             self.pcld_range[i, j] += np.nanmax(t_cld) - np.nanmin(t_cld)
+            self.pcld_ceil[i, j] += np.nanmin(t_cld)
             self.gwgt[i, j] += gaus_wgt
             self.gerr[i, j] += np.multiply(utmrno2err, gaus_wgt)
             self.gcnt[i, j] += 1
@@ -271,10 +279,12 @@ class GridAggregator:
         self.mean_gerr = np.divide(self.gerr, self.gwgt, where=self.gcnt != 0)
         self.mean_gwgt = np.divide(self.gwgt, self.gcnt, where=self.gcnt != 0)
         self.mean_cld_p_range = np.divide(self.pcld_range, self.gcnt, where=self.gcnt != 0)
+        self.mean_cld_p_ceil = np.divide(self.pcld_ceil, self.gcnt, where=self.gcnt != 0)
         self.mean_gno2vmr[self.gcnt == 0] = np.nan
         self.mean_gerr[self.gcnt == 0] = np.nan
         self.mean_gwgt[self.gcnt == 0] = np.nan
         self.mean_cld_p_range[self.gcnt == 0] = np.nan
+        self.mean_cld_p_ceil[self.gcnt == 0] = np.nan
         self.gcnt[self.gcnt == 0] = np.nan   # Watch out for this rewriting of gcnt in the future
 
     def print_report(self):
@@ -285,7 +295,7 @@ class GridAggregator:
         print('(2) Low cloud height range: ', self.loss_count["low_cloud_height_range"], flush=True)
         print('(3) Low cloud height std dev: ', self.loss_count["low_cloud_height_std"], flush=True)
         print('(4) Large error: ', self.loss_count["large_error"], flush=True)
-        print('(5) Significantly less then zero: ', self.loss_count["much_less_than_zero"], flush=True)
+        print('(5) Significantly less than zero: ', self.loss_count["much_less_than_zero"], flush=True)
         print('(6) Outlier (NO2 > 200 pptv): ', self.loss_count["no2_outlier"], flush=True)
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
@@ -327,10 +337,15 @@ class GridAggregator:
         utno2err.long_name = 'Standard error of the NO2 mixing ratios in the UT (180-450 hPa) obtained using cloud-slicing'
         utno2err[:] = self.mean_gerr
 
-        utno2err = ncout.createVariable('cld_top_p_range', np.float32, ('lon', 'lat'))
-        utno2err.units = 'hPa'
-        utno2err.long_name = 'Gridded mean range in cloud top pressures used to cloud-slice TROPOMI NO2'
-        utno2err[:] = self.mean_cld_p_range
+        utcldrange = ncout.createVariable('cld_top_p_range', np.float32, ('lon', 'lat'))
+        utcldrange.units = 'hPa'
+        utcldrange.long_name = 'Gridded mean range in cloud top pressures used to cloud-slice TROPOMI NO2'
+        utcldrange[:] = self.mean_cld_p_range
+
+        utcldceil = ncout.createVariable('cld_top_p_ceil', np.float32, ('lon', 'lat'))
+        utcldceil.units = 'hPa'
+        utcldceil.long_name = 'Gridded mean ceiling of cloud top pressures used to cloud-slice TROPOMI NO2'
+        utcldceil[:] = self.mean_cld_p_ceil
 
         nobs = ncout.createVariable('nobs', np.float32, ('lon', 'lat'))
         nobs.units = 'unitless'
@@ -339,43 +354,52 @@ class GridAggregator:
 
         ncout.close()
 
-    def plot_data(self):
+    def plot_data(self, out_file):
         """Plots the seasonal_means to screen."""
         # Plot the data:
-        m = Basemap(resolution='l', projection='merc',
-                    lat_0=0, lon_0=0, llcrnrlon=-180,
-                    llcrnrlat=-75, urcrnrlon=180, urcrnrlat=80)
         X, Y = np.meshgrid(self.out_lon, self.out_lat, indexing='ij')
-        xi, yi = m(X, Y)
-        plt.subplot(1, 3, 1)
-        cs = m.pcolor(xi, yi, np.squeeze(self.mean_gno2vmr), vmin=0, vmax=80, cmap='jet')
-        m.drawparallels(np.arange(-80., 81., 45.), labels=[1, 0, 0, 0], fontsize=8)
-        m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1], fontsize=8)
-        m.drawcoastlines()
-        m.drawcountries()
-        cbar = m.colorbar(cs, location='bottom', pad="10%")
-        plt.title('NO2 VMRs')
 
-        plt.subplot(1, 3, 2)
-        cs = m.pcolor(xi, yi, np.squeeze(self.mean_gerr), vmin=0, vmax=30, cmap='jet')
-        m.drawparallels(np.arange(-80., 81., 45.), labels=[1, 0, 0, 0], fontsize=8)
-        m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1], fontsize=8)
-        m.drawcoastlines()
-        m.drawcountries()
-        cbar = m.colorbar(cs, location='bottom', pad="10%")
-        plt.title('NO2 error')
+        # Define plot parameters:
+        nplots = 3
+        max_val = [100, 20, 20]
+        nbound = [21, 21, 21]
+        unit = ['[pptv]','[pptv]','unitless']
+        plot_title = ['TROPOMI cloud-sliced NO2',
+                      'TROPOMI cloud-sliced NO2 error',
+                      'Number of cloud-sliced data points']
 
-        plt.subplot(1, 3, 3)
-        cs = m.pcolor(xi, yi, np.squeeze(self.gcnt), vmin=0., vmax=30, cmap='jet')
-        m.drawparallels(np.arange(-80., 81., 45.), labels=[1, 0, 0, 0], fontsize=8)
-        m.drawmeridians(np.arange(-180., 181., 45.), labels=[0, 0, 0, 1], fontsize=8)
-        m.drawcoastlines()
-        m.drawcountries()
-        cbar = m.colorbar(cs, location='bottom', pad="10%")
-        plt.title('Number of points')
+        fig, ax = plt.subplots(3, 1, figsize=(5,11), subplot_kw=dict(projection=ccrs.PlateCarree()))
 
+        # Plot the subplots:
+        for i in range(nplots):
+
+            # Define what data to plot:
+            if i==0: plot_vals = np.squeeze(self.mean_gno2vmr)
+            if i==1: plot_vals = np.squeeze(self.mean_gerr)
+            if i==2: plot_vals = np.squeeze(self.gcnt)
+
+            if i==0: 
+                tickval = [0,25,50,75,100]
+            else:
+                tickval = [0,5,10,15,20]
+
+            ax[i].coastlines(resolution='50m')
+
+            ax[i].set_extent([-179.9, 179.9, -75, 75], crs=ccrs.PlateCarree())
+
+            data_crs = ccrs.PlateCarree()
+            bounds = np.linspace(0, max_val[i],nbound[i])
+
+            c = ax[i].pcolormesh(X,Y, plot_vals, transform=data_crs,cmap='jet', 
+                                 vmin=0, vmax=max_val[i])
+
+            cb = fig.colorbar(c, ax=ax[i],label=unit[i], orientation='horizontal',
+                              shrink=0.5,pad=0.01,boundaries=bounds,ticks=tickval )
+            
+            cb.ax.tick_params(labelsize=10, direction='in', length=6)
+
+        #plt.savefig(out_file, format='ps')
         plt.show()
-
 
 class TropomiData:
     """A class for extracting, preprocessing and containing data from a s5p tropomi file."""
@@ -626,7 +650,7 @@ class TropomiData:
 
 class CloudData:
     """Class for containing the data for cloud filtering and analysis."""
-    def __init__(self, file_path, data_type):
+    def __init__(self, file_path, fresco_440, data_type):
         """Reads either the tropomi file (if data_type = 'fresco') or the ocra file (if data_type = 'dlr-ocra')
         at file_path and returns an instance of CloudData. Calls either read_fresco_file or read_ocra_file.
 
@@ -638,6 +662,9 @@ class CloudData:
         # Set from file_path
         self.file_name = path.basename(file_path)
         self.date = get_date(self.file_name)  # Assuming for now that ocra and S5P have the same timestamping
+
+        # Set from input:
+        self.fresco_440 = fresco_440
 
         # Set from file contents
         self.cldfrac = None
@@ -666,15 +693,19 @@ class CloudData:
         :type file_path: str
         """
         fh = Dataset(file_path)
-        # Cloud fraction:
-        tcldfrac = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
-                       variables['cloud_fraction_crb'][:]
+        # Cloud fraction (determine whether to use A-band or 440 nm
+        #                 effective cloud fraction product):
+        if ( self.fresco_440 ):
+            tcldfrac = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']. \
+                variables['cloud_fraction_crb_nitrogendioxide_window'][:]
+        else:
+            tcldfrac = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
+                variables['cloud_fraction_crb'][:]
         self.cldfrac = tcldfrac.data[0, :, :]
         # Cloud top pressure:
         gcldpres = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
                        variables['cloud_pressure_crb'][:]
         self.tcldpres = gcldpres[0, :, :]
-
         # Get scene and surface pressure to diagnose clouds misclassified as snow/ice:
         # Apparent scene pressure:
         gscenep = fh.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
@@ -781,6 +812,7 @@ if __name__ == "__main__":
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
     parser.add_argument("--cloud_product", default = "fresco", help="can be fresco or dlr-ocra")
     parser.add_argument("--cloud_threshold", default = "07", help="recommended value is 07. Can also test 08, 09, 10")
+    parser.add_argument("--fresco_440", type=bool, default = False, help="Use FRESCO-S 440 nm cloud fraction")
     parser.add_argument("--pmin", default=180, type=int, help="Lower bound on cloud height. Defaults to 180.")
     parser.add_argument("--pmax", default=450, type=int, help="Upper bound on cloud height. Defaults to 450.")
     args = parser.parse_args()
@@ -814,12 +846,17 @@ if __name__ == "__main__":
         dellat, dellon = 2, 2.5
     elif args.grid_res == '4x5':
         dellat, dellon = 4, 5
+    elif args.grid_res == '05x05':
+        dellat, dellon = 0.5, 0.5
     else:
-        print("Invalid grid; values can be 1x1, 2x25, 4x5")
+        print("Invalid grid; values can be 05x05, 1x1, 2x25, 4x5")
         sys.exit(1)
 
     # Parsing cloud threshold
     cloud_threshold = float(args.cloud_threshold)/10
+
+    # Parsing bollean to use or not use FRESCO-S cloud fraction at 440 nm:
+    fresco_440 = args.fresco_440
 
     date_range = rr.rrule(rr.DAILY, dtstart=start_date, until=end_date)
 
@@ -862,7 +899,7 @@ if __name__ == "__main__":
 
     for trop_file, cloud_file in zip(trop_files, cloud_files):
         trop_data = TropomiData(trop_file)
-        cloud_data = CloudData(cloud_file, data_type=args.cloud_product)
+        cloud_data = CloudData(cloud_file, fresco_440, data_type=args.cloud_product)
         if cloud_data.data_parity==False: continue
         trop_data.calc_geo_column()
         trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold, args.pmax, args.pmin)
@@ -871,14 +908,30 @@ if __name__ == "__main__":
         grid_aggregator.apply_cloud_slice()
     grid_aggregator.calc_seasonal_means()
 
-    out_file = path.join(args.out_dir, 'tropomi-ut-no2-'+ args.cloud_product
-                         + '-' + args.cloud_threshold
-                         + '-' + args.grid_res
-                         + '-' + args.season
-                         + '-' + yrrange+'-v5.nc')
+    # Define cloud product string for file name:
+    str_cld_prod = args.cloud_product
+    if ( fresco_440 ):
+        str_cld_prod = 'fresco-440nm'
+
+    # Define output file names:
+    # (1) Data file:
+    out_data_file = path.join(args.out_dir, 'tropomi-ut-no2-' + str_cld_prod
+                              + '-' + args.cloud_threshold
+                              + '-' + args.grid_res
+                              + '-' + args.season[0:3]
+                              + '-' + yrrange + '-w-neg-val-v1.nc')
+
+    # (2) Plot file:
+    out_plot_file = path.join(args.out_dir, 'Images/tropomi-ut-no2-'
+                              + str_cld_prod
+                              + '-' + args.cloud_threshold
+                              + '-' + args.grid_res
+                              + '-' + args.season[0:3]
+                              + '-' + yrrange + '-v1.ps')
+    
     grid_aggregator.print_report()
-    grid_aggregator.save_to_netcdf(out_file)
-    grid_aggregator.plot_data()
+    grid_aggregator.save_to_netcdf(out_data_file)
+    grid_aggregator.plot_data(out_plot_file)
 
 
 
