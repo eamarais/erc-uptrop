@@ -7,20 +7,28 @@ import sys
 
 
 class InvalidSeasonException(Exception):
+    #print("Invalid season")
     pass
 
 
 class InvalidRegionException(Exception):
+    #print("Invalid region")
     pass
 
 
 def season_to_date(season):
-    if season == "jja":
+    if season == "jja2019":
         start_date = dt.datetime(year=2019, month=6, day=1)
         end_date = dt.datetime(year=2019, month=8, day=31)
-    elif season == "son":
+    elif season == "jja2020":
+        start_date = dt.datetime(year=2020, month=6, day=1)
+        end_date = dt.datetime(year=2020, month=8, day=31)
+    elif season == "son2019":
         start_date = dt.datetime(year=2019, month=9, day=1)
         end_date = dt.datetime(year=2019, month=11, day=30)
+    elif season == "son2020":
+        start_date = dt.datetime(year=2020, month=9, day=1)
+        end_date = dt.datetime(year=2020, month=11, day=30)
     elif season == "djf":
         start_date = dt.datetime(year=2019, month=12, day=1)
         end_date = dt.datetime(year=2020, month=2, day=29)  # Leap year

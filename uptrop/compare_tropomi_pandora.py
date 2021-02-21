@@ -269,7 +269,7 @@ class DataCollector:
         print('Min & max relative errors (TROPOMI): ', np.nanmin(np.divide(self.s5p_wgt, self.s5p_no2)),
               np.nanmax(np.divide(self.s5p_wgt, self.s5p_no2)))
 
-    def plot_data(self):
+    def plot_data(self, PANDORA_SITE):
         """Time series of daily means"""
         # Plot time series:
         plt.figure(1, figsize=(10, 5))
@@ -286,7 +286,8 @@ class DataCollector:
         plt.ylabel('$NO_2$ total VCD [$10^{14}$ molecules $cm^2$]')
         leg = plt.legend(loc='lower left', fontsize='large')
         leg.get_frame().set_linewidth(0.0)
-        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-gc_data-timeseries-v1-jun2019-apr2020.ps', \
+        #plt.savefig('./Images/tropomi-'+PANDORA_SITE+
+        #            '-pandora-gc_data-timeseries-v1-jun2019-may2020.ps',
         #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         # Plot scatterplot:
         tx = self.pan_no2
@@ -322,7 +323,8 @@ class DataCollector:
         add2plt = ("r = {a:.3f}".format(a=r[0]))
         plt.text(0.1, 0.84, add2plt, fontsize=10,
                  ha='left', va='center', transform=ax.transAxes)
-        # plt.savefig('./Images/tropomi-'+PANDORA_SITE+'-pandora-gc_data-scatterplot-v1-jun2019-apr2020.ps', \
+        #plt.savefig('./Images/tropomi-'+PANDORA_SITE+
+        #            '-pandora-gc_data-scatterplot-v1-jun2019-apr2020.ps',
         #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         plt.show()
 
@@ -746,6 +748,7 @@ class PandoraData:
         loc = p[0]
         self.panlat = loc['lat']
         self.panlon = loc['lon']
+        self.panalt = loc['alt']
         # Extract data frame with relevant Pandora data:
         df = p[1]
         # Get variables names from column headers:
@@ -774,9 +777,13 @@ class PandoraData:
         # reference temperature at these sites that will be used in the future v1.8
         # retrieval rather than 254K used for sites that extend to the surface.
         # V1.8 data will be available in late 2020.
-        if (col_type == 'Tot'):
+        # Only apply this correction to the high-altitude sites:
+        if (col_type == 'Tot' and self.panalt > 2e3):
+            print('Apply 10% bias correction to Pandora data for site at {} m'.format(str(self.panalt)))
             self.panno2 = self.panno2 * 0.9
             self.panno2err = self.panno2err * 0.9
+        else:
+            print('No 10% bias correction applied to Pandora data for site at {} m'.format(str(self.panalt)))
         # Get data length (i.e., length of each row):
         npanpnts = len(df)
         # Confirm processing correct site:
@@ -890,6 +897,18 @@ if __name__ == "__main__":
     if ( args.pandora_site== 'mauna_loa'):
         SITE_NUM= '59'
         C_SITE= 'MaunaLoaHI'
+    if ( args.pandora_site== 'eureka'):
+        SITE_NUM= '144'
+        C_SITE= 'Eureka-PEARL'
+    if ( args.pandora_site== 'fairbanks'):
+        SITE_NUM= '29'
+        C_SITE= 'FairbanksAK'
+    if ( args.pandora_site== 'fort-mckay'):
+        SITE_NUM= '122'
+        C_SITE= 'FortMcKay'
+    if ( args.pandora_site== 'ny-alesund'):
+        SITE_NUM= '152'
+        C_SITE= 'NyAlesund'    
 
     # Conditions for choosing total or tropospheric column:
     if ( args.no2_col== 'Trop'):
@@ -953,4 +972,4 @@ if __name__ == "__main__":
 
     data_aggregator.apply_weight_to_means()
     data_aggregator.write_to_netcdf(outfile)
-    data_aggregator.plot_data()
+    data_aggregator.plot_data(args.pandora_site)

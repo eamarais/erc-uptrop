@@ -85,29 +85,32 @@ def get_column_from_description(column_dict, description):
         return index
 
 
-def get_lat_lon(pandora_filepath):
-    """Returns a dictionary of lat, lon extracted from the pandora file
+def get_lat_lon_alt(pandora_filepath):
+    """Returns a dictionary of lat, lon, alt extracted from the pandora file
 
     :param pandora_filepath: The pandora file
     :type pandora_filepath: str
 
-    :returns: A dict of {"lat":lat, "lon":lon}
+    :returns: A dict of {"lat":lat, "lon":lon, "alt":alt}
     :rtype: dict{str:int}
     """
     lat = None
     lon = None
+    alt = None
     with open(pandora_filepath, 'r', encoding="Latin-1") as pandora_file:
-        while (lat == None or lon == None):
+        while (lat == None or lon == None or alt == None):
             current_line = pandora_file.readline()
             if current_line.startswith("Location latitude [deg]:"):
                 lat = float(current_line.split(":")[1])
             elif current_line.startswith("Location longitude [deg]:"):
                 lon = float(current_line.split(":")[1])
+            elif current_line.startswith("Location altitude [m]:"):
+                alt = float(current_line.split(":")[1])
             elif current_line.startswith("--------"):
                 # Future improvements to code: Change for exception if this might happen
-                print("Lat/lon not found in file {}".format(pandora_filepath))
+                print("Lat/lon/alt not found in file {}".format(pandora_filepath))
                 return
-    return {"lat": lat, "lon": lon}
+    return {"lat": lat, "lon": lon, "alt": alt}
 
 
 def read_pandora(pandora_filepath, no2col):
@@ -118,7 +121,7 @@ def read_pandora(pandora_filepath, no2col):
 
     Pandora data can be either total column or troposphere column
 
-    The dictionary has key {'lat,'lon'}
+    The dictionary has key {'lat,'lon','alt'}
 
     The dataframe has column headings:
 
@@ -134,7 +137,7 @@ def read_pandora(pandora_filepath, no2col):
     :rtype: tuple(dict, pandas.dataframe)
     """
 
-    loc = get_lat_lon(pandora_filepath)
+    loc = get_lat_lon_alt(pandora_filepath)
 
     column_dict = get_column_description_index(pandora_filepath)
     dateind = get_column_from_description(column_dict, 'UT date and time for center of m')

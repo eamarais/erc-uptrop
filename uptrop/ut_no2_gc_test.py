@@ -400,7 +400,7 @@ class ProcessedData:
                 return
             self.loss_count[CLOUD_SLICE_ERROR_ENUM[stage_reached]] += 1
             # Track non-uniform NO2 removed:
-            grad_ind=np.where(t_grad_no2 >= 0.33)[0]
+            grad_ind=np.where(np.abs(t_grad_no2) >= 0.33)[0]
             self.grad_remove += len(grad_ind)
             #print("Cloud-slice exception {} in pixel i:{} j:{}".format(
             #    CLOUD_SLICE_ERROR_ENUM[stage_reached], i, j))
@@ -419,7 +419,7 @@ class ProcessedData:
                 print('Min rel. cloud-sliced NO2 error: ', self.minerr, flush=True)
                 
             # Track non-uniform NO2 retained:
-            grad_ind=np.where(t_grad_no2 >= 0.33)[0]
+            grad_ind=np.where(np.abs(t_grad_no2) >= 0.33)[0]
             self.grad_retain += len(grad_ind)
             
             # Weighted mean for each pass of cldslice:
@@ -436,7 +436,6 @@ class ProcessedData:
     def get_weighted_mean(self):
         """Applies weighting to the aggregated means.
         """
-
         # Mean physical parameters:
         self.g_no2_vmr = np.divide(self.g_no2_vmr, self.g_gaus_wgt, where=self.g_cnt != 0)
         self.g_cld_fr = np.divide(self.g_cld_fr, self.g_cnt, where=self.g_cnt != 0)
@@ -471,7 +470,7 @@ class ProcessedData:
         print('(2) Low cloud height range: ', self.loss_count["low_cloud_height_range"], flush=True)
         print('(3) Low cloud height std dev: ', self.loss_count["low_cloud_height_std"], flush=True)
         print('(4) Large error: ', self.loss_count["large_error"], flush=True)
-        print('(5) Significantly less then zero: ', self.loss_count["much_less_than_zero"], flush=True)
+        print('(5) Significantly less than zero: ', self.loss_count["much_less_than_zero"], flush=True)
         print('(6) Outlier (NO2 > 200 pptv): ', self.loss_count["no2_outlier"], flush=True)
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
@@ -483,6 +482,7 @@ class ProcessedData:
     def plot_data(self):
         """Plots the present state of the gridded data
         """
+        # ===> FUTURE UPDATE : change from basemap to cartopy <===
         # Plot the data:
         m = Basemap(resolution='l', projection='merc',
                     lat_0=0, lon_0=0, llcrnrlon=self.minlon,
@@ -822,9 +822,9 @@ if __name__ == "__main__":
     parser.add_argument("--resolution", default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
     parser.add_argument("--region", default="EU", help="Can be EU, NA, or CH")
     parser.add_argument("--strat_filter_threshold", default="002", help="")
-    parser.add_argument("--start_date", default="2016-06-01")
-    parser.add_argument("--end_date", default="2017-08-31")
-    parser.add_argument("-p", "--plot", type=bool)
+    #parser.add_argument("--start_date", default="2016-06-01")
+    #parser.add_argument("--end_date", default="2017-08-31")
+    parser.add_argument("-p", "--plot", type=bool, default=False)
     parser.add_argument("--do_temp_correct", type=bool)
     parser.add_argument("--apply_cld_frac_filter", type=bool)
     parser.add_argument("--do_cld_hght_test", type=bool)
@@ -843,7 +843,7 @@ if __name__ == "__main__":
                             + '-' + args.region
                             + '-' + args.resolution
                             + '-jja-' + yrrange
-                            + '-' + "-gaus-wgt" )
+                            + '-' + "gaus-wgt" )
 
     if args.do_cld_hght_test:
         out_file += "-cldtop"
@@ -854,7 +854,7 @@ if __name__ == "__main__":
     if args.apply_cld_frac_filter:
         out_file += "-cld-filt"
         
-    out_file += "-v4.nc"
+    out_file += "-v6.nc"
 
     strat_filter_threshold = float(args.strat_filter_threshold)/100
     files = get_gc_file_list(gc_dir, args.region)
@@ -870,7 +870,7 @@ if __name__ == "__main__":
 
     rolling_total.get_weighted_mean()
     rolling_total.print_data_report()
-    rolling_total.plot_data()
+    if args.plot==True: rolling_total.plot_data()
     rolling_total.save_to_netcdf(out_file)
 
 
