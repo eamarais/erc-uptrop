@@ -84,12 +84,6 @@ optional arguments:
 <dd></dd></dl>
 
 <dl class="py exception">
-<dt id="uptrop.tropomi_ut_no2.CloudFileShapeMismatch">
-<em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">CloudFileShapeMismatch</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudFileShapeMismatch" title="Permalink to this definition"> </a></dt>
-<dd><p>Raised when FRESCO and DLR files are not the same shape</p>
-</dd></dl>
-
-<dl class="py exception">
 <dt id="uptrop.tropomi_ut_no2.UnequalColumnException">
 <em class="property">exception </em><code class="sig-prename descclassname">uptrop.tropomi_ut_no2.</code><code class="sig-name descname">UnequalColumnException</code><a class="headerlink" href="#uptrop.tropomi_ut_no2.UnequalColumnException" title="Permalink to this definition"> </a></dt>
 <dd></dd></dl>
@@ -137,7 +131,7 @@ at file_path and returns an instance of CloudData. Calls either read_fresco_file
 <dt id="uptrop.tropomi_ut_no2.CloudData.read_ocra_file">
 <code class="sig-name descname">read_ocra_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.tropomi_ut_no2.CloudData.read_ocra_file" title="Permalink to this definition"> </a></dt>
 <dd><p>Reads, filters and preprocesses the data in a dlr-ocra file.</p>
-<p><span class="xref std std-ref">uptrop.convert_height_to_pressure</span> is called to convert ocra cloud-top heights to
+<p><span class="xref std std-ref">uptrop.height_pressure_converter</span> is called to convert ocra cloud-top heights to
 pressure values for cross-compatability with fresco data.</p>
 <dl class="simple">
 <dt>Pixels are dropped if</dt><dd><ul class="simple">

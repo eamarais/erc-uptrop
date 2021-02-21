@@ -48,7 +48,7 @@
             
   <div class="section" id="welcome-to-uptrop-s-documentation">
 <h1>Welcome to Uptrop’s documentation!<a class="headerlink" href="#welcome-to-uptrop-s-documentation" title="Permalink to this headline"> </a></h1>
-<p>Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020).</p>
+<p>Here you will find all the relevant details of the functionality of the code used to generate results described and discussed in Marais et al. (2020).</p>
 <p>The python code was developed for the ERC Starting Grant project UpTrop (<a class="reference external" href="https://maraisresearchgroup.co.uk/uptrop.html">https://maraisresearchgroup.co.uk/uptrop.html</a>) led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts.</p>
 <div class="toctree-wrapper compound">
 <p class="caption"><span class="caption-text">Contents:</span></p>
@@ -145,11 +145,11 @@ resolution, and model simulation years.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: ut_no2_gc_test.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--gc_dir GC_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
                      <span class="o">[</span>--resolution RESOLUTION<span class="o">]</span> <span class="o">[</span>--region REGION<span class="o">]</span>
                      <span class="o">[</span>--strat_filter_threshold STRAT_FILTER_THRESHOLD<span class="o">]</span>
-                     <span class="o">[</span>--season SEASON<span class="o">]</span> <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                     <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
                      <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>-p PLOT<span class="o">]</span>
                      <span class="o">[</span>--do_temp_correct DO_TEMP_CORRECT<span class="o">]</span>
-                     <span class="o">[</span>--do_error_weight DO_ERROR_WEIGHT<span class="o">]</span>
                      <span class="o">[</span>--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER<span class="o">]</span>
+                     <span class="o">[</span>--do_cld_hght_test DO_CLD_HGHT_TEST<span class="o">]</span>
 
 optional arguments:
   -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
@@ -159,13 +159,12 @@ optional arguments:
                         Can be 8x10, 4x5, 2x25 or 1x1
   --region REGION       Can be EU, NA, or CH
   --strat_filter_threshold STRAT_FILTER_THRESHOLD
-  --season SEASON
   --start_date START_DATE
   --end_date END_DATE
   -p PLOT, --plot PLOT
   --do_temp_correct DO_TEMP_CORRECT
-  --do_error_weight DO_ERROR_WEIGHT
   --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+  --do_cld_hght_test DO_CLD_HGHT_TEST
 </pre></div>
 </div>
 </div>
@@ -236,7 +235,7 @@ and from the FRESCO cloud product in the TROPOMI NO2 data product file.</p>
 <p>Output from this code includes a NetCDF file with:</p>
 <ol class="arabic simple">
 <li><p>Data regridded to a 1 deg x 1 deg global grid and saved as monthly means for scenes with the reference cloud product
-(specied as input argument) cloud fraction &gt; 0.7 and cloud tops in the upper troposphere (450-180 hPa).</p></li>
+(specified as input argument) cloud fraction &gt; 0.7 and cloud tops in the upper troposphere (450-180 hPa).</p></li>
 <li><p>Meridional frequency of upper tropospheric (450-180 hPa) cloud fractions &gt; 0.7 for each product.</p></li>
 </ol>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: fresco_cld_err.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--s5p_data_dir S5P_DATA_DIR<span class="o">]</span>

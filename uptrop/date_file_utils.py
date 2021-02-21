@@ -5,9 +5,11 @@ from os import path
 
 import sys
 
+
 class InvalidSeasonException(Exception):
     #print("Invalid season")
     pass
+
 
 class InvalidRegionException(Exception):
     #print("Invalid region")

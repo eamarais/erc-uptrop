@@ -61,11 +61,11 @@ resolution, and model simulation years.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>usage: ut_no2_gc_test.py <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>--gc_dir GC_DIR<span class="o">]</span> <span class="o">[</span>--out_dir OUT_DIR<span class="o">]</span>
                      <span class="o">[</span>--resolution RESOLUTION<span class="o">]</span> <span class="o">[</span>--region REGION<span class="o">]</span>
                      <span class="o">[</span>--strat_filter_threshold STRAT_FILTER_THRESHOLD<span class="o">]</span>
-                     <span class="o">[</span>--season SEASON<span class="o">]</span> <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
+                     <span class="o">[</span>--start_date START_DATE<span class="o">]</span>
                      <span class="o">[</span>--end_date END_DATE<span class="o">]</span> <span class="o">[</span>-p PLOT<span class="o">]</span>
                      <span class="o">[</span>--do_temp_correct DO_TEMP_CORRECT<span class="o">]</span>
-                     <span class="o">[</span>--do_error_weight DO_ERROR_WEIGHT<span class="o">]</span>
                      <span class="o">[</span>--apply_cld_frac_filter APPLY_CLD_FRAC_FILTER<span class="o">]</span>
+                     <span class="o">[</span>--do_cld_hght_test DO_CLD_HGHT_TEST<span class="o">]</span>
 
 optional arguments:
   -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
@@ -75,13 +75,12 @@ optional arguments:
                         Can be 8x10, 4x5, 2x25 or 1x1
   --region REGION       Can be EU, NA, or CH
   --strat_filter_threshold STRAT_FILTER_THRESHOLD
-  --season SEASON
   --start_date START_DATE
   --end_date END_DATE
   -p PLOT, --plot PLOT
   --do_temp_correct DO_TEMP_CORRECT
-  --do_error_weight DO_ERROR_WEIGHT
   --apply_cld_frac_filter APPLY_CLD_FRAC_FILTER
+  --do_cld_hght_test DO_CLD_HGHT_TEST
 </pre></div>
 </div>
 <dl class="py exception">
@@ -111,18 +110,18 @@ optional arguments:
 
 <dl class="py class">
 <dt id="uptrop.ut_no2_gc_test.GeosChemDay">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">GeosChemDay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">error_weight</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay" title="Permalink to this definition"> </a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">GeosChemDay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cloud_height_test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for reading, preprocessing and accessing Geoschem data on a given day</p>
 <dl class="py method">
 <dt id="uptrop.ut_no2_gc_test.GeosChemDay.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">error_weight</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay.__init__" title="Permalink to this definition"> </a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_path</span></em>, <em class="sig-param"><span class="n">temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cloud_height_test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay.__init__" title="Permalink to this definition"> </a></dt>
 <dd><p>Reads the data at file_path and returns a GeosChemDay object containing that data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>file_path</strong> (<em>str</em>) – Path to the netcdf4 file containing the GeosChem data</p></li>
-<li><p><strong>error_weight</strong> (<em>bool</em>) – Whether to apply error weighting</p></li>
 <li><p><strong>temperature_correction</strong> (<em>bool</em>) – Whether to apply temperature correction</p></li>
+<li><p><strong>cloud_height_test</strong> (<em>bool</em>) – Whether to test effect of systematic underestimate in cloud height</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -138,7 +137,6 @@ optional arguments:
 <dt id="uptrop.ut_no2_gc_test.GeosChemDay.prepare_no2_pixel">
 <code class="sig-name descname">prepare_no2_pixel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.GeosChemDay.prepare_no2_pixel" title="Permalink to this definition"> </a></dt>
 <dd><p>Extracts preprocesed no2 from the geoschem pixel at x,y</p>
-<p>TODO: MORE HERE</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -153,11 +151,11 @@ optional arguments:
 
 <dl class="py class">
 <dt id="uptrop.ut_no2_gc_test.ProcessedData">
-<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">ProcessedData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em>, <em class="sig-param"><span class="n">strat_thld</span></em>, <em class="sig-param"><span class="n">do_temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_error_weighting</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_frac_filter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData" title="Permalink to this definition"> </a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">uptrop.ut_no2_gc_test.</code><code class="sig-name descname">ProcessedData</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em>, <em class="sig-param"><span class="n">strat_thld</span></em>, <em class="sig-param"><span class="n">do_temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_frac_filter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_hght_test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData" title="Permalink to this definition"> </a></dt>
 <dd><p>A class for comparing geoschem and tropomi data</p>
 <dl class="py method">
 <dt id="uptrop.ut_no2_gc_test.ProcessedData.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em>, <em class="sig-param"><span class="n">strat_thld</span></em>, <em class="sig-param"><span class="n">do_temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_error_weighting</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_frac_filter</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.__init__" title="Permalink to this definition"> </a></dt>
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">str_res</span></em>, <em class="sig-param"><span class="n">strat_thld</span></em>, <em class="sig-param"><span class="n">do_temperature_correction</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_frac_filter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_cld_hght_test</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#uptrop.ut_no2_gc_test.ProcessedData.__init__" title="Permalink to this definition"> </a></dt>
 <dd><p>Creates and returns an instance of ProcessedData for a given region</p>
 <p>This class aggregates geoschem data over a grid defined by the <span class="xref std std-ref">define_grid method</span>.</p>
 <dl class="field-list simple">
@@ -166,7 +164,6 @@ optional arguments:
 <li><p><strong>region</strong> (<em>str</em>) – The region to aggregate geoschem over; can be NA, EU or CH.</p></li>
 <li><p><strong>str_res</strong> (<em>str</em>) – The resolution of the grid around teh region to analyse; can be 8x10, 4x5, 2x25 or 1x1</p></li>
 <li><p><strong>do_temperature_correction</strong> (<em>bool</em>) – Whether to perform the temperature correction step</p></li>
-<li><p><strong>do_error_weighting</strong> (<em>bool</em>) – Whether to weight errors</p></li>
 <li><p><strong>do_cld_frac_filter</strong> (<em>bool</em>) – Whether to perform fractional filtering of clouds</p></li>
 </ul>
 </dd>

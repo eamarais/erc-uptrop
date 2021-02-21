@@ -7,7 +7,7 @@ and from the FRESCO cloud product in the TROPOMI NO2 data product file.
 Output from this code includes a NetCDF file with:
 
 1. Data regridded to a 1 deg x 1 deg global grid and saved as monthly means for scenes with the reference cloud product
-   (specied as input argument) cloud fraction > 0.7 and cloud tops in the upper troposphere (450-180 hPa).
+   (specified as input argument) cloud fraction > 0.7 and cloud tops in the upper troposphere (450-180 hPa).
 2. Meridional frequency of upper tropospheric (450-180 hPa) cloud fractions > 0.7 for each product.
 
 .. code-block:: bash
@@ -697,29 +697,6 @@ def process_file(tdfile, tffile, running_total_container):
     except ShapeMismatchException:
         print("Mismatch in shape of {} and {}".format(tdfile, tffile))
     return
-
-
-def get_files_for_period(sen_5_p_dir, start_date, end_date):
-
-    year = date.strftime(r"%Y")
-    month = date.strftime(r"%m")
-    datestamp = date.strftime(r"%Y%m%dT")
-    td_file_list = glob.glob(
-        path.join(sen_5_p_dir,
-                  'CLOUD_OFFL',
-                  StrYY,
-                  StrMM,
-                  'S5P_OFFL_L2__CLOUD__' + StrYY + StrMM + '*'))
-    td_file_list = sorted(td_file_list)
-    # Get FRESCO file names:
-    tf_file_list = glob.glob(
-        path.join(sen_5_p_dir,
-                  'NO2_OFFL',
-                  StrYY,
-                  StrMM ,
-                  'S5P_OFFL_L2__NO2____' + StrYY + StrMM + '*'))
-    tf_file_list = sorted(tf_file_list)
-
 
 
 def get_files_for_month(sen_5_p_dir, month_index, ndays=31):

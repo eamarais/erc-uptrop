@@ -16,7 +16,7 @@ Options are available to use cloud information from either the FRESCO-S or ROCIN
            [--pmin PMIN] [--pmax PMAX]
 
     optional arguments:
-      -h, --help            show this help message and ext
+      -h, --help            show this help message and exit
       --trop_dir TROP_DIR   Directory containing tropomi data
       --out_dir OUT_DIR     Directory to contain finished netcdf4
       --season SEASON       Can be jja, son, djf, mam
@@ -53,10 +53,7 @@ import matplotlib.pyplot as plt
 from dateutil import rrule as rr
 
 # Import hack
-sys.path.append(
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
-        '..'))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
 
 from uptrop.height_pressure_converter import alt2pres
 from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
@@ -820,21 +817,13 @@ if __name__ == "__main__":
     if args.season:
         start_date, end_date = season_to_date(args.season)
     else:
-        if args.start_date and args.end_date:
+        if args.start_date is not None and args.end_date is not None:
             start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
             end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-        else:
-            print("Please provide either --season or --start_date and --end_date")
-
-    if args.start_date and args.end_date:
-            start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
-            end_date = dt.datetime.strptime(args.end_date, "%Y-%m-%d")
-    else:
-        if args.season:
-            start_date, end_date = season_to_date(args.season)
         else:
             print("Please provide either --season or --start_date and --end_date")
             sys.exit(1)
+
     if start_date.year == end_date.year:
         yrrange = str(start_date.year)
     else:
