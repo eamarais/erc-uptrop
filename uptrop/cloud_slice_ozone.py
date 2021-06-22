@@ -37,56 +37,58 @@ from uptrop.constants import AVOGADRO as na
 from uptrop.constants import G as g
 from uptrop.constants import MW_AIR as mmair
 
+from scipy import stats
+
 CLOUD_SLICE_ERROR_ENUM = {
     1: "too_few_points",
     2: "low_cloud_height_range",
     3: "low_cloud_height_std",
     4: "large_error",
     5: "much_less_than_zero",
-    6: "no2_outlier",
+    6: "o3_outlier",
     7: "non_uni_strat"
 }
 
 
-def cldslice(pcolno2,cldtophgt):
+def cldslice(pcolo3,cldtophgt):
     """
-    Compute upper troposphere NO2 using partial columns above
+    Compute upper troposphere O3 using partial columns above
     cloudy scenes.
 
-    Determine NO2 mixing ratio by regressing NO2 partial columns
+    Determine O3 mixing ratio by regressing O3 partial columns
     against cloud-top heights over cloudy scenes.
 
-    :param pcolno2: vectors of partial columns in molec/m2
-    :type pcolno2: list of floats
+    :param pcolo3: vectors of partial columns in molec/m2
+    :type pcolo3: list of floats
     :param cldtophgt: corresponding cloud top heights in hPa.
     :type cldtophgt: list of floats
 
-    :return: NO2 volumetric mixing ratio, corresponding estimated error on the
-            cloud-sliced NO2 value, a number to identify which filtering
+    :return: O3 volumetric mixing ratio, corresponding estimated error on the
+            cloud-sliced O3 value, a number to identify which filtering
             criteria led to loss of data in the case that the cloud-sliced
-            NO2 value ia nan, and the mean cloud pressure of data retained
+            O3 value ia nan, and the mean cloud pressure of data retained
             after 10th and 90th percentile filtering.
     :rtype: tuple
     """
     # Initialize:
-    utmrno2=0.0
-    utmrno2err=0.0
+    utmro3=0.0
+    utmro3err=0.0
     error_state=0
 
-    # Define factor to convert slope of NO2 partial column vs pressure
+    # Define factor to convert slope of O3 partial column vs pressure
     # to VMR:
     den2mr=np.divide((np.multiply(g,mmair)),na)
 
     # Get 10th and 90th percentiles of data population:
-    p10=np.percentile(pcolno2,10)
-    p90=np.percentile(pcolno2,90)
+    p10=np.percentile(pcolo3,10)
+    p90=np.percentile(pcolo3,90)
 
     # Remove outliers determined as falling outside the 10th and 90th 
     # percentile range. Not include this or instead using 5th and 95th leads
-    # to overestimate in cloud-sliced UT NO2 compared to the "truth":
-    sind=np.where((pcolno2>p10)&(pcolno2<p90))[0]
+    # to overestimate in cloud-sliced UT O3 compared to the "truth":
+    sind=np.where((pcolo3>p10)&(pcolo3<p90))[0]
     # Trim the data to remove ouliers:
-    pcolno2=pcolno2[sind]
+    pcolo3=pcolo3[sind]
     cldtophgt=cldtophgt[sind]
 
     # Cloud pressure mean:
@@ -100,9 +102,13 @@ def cldslice(pcolno2,cldtophgt):
     # removing outliers:
     if npoints<=10:
         error_state=1
-        utmrno2=np.nan
-        utmrno2err=np.nan
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+        utmro3=np.nan
+        utmro3err=np.nan
+        return (utmro3, utmro3err, error_state, mean_cld_pres)
+
+    # Calculate correlation:
+    r = stats.pearsonr(cldtophgt*1e2,pcolo3)
+    corr = r[0]
 
     # Get cloud top height standard deviation:
     stdcld=np.std(cldtophgt)
@@ -113,29 +119,29 @@ def cldslice(pcolno2,cldtophgt):
     # (i) Cloud range:
     if diffcld<=140:
         error_state=2
-        utmrno2=np.nan
-        utmrno2err=np.nan
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+        utmro3=np.nan
+        utmro3err=np.nan
+        return (utmro3, utmro3err, error_state, mean_cld_pres)
 
     # (ii) Cloud standard deviation:
     if stdcld<=30:
         error_state=3
-        utmrno2=np.nan
-        utmrno2err=np.nan
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+        utmro3=np.nan
+        utmro3err=np.nan
+        return (utmro3, utmro3err, error_state, mean_cld_pres)
 
     # Get regression statistics:
-    # Partial NO2 column (molec/m2) vs cloud top height (hPa):
+    # Partial O3 column (molec/m2) vs cloud top height (hPa):
     # 300 iterations of regression chosen to compromise between
     # statistics and computational efficiency:
-    result=rma(cldtophgt*1e2,pcolno2,len(pcolno2),300)
+    result=rma(cldtophgt*1e2,pcolo3,len(pcolo3),300)
 
     # Remove data with relative error > 100%:
-    if np.absolute(np.divide(result[2], result[0]))>1.0:
-        error_state=4
-        utmrno2=np.nan
-        utmrno2err=np.nan
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+    #if np.absolute(np.divide(result[2], result[0]))>1.0:
+    #    error_state=4
+    #    utmro3=np.nan
+    #    utmro3err=np.nan
+    #    return (utmro3, utmro3err, error_state, mean_cld_pres)
 
     # Account for negative values:
     # Set points with sum of slope and error less than zero to nan.
@@ -143,39 +149,40 @@ def cldslice(pcolno2,cldtophgt):
     # This could be reduced to a single line. Eventually update to:
     #if result[0]<0 and np.add(result[0],result[2])<0):
     #    error_state=5
-    #    utmrno2=np.nan
-    #    utmrno2err=np.nan
-    #    return (utmrno2, utmrno2err, error_state, mean_cld_pres)
-    if result[0]<0 and (not np.isnan(utmrno2)):
-        if (np.add(result[0],result[2])<0):
-            error_state=5
-            utmrno2=np.nan
-            utmrno2err=np.nan
-            return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+    #    utmro3=np.nan
+    #    utmro3err=np.nan
+    #    return (utmro3, utmro3err, error_state, mean_cld_pres)
+    if np.add(result[0],result[2])<0 and (not np.isnan(utmro3)):
+    #if corr < 0.4:
+        #if (np.add(result[0],result[2])<0):
+        error_state=5
+        utmro3=np.nan
+        utmro3err=np.nan
+        return (utmro3, utmro3err, error_state, mean_cld_pres)
 
-    # Proceed with estimating NO2 mixing ratios for retained data:
-    #if not np.isnan(utmrno2):
+    # Proceed with estimating O3 mixing ratios for retained data:
+    #if not np.isnan(utmro3):
     slope=result[0]
     #slope=np.multiply(slope,sf)
     slope_err=result[2]
     #slope_err=np.multiply(slope_err,sf)
     # Convert slope to mol/mol:
-    utmrno2=np.multiply(slope,den2mr)
+    utmro3=np.multiply(slope,den2mr)
     # Convert error to mol/mol:
-    utmrno2err=np.multiply(slope_err,den2mr)
-    # Convert UT NO2 from mol/mol to ppt:
-    utmrno2=np.multiply(utmrno2,1e+12)
-    # Convert UT NO2 error from mol/mol to ppt
-    utmrno2err=np.multiply(utmrno2err,1e+12)
+    utmro3err=np.multiply(slope_err,den2mr)
+    # Convert UT O3 from mol/mol to ppb:
+    utmro3=np.multiply(utmro3,1e+9)
+    # Convert UT O3 error from mol/mol to ppb
+    utmro3err=np.multiply(utmro3err,1e+9)
 
-    # Finally, remove outliers in the cloud-sliced NO2
+    # Finally, remove outliers in the cloud-sliced O3
     # 200 pptv threshold is chosen, as far from likely range.
-    # Scale factor applied to TROPOMI UT NO2 to account for
-    # positive bias in free tropospheric NO2:
-    if utmrno2>200:
+    # Scale factor applied to TROPOMI UT O3 to account for
+    # positive bias in free tropospheric O3:
+    if utmro3>250:
         error_state=6
-        utmrno2=np.nan
-        utmrno2err=np.nan
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+        utmro3=np.nan
+        utmro3err=np.nan
+        return (utmro3, utmro3err, error_state, mean_cld_pres)
     else:
-        return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+        return (utmro3, utmro3err, error_state, mean_cld_pres)

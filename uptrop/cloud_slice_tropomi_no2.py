@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for June 2019 to November 2020.
+Process and apply the cloud-slicing approach to partial columns of NO2 from S5P/TROPOMI for December 2018 to May 2021.
 
 The default is to obtain seasonal means at 1x1 for partial columns above clouds with cloud fraction >=0.7 and within the cloud top pressure range of 450-180 hPa.
 
@@ -56,7 +56,7 @@ from dateutil import rrule as rr
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
 
 from uptrop.height_pressure_converter import alt2pres
-from uptrop.cloud_slice_ut_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
+from uptrop.cloud_slice_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
 from uptrop.date_file_utils import season_to_date, get_tropomi_file_list, get_ocra_file_list, get_date
 
 
@@ -69,7 +69,7 @@ class UnequalColumnException(Exception):
 
 class GridAggregator:
     """A class for aggregating higher-resolution data into grid squares"""
-    def __init__(self, dellat, dellon):
+    def __init__(self, dellat, dellon,pmin,pmax):
         """Creates a grid aggregator across the entire world of resolution dellon, dellat
 
         :param dellat: vertical size of the aggregation grid in decimal degrees
@@ -96,6 +96,12 @@ class GridAggregator:
 
         self.file_count = 0
         self.current_max_points = 0
+
+        # Define cloud pressure difference threshold:
+        if ((pmin==180) & (pmax==450)): self.diff_cldh_thold=140
+        if ((pmin==180) & (pmax==320)): self.diff_cldh_thold=100
+        if ((pmin==320) & (pmax==450)): self.diff_cldh_thold=100
+        if ((pmin==280) & (pmax==400)): self.diff_cldh_thold=80
 
         self.loss_count = {
             "too_few_points": 0,
@@ -243,7 +249,7 @@ class GridAggregator:
         :param t_col_no2: A list of gc_data values, of same length as t_cld
         :type t_col_no2: list of floats
         """
-        utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
+        utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld,self.diff_cldh_thold)
         # Calculate weights:
         #gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
         # Skip if approach didn't work (i.e. cloud-sliced UT NO2 is NaN):
@@ -395,7 +401,7 @@ class GridAggregator:
             
             cb.ax.tick_params(labelsize=10, direction='in', length=6)
 
-        #plt.savefig(out_file, format='ps')
+        plt.savefig(out_file, format='ps')
         plt.show()
 
 class TropomiData:
@@ -804,6 +810,7 @@ if __name__ == "__main__":
     parser.add_argument("--trop_dir", help="Directory containing tropomi data")
     parser.add_argument("--out_dir", help="Directory to contain finished netcdf4")
     parser.add_argument("--season", help="Can be jja, son, djf, mam")
+    parser.add_argument("--year", help="Can be 2018, 2019, 2020, 2021")
     parser.add_argument("--start_date", help="Start date of processing window (yyyy-mm-dd)")
     parser.add_argument("--end_date", help="End date of processing window (yyyy-mm-dd)")
     parser.add_argument("--grid_res", default='1x1', help="Can be 1x1, 2x25, 4x5")
@@ -815,7 +822,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.season:
-        start_date, end_date = season_to_date(args.season)
+        start_date, end_date = season_to_date(args.season,np.int(args.year))
     else:
         if args.start_date is not None and args.end_date is not None:
             start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
@@ -859,7 +866,7 @@ if __name__ == "__main__":
         print("Invalid cloud product; can be fresco or dlr-ocra")
         sys.exit(1)
 
-    grid_aggregator = GridAggregator(dellat, dellon)
+    grid_aggregator = GridAggregator(dellat, dellon,args.pmin,args.pmax)
 
     # Check for instances where there are cloud files for a TROPOMI swath, but
     # no NO2 files and vice versa:
@@ -901,26 +908,27 @@ if __name__ == "__main__":
     str_cld_prod = args.cloud_product
     if ( fresco_440 ):
         str_cld_prod = 'fresco-440nm'
+    #out_plot_file = ' '
+    #grid_aggregator.plot_data(out_plot_file)
 
     # Define output file names:
-    # (1) Data file:
-    out_data_file = path.join(args.out_dir, 'tropomi-ut-no2-' + str_cld_prod
-                              + '-' + args.cloud_threshold
-                              + '-' + args.grid_res
-                              + '-' + args.season[0:3]
-                              + '-' + yrrange + '-w-neg-val-v1.nc')
-
+    # Data file and plot file names if season is or isn't specified in the input arguments:
+    if args.season is not None: 
+        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v1.nc'
+        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season[0:3] + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v1.ps'
+    else:
+        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v1.nc'
+        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v1.ps'
+    # Complete data file path:
+    out_data_file_path = path.join(args.out_dir, out_data_file)
+    print("Saving data to: {}".format(out_data_file_path), flush=True)
+    
     # (2) Plot file:
-    out_plot_file = path.join(args.out_dir, 'Images/tropomi-ut-no2-'
-                              + str_cld_prod
-                              + '-' + args.cloud_threshold
-                              + '-' + args.grid_res
-                              + '-' + args.season[0:3]
-                              + '-' + yrrange + '-v1.ps')
+    out_plot_file_path = path.join('/Images/', out_plot_file) #path.join(args.out_dir, out_plot_file)
     
     grid_aggregator.print_report()
-    grid_aggregator.save_to_netcdf(out_data_file)
-    grid_aggregator.plot_data(out_plot_file)
+    grid_aggregator.save_to_netcdf(out_data_file_path)
+    grid_aggregator.plot_data(out_plot_file_path)
 
 
 

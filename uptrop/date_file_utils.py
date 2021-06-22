@@ -16,28 +16,44 @@ class InvalidRegionException(Exception):
     pass
 
 
-def season_to_date(season):
-    if season == "jja2019":
-        start_date = dt.datetime(year=2019, month=6, day=1)
-        end_date = dt.datetime(year=2019, month=8, day=31)
-    elif season == "jja2020":
-        start_date = dt.datetime(year=2020, month=6, day=1)
-        end_date = dt.datetime(year=2020, month=8, day=31)
-    elif season == "son2019":
-        start_date = dt.datetime(year=2019, month=9, day=1)
-        end_date = dt.datetime(year=2019, month=11, day=30)
-    elif season == "son2020":
-        start_date = dt.datetime(year=2020, month=9, day=1)
-        end_date = dt.datetime(year=2020, month=11, day=30)
+def season_to_date(season,yyyy):
+    if season == "jja":
+        start_date = dt.datetime(year=yyyy, month=6, day=1)
+        end_date = dt.datetime(year=yyyy, month=8, day=31)
+    elif season == "son":
+        start_date = dt.datetime(year=yyyy, month=9, day=1)
+        end_date = dt.datetime(year=yyyy, month=11, day=30)
     elif season == "djf":
-        start_date = dt.datetime(year=2019, month=12, day=1)
-        end_date = dt.datetime(year=2020, month=2, day=29)  # Leap year
+        start_date = dt.datetime(year=yyyy, month=12, day=1)
+        # Account for leap year:
+        if yyyy+1==2020:
+            end_date = dt.datetime(year=yyyy+1, month=2, day=29)
+        else:
+            end_date = dt.datetime(year=yyyy+1, month=2, day=28)
     elif season == "mam":
-        start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=5, day=31)
-    elif season == "test":
-        start_date = dt.datetime(year=2020, month=3, day=1)
-        end_date = dt.datetime(year=2020, month=3, day=3)
+        start_date = dt.datetime(year=yyyy, month=3, day=1)
+        end_date = dt.datetime(year=yyyy, month=5, day=31)
+    #if season == "jja2019":
+    #    start_date = dt.datetime(year=2019, month=6, day=1)
+    #    end_date = dt.datetime(year=2019, month=8, day=31)
+    #elif season == "jja2020":
+    #    start_date = dt.datetime(year=2020, month=6, day=1)
+    #    end_date = dt.datetime(year=2020, month=8, day=31)
+    #elif season == "son2019":
+    #    start_date = dt.datetime(year=2019, month=9, day=1)
+    #    end_date = dt.datetime(year=2019, month=11, day=30)
+    #elif season == "son2020":
+    #    start_date = dt.datetime(year=2020, month=9, day=1)
+    #    end_date = dt.datetime(year=2020, month=11, day=30)
+    #elif season == "djf":
+    #    start_date = dt.datetime(year=2019, month=12, day=1)
+    #    end_date = dt.datetime(year=2020, month=2, day=29)  # Leap year
+    #elif season == "mam":
+    #    start_date = dt.datetime(year=2020, month=3, day=1)
+    #    end_date = dt.datetime(year=2020, month=5, day=31)
+    #elif season == "test":
+    #    start_date = dt.datetime(year=2020, month=3, day=1)
+    #    end_date = dt.datetime(year=2020, month=3, day=3)
     else:
         raise InvalidSeasonException
     return start_date, end_date
