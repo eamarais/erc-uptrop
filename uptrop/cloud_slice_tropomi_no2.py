@@ -108,7 +108,7 @@ class GridAggregator:
             "low_cloud_height_range": 0,
             "low_cloud_height_std": 0,
             "large_error": 0,
-            "much_less_than_zero": 0,
+            "sig_diff_from_zero": 0,
             "no2_outlier": 0,
             "non_uni_strat": 0,
         }
@@ -298,7 +298,7 @@ class GridAggregator:
         print('(2) Low cloud height range: ', self.loss_count["low_cloud_height_range"], flush=True)
         print('(3) Low cloud height std dev: ', self.loss_count["low_cloud_height_std"], flush=True)
         print('(4) Large error: ', self.loss_count["large_error"], flush=True)
-        print('(5) Significantly less than zero: ', self.loss_count["much_less_than_zero"], flush=True)
+        print('(5) Significantly less than zero: ', self.loss_count["sig_diff_from_zero"], flush=True)
         print('(6) Outlier (NO2 > 200 pptv): ', self.loss_count["no2_outlier"], flush=True)
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
@@ -364,7 +364,7 @@ class GridAggregator:
 
         # Define plot parameters:
         nplots = 3
-        max_val = [100, 20, 20]
+        max_val = [80, 80, 20]
         nbound = [21, 21, 21]
         unit = ['[pptv]','[pptv]','unitless']
         plot_title = ['TROPOMI cloud-sliced NO2',
@@ -924,10 +924,11 @@ if __name__ == "__main__":
     print("Saving data to: {}".format(out_data_file_path), flush=True)
     
     # (2) Plot file:
-    out_plot_file_path = path.join('/Images/', out_plot_file) #path.join(args.out_dir, out_plot_file)
+    #out_plot_file_path = path.join('/Images/', out_plot_file)
+    out_plot_file_path = path.join(args.out_dir, '/Images/', out_plot_file)
     
     grid_aggregator.print_report()
-    grid_aggregator.save_to_netcdf(out_data_file_path)
+    #grid_aggregator.save_to_netcdf(out_data_file_path)
     grid_aggregator.plot_data(out_plot_file_path)
 
 

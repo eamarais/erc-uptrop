@@ -286,9 +286,9 @@ class DataCollector:
         plt.ylabel('$NO_2$ total VCD [$10^{14}$ molecules $cm^2$]')
         leg = plt.legend(loc='lower left', fontsize='large')
         leg.get_frame().set_linewidth(0.0)
-        #plt.savefig('./Images/tropomi-'+PANDORA_SITE+
-        #            '-pandora-gc_data-timeseries-v1-jun2019-may2020.ps',
-        #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
+        plt.savefig('./Images/v020101/tropomi-'+PANDORA_SITE+
+                    '-pandora-gc_data-timeseries-v1-dec2018-may2021.ps',
+                    format='ps',transparent=True,bbox_inches='tight',dpi=100)
         # Plot scatterplot:
         tx = self.pan_no2
         ty = self.s5p_no2
@@ -323,7 +323,7 @@ class DataCollector:
         add2plt = ("r = {a:.3f}".format(a=r[0]))
         plt.text(0.1, 0.84, add2plt, fontsize=10,
                  ha='left', va='center', transform=ax.transAxes)
-        #plt.savefig('./Images/tropomi-'+PANDORA_SITE+
+        #plt.savefig('./Images/v020101/tropomi-'+PANDORA_SITE+
         #            '-pandora-gc_data-scatterplot-v1-jun2019-apr2020.ps',
         #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         plt.show()
@@ -779,7 +779,7 @@ class PandoraData:
         # V1.8 data will be available in late 2020.
         # Only apply this correction to the high-altitude sites:
         if (col_type == 'Tot' and self.panalt > 2e3):
-            print('Apply 10% bias correction to Pandora data for site at {} m'.format(str(self.panalt)))
+            print('Apply 10% bias correction to Pandora total column for site at {} m'.format(str(self.panalt)))
             self.panno2 = self.panno2 * 0.9
             self.panno2err = self.panno2err * 0.9
         else:
@@ -925,9 +925,9 @@ if __name__ == "__main__":
     # Get Pandora file_path (one file per site):
     panfile= get_pandora_file(args.pan_dir, args.pandora_site, SITE_NUM, C_SITE, args.no2_col, FV)
     if ( args.apply_bias_correction ):
-        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v5.nc')
+        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v1.nc')
     else:
-        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-v4.nc')
+        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-v1.nc')
 
     pandora_data = PandoraData(panfile,args.no2_col)
     data_aggregator = DataCollector(start_date, end_date)

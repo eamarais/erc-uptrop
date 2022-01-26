@@ -69,7 +69,7 @@ from uptrop.constants import AVOGADRO
 from uptrop.constants import G
 from uptrop.constants import MW_AIR
 from uptrop.bootstrap import rma
-from uptrop.cloud_slice_no2_ts import cldslice, CLOUD_SLICE_ERROR_ENUM
+from uptrop.cloud_slice_no2 import cldslice, CLOUD_SLICE_ERROR_ENUM
 from uptrop.height_pressure_converter import alt2pres, pres2alt
 
 
@@ -155,7 +155,7 @@ class ProcessedData:
             "low_cloud_height_range": 0,
             "low_cloud_height_std": 0,
             "large_error": 0,
-            "much_less_than_zero": 0,
+            "sig_diff_from_zero": 0,
             "no2_outlier": 0,
             "non_uni_strat": 0,
         }
@@ -388,7 +388,7 @@ class ProcessedData:
         :param t_o3: O3 mixing ratio to test influence from stratosphere
         :type t_o3: float
         """
-        utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld)
+        utmrno2, utmrno2err, stage_reached, mean_cld_pres = cldslice(t_col_no2, t_cld,140)
         
         # Skip if approach didn't work (i.e. cloud-sliced UT NO2 is NaN):
         # Drop out after the reason for data loss is added to loss_count.
@@ -470,7 +470,7 @@ class ProcessedData:
         print('(2) Low cloud height range: ', self.loss_count["low_cloud_height_range"], flush=True)
         print('(3) Low cloud height std dev: ', self.loss_count["low_cloud_height_std"], flush=True)
         print('(4) Large error: ', self.loss_count["large_error"], flush=True)
-        print('(5) Significantly less than zero: ', self.loss_count["much_less_than_zero"], flush=True)
+        print('(5) Significantly less than zero: ', self.loss_count["sig_diff_from_zero"], flush=True)
         print('(6) Outlier (NO2 > 200 pptv): ', self.loss_count["no2_outlier"], flush=True)
         print('(7) Non-uniform stratosphere: ', self.loss_count["non_uni_strat"], flush=True)
         print('(8) Successful retrievals: ', self.cloud_slice_count, flush=True)
@@ -821,7 +821,7 @@ if __name__ == "__main__":
     parser.add_argument("--out_dir")
     parser.add_argument("--resolution", default="4x5", help="Can be 8x10, 4x5, 2x25 or 1x1")
     parser.add_argument("--region", default="EU", help="Can be EU, NA, or CH")
-    parser.add_argument("--strat_filter_threshold", default="001", help="")
+    parser.add_argument("--strat_filter_threshold", default="002", help="")
     #parser.add_argument("--start_date", default="2016-06-01")
     #parser.add_argument("--end_date", default="2017-08-31")
     parser.add_argument("-p", "--plot", type=bool, default=False)
@@ -847,14 +847,14 @@ if __name__ == "__main__":
 
     if args.do_cld_hght_test:
         out_file += "-cldtop"
-    if args.strat_filter_threshold != "001":
+    if args.strat_filter_threshold != "002":
         out_file += '-' + args.strat_filter_threshold +'strat'
     if args.do_temp_correct:
         out_file += "-temp-corr"
     if args.apply_cld_frac_filter:
         out_file += "-cld-filt"
         
-    out_file += "-ts-v1.nc"
+    out_file += "-v1.nc"
 
     strat_filter_threshold = float(args.strat_filter_threshold)/100
     files = get_gc_file_list(gc_dir, args.region)
@@ -871,6 +871,6 @@ if __name__ == "__main__":
     rolling_total.get_weighted_mean()
     rolling_total.print_data_report()
     if args.plot==True: rolling_total.plot_data()
-    #rolling_total.save_to_netcdf(out_file)
+    rolling_total.save_to_netcdf(out_file)
 
 

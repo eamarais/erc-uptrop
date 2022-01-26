@@ -44,13 +44,13 @@ CLOUD_SLICE_ERROR_ENUM = {
     2: "low_cloud_height_range",
     3: "low_cloud_height_std",
     4: "large_error",
-    5: "much_less_than_zero",
+    5: "sig_diff_from_zero",
     6: "no2_outlier",
     7: "non_uni_strat"
 }
 
 
-def cldslice(pcolno2,cldtophgt):
+def cldslice(pcolno2,cldtophgt,cld_diff_thold):
     """
     Compute upper troposphere NO2 using partial columns above
     cloudy scenes.
@@ -113,7 +113,7 @@ def cldslice(pcolno2,cldtophgt):
 
     # Only consider scenes with a dynamic range of clouds:
     # (i) Cloud range:
-    if diffcld<=140:
+    if diffcld<=cld_diff_thold:
         error_state=2
         utmrno2=np.nan
         utmrno2err=np.nan
@@ -130,13 +130,19 @@ def cldslice(pcolno2,cldtophgt):
     # Partial NO2 column (molec/m2) vs cloud top height (hPa):
     # 300 iterations of regression chosen to compromise between
     # statistics and computational efficiency:
-    #result=rma(cldtophgt*1e2,pcolno2,npoints,300)
+    result=rma(cldtophgt*1e2,pcolno2,npoints,300)
     
     # Try Theil-Sen regressor instead:
     # Test with GEOS-Chem.    
-    ts_reg = stats.mstats.theilslopes(pcolno2, cldtophgt*1e2, 0.95)
-    ts_slope = ts_reg[0]
-    ts_slope_err = max(np.abs(ts_reg[0]-ts_reg[2:]))
+    ts_reg = stats.mstats.theilslopes(pcolno2, cldtophgt*1e2, 0.9)
+    ts_slope = ts_reg[0] 
+    ts_slope_err = max(np.abs(ts_reg[0]-ts_reg[2:4])) # Conservative approach: choose largest error value
+
+    # Compare the two:
+    #print('RMA slope: ', result[0])
+    #print('Theil Slope: ', ts_slope)
+    #print('Theil Slope CI: ', ts_reg[2:4])
+    #sys.exit()
 
     #if ts_slope>=0:
     #    print('RMA slope (e12): ',result[0]*1e-12)
@@ -150,9 +156,9 @@ def cldslice(pcolno2,cldtophgt):
     #    print('R = ',r)
     #    if r[0]>0.6: sys.exit()
 
-    # Remove data with relative error > 100%:
+    # Remove data with relative error > factor of 3:
     #if np.absolute(np.divide(result[2], result[0]))>1.0:
-    if np.min(np.abs(np.divide(ts_slope_err, ts_slope)))>1.0:
+    if np.divide(ts_slope_err, ts_slope)>2.0:
         error_state=4
         utmrno2=np.nan
         utmrno2err=np.nan
@@ -169,8 +175,8 @@ def cldslice(pcolno2,cldtophgt):
     #    return (utmrno2, utmrno2err, error_state, mean_cld_pres)
     #if result[0]<0 and (not np.isnan(utmrno2)):
     #    if (np.add(result[0],result[2])<0):
-    if ts_slope<0 and (not np.isnan(utmrno2)):
-        if np.min(np.add(ts_slope,ts_slope_err))<0:
+    if ts_slope<0:     # and (not np.isnan(utmrno2)):
+        if np.add(ts_slope,ts_slope_err)<0:
             error_state=5
             utmrno2=np.nan
             utmrno2err=np.nan
@@ -197,7 +203,7 @@ def cldslice(pcolno2,cldtophgt):
     # 200 pptv threshold is chosen, as far from likely range.
     # Scale factor applied to TROPOMI UT NO2 to account for
     # positive bias in free tropospheric NO2:
-    if utmrno2>200:
+    if np.abs(utmrno2)>200:
         error_state=6
         utmrno2=np.nan
         utmrno2err=np.nan

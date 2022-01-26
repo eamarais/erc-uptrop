@@ -44,7 +44,7 @@ CLOUD_SLICE_ERROR_ENUM = {
     2: "low_cloud_height_range",
     3: "low_cloud_height_std",
     4: "large_error",
-    5: "much_less_than_zero",
+    5: "sig_diff_from_zero",
     6: "no2_outlier",
     7: "non_uni_strat"
 }
@@ -156,8 +156,15 @@ def cldslice(pcolno2,cldtophgt,cld_diff_thold):
     #    utmrno2=np.nan
     #    utmrno2err=np.nan
     #    return (utmrno2, utmrno2err, error_state, mean_cld_pres)
-    if result[0]<0 and (not np.isnan(utmrno2)):
+    if result[0]<0: # and (not np.isnan(utmrno2)):
         if (np.add(result[0],result[2])<0):
+            error_state=5
+            utmrno2=np.nan
+            utmrno2err=np.nan
+            return (utmrno2, utmrno2err, error_state, mean_cld_pres)
+
+    if result[0]>0: # and (not np.isnan(utmrno2)):
+        if (np.subtract(result[0],result[2])<0):
             error_state=5
             utmrno2=np.nan
             utmrno2err=np.nan
