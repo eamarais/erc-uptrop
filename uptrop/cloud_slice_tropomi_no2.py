@@ -925,7 +925,7 @@ if __name__ == "__main__":
     
     # (2) Plot file:
     #out_plot_file_path = path.join('/Images/', out_plot_file)
-    out_plot_file_path = path.join(args.out_dir, '/Images/', out_plot_file)
+    out_plot_file_path = path.join(args.out_dir, 'Images/', out_plot_file)
     
     grid_aggregator.print_report()
     #grid_aggregator.save_to_netcdf(out_data_file_path)
