@@ -921,14 +921,15 @@ if __name__ == "__main__":
         out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v1.ps'
     # Complete data file path:
     out_data_file_path = path.join(args.out_dir, out_data_file)
+    grid_aggregator.print_report()
     print("Saving data to: {}".format(out_data_file_path), flush=True)
+    grid_aggregator.save_to_netcdf(out_data_file_path)
     
     # (2) Plot file:
     #out_plot_file_path = path.join('/Images/', out_plot_file)
     out_plot_file_path = path.join(args.out_dir, '/Images/', out_plot_file)
     
-    grid_aggregator.print_report()
-    #grid_aggregator.save_to_netcdf(out_data_file_path)
+    print("Saving image to: {}".format(out_plot_file_path), flush=True)
     grid_aggregator.plot_data(out_plot_file_path)
 
 
