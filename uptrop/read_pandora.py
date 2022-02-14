@@ -113,7 +113,7 @@ def get_lat_lon_alt(pandora_filepath):
     return {"lat": lat, "lon": lon, "alt": alt}
 
 
-def read_pandora(pandora_filepath, no2col):
+def read_pandora(pandora_filepath, no2col, pan_ver):
 
     """Reads position and data from a Pandora file
 
@@ -132,6 +132,8 @@ def read_pandora(pandora_filepath, no2col):
     :type pandora_filepath: str
     :param no2col: Whether to get all values 'Tot' or tropospheric values only 'Trop'
     :type no2col: str
+    :param pan_ver: Whether Pandora version reading in is v1.7 or v1.8
+    :type pan_ver: str
 
     :returns: A tuple of the position dictionary and the dataframe
     :rtype: tuple(dict, pandas.dataframe)
@@ -140,37 +142,53 @@ def read_pandora(pandora_filepath, no2col):
     loc = get_lat_lon_alt(pandora_filepath)
 
     column_dict = get_column_description_index(pandora_filepath)
-    dateind = get_column_from_description(column_dict, 'UT date and time for center of m')
+    dateind = get_column_from_description(column_dict, 'UT date and time for ') #center of m')
     jdayind = get_column_from_description(column_dict, 'Fractional days since 1-Jan-2000')
     # SZA:
-    szaind = get_column_from_description(column_dict,  'Solar zenith angle for center of')
+    szaind = get_column_from_description(column_dict,  'Solar zenith angle for ') #center of')
     # NO2 column:
     # (a) Total:
     if no2col == 'Tot':
         no2ind = get_column_from_description(column_dict,  'Nitrogen dioxide total vertical ')
+        #print(no2ind)
+        #sys.exit()
     # (b) Troposphere:
     if no2col == 'Trop':
         no2ind = get_column_from_description(column_dict,  'Nitrogen dioxide tropospheric v')
     # NO2 column error:
     # (a) Total:
     if no2col == 'Tot':
-        errind = get_column_from_description(column_dict,  'Uncertainty of nitrogen dioxide total ver')
+        if pan_ver == '1.7':
+            errind = get_column_from_description(column_dict,  'Uncertainty of nitrogen dioxide total ver')
+        else:
+            errind = get_column_from_description(column_dict,  'Independent uncertainty of nitrogen dioxide total vertical column amount')
     # (b) Troposphere:
     if no2col == 'Trop':
-        errind = get_column_from_description(column_dict,  'Uncertainty of nitrogen dioxide troposph')
+        if pan_ver == '1.7':
+            errind = get_column_from_description(column_dict,  'Uncertainty of nitrogen dioxide troposph')
+        else:
+            errind = get_column_from_description(column_dict,  'Independent uncertainty of nitrogen dioxide tropospheric vertical column amount')
     # Data quality flag:
     qaflagind = get_column_from_description(column_dict,  'L2 data quality flag for nitrog')
 
     # Level 2 fit flag:
     # There are two entries (min and max) of this in the tropospheric
     # column file. The minimum is being used here.
-    fitflagind = get_column_from_description(column_dict,'Level 2 Fit data quality flag')
+    if pan_ver == '1.7':
+        fitflagind = get_column_from_description(column_dict,'Level 2 Fit data quality flag')
+    else:
+        fitflagind = get_column_from_description(column_dict,'L2Fit data quality flag, 0=assured high quality')
 
     data_start = get_start_of_data(pandora_filepath)
 
     names = ["ut_date", "jday", "sza", "no2", "no2err", "qaflag", "fitflag"]
     columns = [dateind, jdayind, szaind, no2ind, errind, qaflagind, fitflagind]
     columns = [column -1 for column in columns]  # Pandora columns are 1-indexed, Pandas are 0
+
+    # Reorder arrays from lowest to highest indices:
+    idx = np.argsort(columns)
+    columns = [columns[i] for i in idx]
+    names = [names[i] for i in idx]
 
     # Future improvements to code: Set ut_date up as an index for easier slicing of data
     df = pd.read_csv(pandora_filepath,

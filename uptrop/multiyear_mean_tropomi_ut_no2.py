@@ -19,22 +19,28 @@ import numpy as np
 # Steps to follow:
 # (1) Define input:
 # Season of interest (eventually change to argparse)
-SEAS = "jja"
+SEAS = "mam"
 # Data product of interest:
-PRODUCT = "fresco"
+PRODUCT = "fresco-wide"
+# Define altitude range:
+ALT_RANGE = '180-450hPa'
 # Data directory:
-IODIR = "/home/ucfaea1/python/uptrop/Data/"
+IODIR = "/home/ucfaea1/python/cloud_slice_pal_no2/Data"
 # Years of interest:
-YEARS = ['2019', '2020']
+YEARS = ['2019', '2020', '2021']
+# Year range for output:
+YrRange = '2019-2021'
 
 # (2) Get files of interest:
-tfile1 = path.join(IODIR, 'tropomi-ut-no2-fresco-07-1x1-' + SEAS + '-' + YEARS[0] + '-v6.nc')
+tfile1 = path.join(IODIR, 'tropomi-ut-no2-' + PRODUCT + '-07-1x1-' + SEAS + '-' + YEARS[0] + '-' + ALT_RANGE + '-v2.nc')
 #tfile1 = glob.glob(tfile_glob_string)
 
-tfile2 = path.join(IODIR, 'tropomi-ut-no2-fresco-07-1x1-' + SEAS + '-' + YEARS[1] + '-v6.nc')
+tfile2 = path.join(IODIR, 'tropomi-ut-no2-' + PRODUCT + '-07-1x1-' + SEAS + '-' + YEARS[1] + '-' + ALT_RANGE + '-v2.nc')
 #tfile2 = glob.glob(tfile_glob_string)
 
-utno2_files = [tfile1, tfile2]
+tfile3 = path.join(IODIR, 'tropomi-ut-no2-' + PRODUCT + '-07-1x1-' + SEAS + '-' + YEARS[2] + '-' + ALT_RANGE + '-v2.nc')
+
+utno2_files = [tfile1, tfile2, tfile3]
 
 # Get number of files:
 nfiles = len(utno2_files)
@@ -44,6 +50,9 @@ first = 0
 
 # Loop over files:
 for f in range(nfiles):
+
+    # Track progress:
+    print('===> Reading file: ', utno2_files[f])
 
     # (3) Read data from files:
     fh = Dataset(utno2_files[f], mode='r')
@@ -83,26 +92,28 @@ for f in range(nfiles):
         my_cld_top_p_range = np.zeros((nx, ny))
         my_cld_top_p_ceil = np.zeros((nx, ny))
         my_nobs = np.zeros((nx, ny))
+        my_nyrs = np.zeros((nx, ny))
         
         # Redefine:
         first = 1
 
     # Add individual years:
-    indices = np.where(~np.isnan(tnobs))
+    indices = np.where(~np.isnan(tutno2))
     my_utno2[indices] += tutno2[indices] * tnobs[indices]
     my_utno2err[indices] += tutno2err[indices] * tnobs[indices]
     my_cld_top_p_range[indices] += tcld_top_p_range[indices] * tnobs[indices]
     my_cld_top_p_ceil[indices] += tcld_top_p_ceil[indices] * tnobs[indices]
     my_nobs[indices] += tnobs[indices]
+    my_nyrs[indices] += 1
 
 # Get multiyear mean:
-my_utno2 = np.where(~np.isnan(my_nobs), np.divide(my_utno2, my_nobs), np.nan)
-my_utno2err = np.where(~np.isnan(my_nobs), np.divide(my_utno2err, my_nobs), np.nan)
-my_cld_top_p_range = np.where(~np.isnan(my_nobs), np.divide(my_cld_top_p_range, my_nobs), np.nan)
-my_cld_top_p_ceil = np.where(~np.isnan(my_nobs), np.divide(my_cld_top_p_ceil, my_nobs), np.nan)
+my_utno2 = np.where(my_nobs!=0, np.divide(my_utno2, my_nobs), np.nan)
+my_utno2err = np.where(my_nobs!=0, np.divide(my_utno2err, my_nobs), np.nan)
+my_cld_top_p_range = np.where(my_nobs!=0, np.divide(my_cld_top_p_range, my_nobs), np.nan)
+my_cld_top_p_ceil = np.where(my_nobs!=0, np.divide(my_cld_top_p_ceil, my_nobs), np.nan)
 
 # (5) Save data:
-outfile = path.join(IODIR, 'tropomi-ut-no2-fresco-07-1x1-' + SEAS + '-multiyr-mean-2019-2020-v6.nc')
+outfile = path.join(IODIR, 'tropomi-ut-no2-' + PRODUCT + '-07-1x1-' + SEAS + '-multiyr-mean-' + YrRange + '-' + ALT_RANGE + '-v2.nc')
 
 ncout = Dataset(outfile, mode='w',format="NETCDF4")
 
@@ -146,6 +157,11 @@ nobs = ncout.createVariable('nobs', np.float32, ('lon', 'lat'))
 nobs.units = 'unitless'
 nobs.long_name = 'Number of observations in each gridsquare used to obtain cloud-sliced UT NO2 mixing ratios'
 nobs[:] = my_nobs
+
+nyrs = ncout.createVariable('nyrs', np.float32, ('lon', 'lat'))
+nyrs.units = 'unitless'
+nyrs.long_name = 'Number of years in each grid used to obtain multiyear mean'
+nyrs[:] = my_nyrs
 
 ncout.close()
 

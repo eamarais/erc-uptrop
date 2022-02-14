@@ -128,9 +128,7 @@ def cldslice(pcolno2,cldtophgt,cld_diff_thold):
 
     # Get regression statistics:
     # Partial NO2 column (molec/m2) vs cloud top height (hPa):
-    # 300 iterations of regression chosen to compromise between
-    # statistics and computational efficiency:
-    result=rma(cldtophgt*1e2,pcolno2,len(pcolno2),300)
+    result=rma(cldtophgt*1e2,pcolno2,len(pcolno2),1000)
 
     # Try Theil-Sen regressor instead:
     # ==== CONSIDER REMOVING OUTLIER FILTER ABOVE!!! ===

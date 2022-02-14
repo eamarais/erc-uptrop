@@ -36,3 +36,6 @@ skip_these_vars = ["anchor",
 # Number of molecules per cm2 in 1 DU:
 DU_TO_MOLECULES_PER_CM2 = 2.6867e+16
 
+# Number of molecules per cm2 in 1 mole per m2:
+MOLES_PER_M2_TO_MOLECULES_PER_CM2 = AVOGADRO * 1e-4
+

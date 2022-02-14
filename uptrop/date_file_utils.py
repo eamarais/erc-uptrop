@@ -59,7 +59,7 @@ def season_to_date(season,yyyy):
     return start_date, end_date
 
 
-def get_tropomi_file_list(trop_dir, date_range):
+def get_tropomi_file_list(trop_dir, date_range, prod):
     """Returns an alphabetically sorted list of Tropomi files
     within a range of dates.
 
@@ -73,7 +73,7 @@ def get_tropomi_file_list(trop_dir, date_range):
     """
     out = []
     for date in date_range:
-        out += (get_tropomi_files_on_day(trop_dir, date))
+        out += (get_tropomi_files_on_day(trop_dir, date, prod))
     return sorted(out)
 
 
@@ -95,7 +95,7 @@ def get_ocra_file_list(ocra_dir, date_range):
     return sorted(out)
 
 
-def get_tropomi_files_on_day(tomidir, date):
+def get_tropomi_files_on_day(tomidir, date, product):
     """Returns a list of tropomi files on a given date.
 
     Uses the :ref:`get_date` function to extract each candidate file's date from it's filename
@@ -114,7 +114,7 @@ def get_tropomi_files_on_day(tomidir, date):
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
-    tomi_glob_string = path.join(tomidir, 'NO2_OFFL', year, month,'S5P_OFFL_L2__NO2____'+ datestamp + '*')
+    tomi_glob_string = path.join(tomidir, year, month,'S5P_' + product + '_L2__NO2____'+ datestamp + '*')
     tomi_files_on_day = glob.glob(tomi_glob_string)
     print('Found {} tropomi no2 files for {}: '.format(len(tomi_files_on_day), date))
     tomi_files_on_day = sorted(tomi_files_on_day)

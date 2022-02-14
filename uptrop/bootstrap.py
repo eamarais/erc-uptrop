@@ -13,6 +13,7 @@ import sys
 from scipy import stats
 import numpy as np
 import random
+from random import randint
 
 def rma(x,y,n,ntrials):
     """
@@ -62,13 +63,10 @@ def rma(x,y,n,ntrials):
     # Loop over trials:
     for w in range(ntrials):
 
-        # Randomly sample points with replacement. Resample if all points are the same point.
-        pairs = []
-        while len(set(pairs)) <= 1:
-            pairs = [random.choice(list(zip(x, y))) for _ in range(n)]
-        x_rdm, y_rdm = zip(*pairs)
-        x_rdm = np.asarray(x_rdm)
-        y_rdm = np.asarray(y_rdm)
+        # Randomly sample points with replacement.
+        indices = [randint(0,len(x)-1) for _ in range(n)]
+        x_rdm = x[indices]
+        y_rdm = y[indices]
 
         # Get shuffled x and y means:
         xbar=np.mean(x_rdm)

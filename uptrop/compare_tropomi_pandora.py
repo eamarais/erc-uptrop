@@ -65,6 +65,7 @@ sys.path.append(
 from uptrop.read_pandora import read_pandora
 from uptrop.bootstrap import rma
 from uptrop.constants import DU_TO_MOLECULES_PER_CM2 as du2moleccm2
+from uptrop.constants import MOLES_PER_M2_TO_MOLECULES_PER_CM2 as molm2_to_moleccm2
 
 
 # Turn off warnings:
@@ -97,7 +98,7 @@ class NoPandoraException(Exception):
 
 class DataCollector:
     """Collates tropomi and pandora data for a region around a Pandora site"""
-    def __init__(self, start_date, end_date):
+    def __init__(self, start_date, end_date, pan_ver):
         """Creates a collator between two dates.
 
         :param start_date: The start date (inclusive)
@@ -108,6 +109,7 @@ class DataCollector:
         # Define final array of coincident data for each day at Pandora site:
         self.start_date = start_date
         self.end_date = end_date
+        self.pan_ver = pan_ver
         nvals = get_days_since_data_start(end_date, start_date) + 1
         self.pan_no2 = np.zeros(nvals)
         self.s5p_no2 = np.zeros(nvals)
@@ -175,7 +177,7 @@ class DataCollector:
                                   & (self.difflat <= diff_deg)
                                   & (trop_data.no2val != np.nan)
                                   & (trop_data.omi_dd == date.day)
-                                  & (trop_data.no2val > 4e13))
+                                  & (trop_data.no2val > 2e13))
                                   #& (trop_data.stratcol < trop_data.totcol))
       
         # Skip if no data:
@@ -225,10 +227,15 @@ class DataCollector:
             print("No pandora data for day {}".format(date))
             raise NoPandoraException
         
-        # Create arrays of relevant data and convert from DU to molec/cm2:
-        tno2 = np.multiply(pandora_data.panno2[panind], du2moleccm2)
-        tunc = np.multiply(pandora_data.panno2err[panind], du2moleccm2)
-        tqa = pandora_data.panqaflag[panind]
+        # Create arrays of relevant data and convert from DU to molec/cm2
+        # for version 1.7 or moles/m2 to molec/cm2 for version 1.8:
+        if (self.pan_ver=='1.7'):
+            tno2 = np.multiply(pandora_data.panno2[panind], du2moleccm2)
+            tunc = np.multiply(pandora_data.panno2err[panind], du2moleccm2)
+        else:
+            tno2 = np.multiply(pandora_data.panno2[panind], molm2_to_moleccm2)
+            tunc = np.multiply(pandora_data.panno2err[panind], molm2_to_moleccm2)
+        #tqa = pandora_data.panqaflag[panind]
         # get day of year:
         day_of_year = get_days_since_data_start(date, self.start_date)
 
@@ -286,9 +293,9 @@ class DataCollector:
         plt.ylabel('$NO_2$ total VCD [$10^{14}$ molecules $cm^2$]')
         leg = plt.legend(loc='lower left', fontsize='large')
         leg.get_frame().set_linewidth(0.0)
-        plt.savefig('./Images/v020101/tropomi-'+PANDORA_SITE+
-                    '-pandora-gc_data-timeseries-v1-dec2018-may2021.ps',
-                    format='ps',transparent=True,bbox_inches='tight',dpi=100)
+        #plt.savefig('./Images/tropomi-'+PANDORA_SITE+
+        #            '-pandora-gc_data-timeseries-v1-dec2018-may2021.ps',
+        #            format='ps',transparent=True,bbox_inches='tight',dpi=100)
         # Plot scatterplot:
         tx = self.pan_no2
         ty = self.s5p_no2
@@ -367,7 +374,7 @@ class DataCollector:
         pancnt[:] = self.pan_cnt
         satno2 = ncout.createVariable('satno2', np.float32, ('time',))
         satno2.units = 'molecules/cm2'
-        satno2.long_name = 'S5P/TROPOMI NO2 OFFL error-weighted daily mean total column NO2 coincident with Pandora'
+        satno2.long_name = 'S5P/TROPOMI NO2 error-weighted daily mean total column NO2 coincident with Pandora'
         satno2[:] = self.s5p_no2
         satcldh = ncout.createVariable('satcldh', np.float32, ('time',))
         satcldh.units = 'hPa'
@@ -379,7 +386,7 @@ class DataCollector:
         satcldf[:] = self.s5p_cf
         saterr = ncout.createVariable('saterr', np.float32, ('time',))
         saterr.units = 'molecules/cm2'
-        saterr.long_name = 'S5P/TROPOMI NO2 OFFL weighted error of daily mean total columns of NO2 coincident with the Pandora site'
+        saterr.long_name = 'S5P/TROPOMI NO2 weighted error of daily mean total columns of NO2 coincident with the Pandora site'
         saterr[:] = self.s5p_wgt
         satcnt = ncout.createVariable('satcnt', np.float32, ('time',))
         satcnt.units = 'unitless'
@@ -511,6 +518,11 @@ class TropomiData:
         self.tstratamf = gstratamf.data[0, :, :]
         fh.close()
 
+        # Free memory (LIST NOT YET COMPLETE):
+        del tsza
+        del tvza
+        del glons
+        del glats
 
     def preprocess(self):
         """Prepares the Tropomi data for use. Applies bias correction if needed here.
@@ -546,7 +558,8 @@ class TropomiData:
             self.tstratno2_og = self.tstratno2
             # Apply correction to stratosphere based on comparison
             # to Pandora Mauna Loa total columns:
-            self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.tstratno2_og / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
+            #self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (2.5e15??? / self.no2sfac) + (self.tstratno2_og / 0.79) - (2.8e15??? / self.no2sfac)), np.nan)
+            self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (self.tstratno2_og / 0.79) - (6.9e14 / self.no2sfac)), np.nan)
 
             # Step 1: calculate stratospheric SCD (not in data product):
             self.tscdstrat = np.multiply(self.tstratno2, self.tstratamf)
@@ -556,13 +569,14 @@ class TropomiData:
             self.tgeotropvcd = np.divide(self.ttropscd, self.tamf_geo)
             # Apply bias correction to troposphere based on comparison
             # to Pandora and MAX-DOAS Izana tropospheric columns:
-            self.tgeotropvcd = self.tgeotropvcd / 1.5
+            self.tgeotropvcd = self.tgeotropvcd / 1.6
 
             # The above bias correction has a null effect on the total column,
             # as it just redistributes the relative contribution of the
             # troposphere and the stratosphere.
             # Calculate the correction to the stratospheric column:
-            self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.tstratno2 / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
+            #self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (2.5e15??? / self.no2sfac) + (self.tstratno2 / 0.79) - (2.8e15??? / self.no2sfac)), np.nan)
+            self.tstratno2 = np.where(self.tstratno2_og != self.fillval, ( (self.tstratno2 / 0.79) - (6.9e14 / self.no2sfac)), np.nan)
             
             # Step 4: sum up stratospheric and tropospheric NO2 VCDs:
             self.tgeototvcd = np.add(self.tgeotropvcd, self.tstratno2)
@@ -657,12 +671,12 @@ class CloudData:
         :param tropomi_data: An instance of CloudComparisonData. Required if type is 'fresco'
         :type tropomi_data: TropomiData"""
 
-        if product_type == "dlr-ocra":
-            self.read_ocra_data(filepath)
+        if product_type == "o22cld":
+            self.get_o22cld_cloud_fields(filepath)
         elif product_type == "fresco":
-            self.read_fresco_data(filepath, tropomi_data)
+            self.get_fresco_cloud_fields(filepath, tropomi_data)
 
-    def read_ocra_data(self, filepath):
+    def get_o22cld_cloud_fields(self, filepath):
         """Reads ocra data"""
         # Read data:
         fh = Dataset(filepath, mode='r')
@@ -694,7 +708,7 @@ class CloudData:
         # Close file:
         fh.close()
 
-    def read_fresco_data(self, filepath, tropomi_data):
+    def get_fresco_cloud_fields(self, filepath, tropomi_data):
         """Reads fresco data. Uses tropomi_data to filter for misclassified snow."""
         # FRESCO product is in NO2 file
         fh = Dataset(filepath, mode='r')
@@ -734,7 +748,7 @@ class CloudData:
 
 class PandoraData:
     """Extracts and preprocesses pandora data from a pandora datafile. See docs for read_pandora for file details"""
-    def __init__(self, file_path, col_type):
+    def __init__(self, file_path, col_type, pan_ver):
         """Returns an instance of PandoraData from file_path. Will apply a correction factor of 0.9 to gc_data and no2_err
         to bring the product up to 'pseudo 1.8'. Also applies corrections for Manua Loa if needed
 
@@ -743,7 +757,7 @@ class PandoraData:
         :param col_type: Can be 'Tot' or 'Trop'
         :type col_type: str"""
         # Read Pandora data from external function:
-        p = read_pandora(file_path, col_type)
+        p = read_pandora(file_path, col_type, pan_ver)
         # Extract latitude and longitude:
         loc = p[0]
         self.panlat = loc['lat']
@@ -779,9 +793,12 @@ class PandoraData:
         # V1.8 data will be available in late 2020.
         # Only apply this correction to the high-altitude sites:
         if (col_type == 'Tot' and self.panalt > 2e3):
-            print('Apply 10% bias correction to Pandora total column for site at {} m'.format(str(self.panalt)))
-            self.panno2 = self.panno2 * 0.9
-            self.panno2err = self.panno2err * 0.9
+            if pan_ver == '1.7':
+                print('Apply 10% bias correction to Pandora v1.7 total column at {} m'.format(str(self.panalt)))
+                self.panno2 = self.panno2 * 0.9
+                self.panno2err = self.panno2err * 0.9
+            else:
+                print('No 10% bias correction applied to Pandora v1.8 total column at {} m'.format(str(self.panalt)))
         else:
             print('No 10% bias correction applied to Pandora data for site at {} m'.format(str(self.panalt)))
         # Get data length (i.e., length of each row):
@@ -790,7 +807,7 @@ class PandoraData:
         print('Pandora Site: ', file_path)
 
 
-def get_tropomi_files_on_day(tropomi_dir, date):
+def get_tropomi_files_on_day(tropomi_dir, date, no2_prod):
     """Gets a sorted list of tropomi files in tropomi_dir on date
 
     :param tropomi_dir: The directory containing tropomi files
@@ -806,7 +823,7 @@ def get_tropomi_files_on_day(tropomi_dir, date):
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
-    tomi_glob_string = os.path.join(tropomi_dir, 'NO2_OFFL', year, month, 'S5P_OFFL_L2__NO2____' + datestamp + '*')
+    tomi_glob_string = os.path.join(tropomi_dir, year, month, 'S5P_' + no2_prod + '_L2__NO2____' + datestamp + '*')
     tomi_files_on_day = glob.glob(tomi_glob_string)
     print('Found {} tropomi files for {}: '.format(len(tomi_files_on_day), date,flush=True))
     tomi_files_on_day = sorted(tomi_files_on_day)
@@ -838,9 +855,8 @@ def get_ocra_files_on_day(tropomi_dir, date):
 def get_pandora_file(pan_dir, pandora_site, site_num, c_site, no2_col, fv):
     """Gets the pandora file for the given set of parameters"""
     pandora_glob_string = os.path.join(pan_dir, pandora_site,
-                         'Pandora' + site_num + 's1_' + c_site + '_L2' + no2_col + '_' + fv + '.txt')
+                         'Pandora' + site_num + 's1_' + c_site + '_L2' + fv + '.txt')
     return glob.glob(pandora_glob_string)[0]
-
 
 def get_days_since_data_start(date, data_start = None):
     """Returns the number of days since the start date. If no start date is given, assumed 01/06/2019"""
@@ -864,6 +880,7 @@ if __name__ == "__main__":
     parser.add_argument("--apply_bias_correction", type=bool, default=False)
     parser.add_argument("--start_date", default="2019-06-01", help="Start date of processing window (yyyy-mm-dd)")
     parser.add_argument("--end_date", default="2020-05-31", help="End date of processing window (yyyy-mm-dd)")
+    parser.add_argument("--no2_prod", default = "PAL_", help="TROPOMI NO2 product name. Can be OFFL or PAL_")
     args = parser.parse_args()
 
     start_date = dt.datetime.strptime(args.start_date, "%Y-%m-%d")
@@ -888,14 +905,18 @@ if __name__ == "__main__":
         DIFF_HH=60/60
 
     # Get Pandora site number:
+    # STILL TO DO: REPLACE FORT MCKAY WITH EGBERT
     if ( args.pandora_site== 'altzomoni'):
         SITE_NUM= '65'
         C_SITE= 'Altzomoni'
     if ( args.pandora_site== 'izana'):
         SITE_NUM= '101'
         C_SITE= 'Izana'
-    if ( args.pandora_site== 'mauna_loa'):
+    if ( args.pandora_site== 'mauna_loa_59'):
         SITE_NUM= '59'
+        C_SITE= 'MaunaLoaHI'
+    if ( args.pandora_site== 'mauna_loa_56'):
+        SITE_NUM= '56'
         C_SITE= 'MaunaLoaHI'
     if ( args.pandora_site== 'eureka'):
         SITE_NUM= '144'
@@ -908,29 +929,41 @@ if __name__ == "__main__":
         C_SITE= 'FortMcKay'
     if ( args.pandora_site== 'ny-alesund'):
         SITE_NUM= '152'
-        C_SITE= 'NyAlesund'    
+        C_SITE= 'NyAlesund'
+
+    # Get Pandora version:
+    if ( args.pandora_site== 'altzomoni'):
+        pandora_version = '1.8'
+    else:
+        pandora_version = '1.7'
 
     # Conditions for choosing total or tropospheric column:
     if ( args.no2_col== 'Trop'):
-        FV= 'rnvh1p1-7'
+        if ( C_SITE =='Altzomoni' ):
+            FV='_rnvh3p1-8'
+        else:
+            FV='Trop_rnvh1p1-7'            
         #maxval=3
         Y_MIN=0
-        Y_MAX=10
+        Y_MAX=15
     if ( args.no2_col== 'Tot'):
         #maxval=5
-        FV= 'rnvs1p1-7'
+        if ( C_SITE =='Altzomoni' ):
+            FV='_rnvs3p1-8'
+        else:
+            FV= 'Tot_rnvs1p1-7'        
         Y_MIN=10
-        Y_MAX=50
+        Y_MAX=60
 
     # Get Pandora file_path (one file per site):
     panfile= get_pandora_file(args.pan_dir, args.pandora_site, SITE_NUM, C_SITE, args.no2_col, FV)
     if ( args.apply_bias_correction ):
-        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v1.nc')
+        outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-bias-corr-v2.nc')
     else:
         outfile = os.path.join(args.out_dir, 'tropomi-pandora-comparison-' + args.pandora_site + '-' + args.cloud_product + '-' + args.no2_col + '-' + args.str_diff_deg + 'deg-' + args.str_diff_min + 'min-v1.nc')
 
-    pandora_data = PandoraData(panfile,args.no2_col)
-    data_aggregator = DataCollector(start_date, end_date)
+    pandora_data = PandoraData(panfile, args.no2_col, pandora_version)
+    data_aggregator = DataCollector(start_date, end_date, pandora_version)
 
     # In the below code, processing_day is a Python date object
     # They are generated using dateutil's rrule (relative rule) and rdelta(relative delta) functions:
@@ -940,7 +973,7 @@ if __name__ == "__main__":
     for processing_day in rr.rrule(freq=rr.DAILY, dtstart=start_date, until=end_date):
 
         print("Processing {}".format(processing_day),flush=True)
-        tomi_files_on_day = get_tropomi_files_on_day(args.trop_dir, processing_day)
+        tomi_files_on_day = get_tropomi_files_on_day(args.trop_dir, processing_day, args.no2_prod)
 
         if args.cloud_product== 'dlr-ocra':
             cloud_files_on_day = get_ocra_files_on_day(args.trop_dir, processing_day)
