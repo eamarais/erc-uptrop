@@ -49,5 +49,5 @@ E. A. Marais, J. F. Roberts, R. G. Ryan, H. Eskes, K. F. Boersma, S. Choi, J. Jo
 
 ERC Starting Grant UpTrop (grant number 851854; https://cordis.europa.eu/project/id/851854) to address uncertainties in reactive nitrogen in the upper troposphere (https://maraisresearchgroup.co.uk/uptrop.html). 
 
-The repository includes python code and routines to apply cloud-slicing to partial columns of NO2 to obtain mising ratios of NO2 in the upper tropposhepre. The routine that does this is cloud_slice_ut_no2.py. 
+The repository includes python code and routines to apply cloud-slicing to partial columns of NO2 to obtain mixing ratios of NO2 in the upper tropposhepre. The routine that does this is cloud_slice_ut_no2.py. 
 
