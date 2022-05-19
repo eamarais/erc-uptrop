@@ -104,7 +104,7 @@ class GridAggregator:
         # Define cloud pressure difference threshold:
         # Use half the range cloud height range so that code is versatile and
         # because this is consistent with Marais et al. (2021) for the upper troposphere.
-        self.diff_cldh_thold = self.press_sigm
+        self.diff_cldh_thold = self.press_sigma
         #if ((pmin==180) & (pmax==450)): self.diff_cldh_thold=140
         #if ((pmin==180) & (pmax==320)): self.diff_cldh_thold=100
         #if ((pmin==320) & (pmax==450)): self.diff_cldh_thold=100
