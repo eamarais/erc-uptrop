@@ -44,9 +44,10 @@ Sources and citations
 ---------------------
 Files copied from eam-group repo (https://github.com/eamarais/eam-group/tree/master/eloise/uptrop)
 
-Citation where details of the method, and interpretation and visualization of the data is Marais et al., 2020.
+Citation where details of the method, and interpretation and visualization of the data is:
+E. A. Marais, J. F. Roberts, R. G. Ryan, H. Eskes, K. F. Boersma, S. Choi, J. Joiner, N. Abuhassan, A. Redondas, M. Grutter, A. Cede, L. Gomez, M. Navarro-Comas, New observations of NO2 in the upper troposphere from TROPOMI, Atmos. Meas. Tech., 14, 2389-2408, doi:10.5194/amt-14-2389-2021. Link to PDF: https://amt.copernicus.org/articles/14/2389/2021/amt-14-2389-2021.pdf.
 
-ERC Starting Grant to address uncertainties in reactive nitrogen in the upper troposphere. 
-Includes python code and routines to apply cloud-slicing to partial columns of NO2 to obtain mising ratios of NO2 in the upper tropposhepre. The routine
-that does this is cloud_slice_ut_no2.py. 
+ERC Starting Grant UpTrop (grant number 851854; https://cordis.europa.eu/project/id/851854) to address uncertainties in reactive nitrogen in the upper troposphere (https://maraisresearchgroup.co.uk/uptrop.html). 
+
+The repository includes python code and routines to apply cloud-slicing to partial columns of NO2 to obtain mixing ratios of NO2 in the upper tropposhepre. The routine that does this is cloud_slice_ut_no2.py. 
 
