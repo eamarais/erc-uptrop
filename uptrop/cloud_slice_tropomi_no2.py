@@ -97,11 +97,18 @@ class GridAggregator:
         self.file_count = 0
         self.current_max_points = 0
 
+        # Calculate pressure range and centre for Gaussian weighting:
+        self.press_sigma = 0.5*(pmax - pmin)
+        self.press_mid   = pmin + self.press_sigma
+
         # Define cloud pressure difference threshold:
-        if ((pmin==180) & (pmax==450)): self.diff_cldh_thold=140
-        if ((pmin==180) & (pmax==320)): self.diff_cldh_thold=100
-        if ((pmin==320) & (pmax==450)): self.diff_cldh_thold=100
-        if ((pmin==280) & (pmax==400)): self.diff_cldh_thold=80
+        # Use half the range cloud height range so that code is versatile and
+        # because this is consistent with Marais et al. (2021) for the upper troposphere.
+        self.diff_cldh_thold = self.press_sigm
+        #if ((pmin==180) & (pmax==450)): self.diff_cldh_thold=140
+        #if ((pmin==180) & (pmax==320)): self.diff_cldh_thold=100
+        #if ((pmin==320) & (pmax==450)): self.diff_cldh_thold=100
+        #if ((pmin==280) & (pmax==400)): self.diff_cldh_thold=80
 
         self.loss_count = {
             "too_few_points": 0,
@@ -220,10 +227,12 @@ class GridAggregator:
 
                 # Use cloud_slice_ut_no2 function to get NO2 mixing
                 # ratio from cloud-slicing:
-                if ((npnts >= 10) & (npnts < 100)):
+                # Change this slightly to exploit higher spatial resolution of TROPOMI to
+                # increase the number of scenes retrieved:
+                if ((npnts >= 10) & (npnts < 50)):
                     self.add_slice(i,j,tcld,tcolno2)
 
-                elif (npnts >= 100):
+                elif (npnts >= 50):
                     # Define number of iterations:
                     stride = round(npnts / n_slices)
                     nloop = list(range(stride))
@@ -265,7 +274,7 @@ class GridAggregator:
             #    CLOUD_SLICE_ERROR_ENUM[stage_reached], i, j))
         else:
             # Calculate weights:
-            gaus_wgt = np.exp((-(mean_cld_pres - 315) ** 2) / (2 * 135 ** 2))
+            gaus_wgt = np.exp((-(mean_cld_pres - self.press_mid) ** 2) / (2 * self.press_sigma ** 2))
             self.gno2vmr[i, j] += np.multiply(utmrno2, gaus_wgt)
             self.pcld_range[i, j] += np.nanmax(t_cld) - np.nanmin(t_cld)
             self.pcld_ceil[i, j] += np.nanmin(t_cld)
@@ -408,7 +417,7 @@ class TropomiData:
     """A class for extracting, preprocessing and containing data from a s5p tropomi file."""
 
     # Initialize _everything_ before the first read.
-    def __init__(self, file_path):
+    def __init__(self, file_path, no2_prod):
         """Reads the tropomi file at file_path and prepares it for processing.
 
         :param file_path: Path to the netcdf4 file containing the tropomi data
@@ -418,6 +427,7 @@ class TropomiData:
         self.file_name = path.basename(file_path)
         print('Processing: ', self.file_name, flush=True)
         self.date = get_date(self.file_name)
+        self.no2_prod = no2_prod
 
         # Members straight from trop body
         self.no2sfac = None
@@ -551,13 +561,26 @@ class TropomiData:
            The correction addresses an underestimate in TROPOMI stratospheric NO2 variance and a factor of 2 overestimate in TROPOMI tropospheric NO2.
            """
 
+        # Define bias correction values that depend on whether using OFFL or PAL_ NO2 product:
+        # No longer needed, as the updated regression approach (Theil Slope) addresses positive bias
+        # in background NO2 over remote locations that seemed to necessitate this.
+        # It was applied to resolve difference between ground-based (Pandora, MAX-DOAS) and
+        # TROPOMI tropospheric columns, but this discrepancy may stem from other issues:
+        if self.no2_prod=='PAL':
+            trop_correc_fac = 1.0
+            
+        if self.no2_prod=='OFFL':
+            trop_correc_fac = 1.0
+
         # Calculate the geometric AMF for calculating the tropospheric column:
         tamf_geo = np.add((np.reciprocal(np.cos(np.deg2rad(self.sza)))),
                           (np.reciprocal(np.cos(np.deg2rad(self.vza)))))
 
         # Bias correct stratospheric column variance:
-        #tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.stratno2_og / 0.87) - (2.8e15 / self.no2sfac)), self.fillval )
-        tstratno2 = np.where(self.stratno2_og != self.fillval, ( (self.stratno2_og / 0.79) - (6.9e14 / self.no2sfac)), self.fillval )
+        if self.no2_prod=='OFFL':
+            tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (self.stratno2_og / 0.87) - (2.8e15 / self.no2sfac)), self.fillval )
+        if self.no2_prod=='PAL':
+            tstratno2 = np.where(self.stratno2_og != self.fillval, ( (self.stratno2_og / 0.79) - (6.9e14 / self.no2sfac)), self.fillval )
 
         # Get VCD under cloudy conditions. This is done as the current
         # tropospheric NO2 VCD product includes influence from the prior
@@ -571,13 +594,15 @@ class TropomiData:
 
         # Decrease tropospheric column by 50% to correct for overestimate
         # compared to Pandora and MAX-DOAS tropospheric columns at Izana:
-        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / 1.6, np.nan )
+        tgeotropvcd = np.where(tgeotropvcd != self.fillval, tgeotropvcd / trop_correc_fac, np.nan )
         # The above bias correction has a null effect on the total column, as
         # it just redistributes the relative contribution of the troposphere
         # and the stratosphere.
         # Calculate the correction to the stratospheric column:
-        #tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (tstratno2 / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
-        tstratno2 = np.where(self.stratno2_og != self.fillval, ( (tstratno2 / 0.87) - (6.9e14 / self.no2sfac)), np.nan)
+        if self.no2_prod=='OFFL':
+            tstratno2 = np.where(self.stratno2_og != self.fillval, ( (2.5e15 / self.no2sfac) + (tstratno2 / 0.87) - (2.8e15 / self.no2sfac)), np.nan)
+        if self.no2_prod=='PAL':
+            tstratno2 = np.where(self.stratno2_og != self.fillval, ( (tstratno2 / 0.87) - (6.9e14 / self.no2sfac)), np.nan)
 
         # Calculate the total bias corrected column:
         tgeototvcd = np.add(tgeotropvcd, tstratno2)
@@ -656,7 +681,7 @@ class TropomiData:
 
 class CloudData:
     """Class for containing the data for cloud filtering and analysis."""
-    def __init__(self, file_path, fresco_440, data_type):
+    def __init__(self, file_path, fresco_440, no2_prod, data_type):
         """Reads either the tropomi file (if data_type = 'fresco') or the ocra file (if data_type = 'dlr-ocra')
         at file_path and returns an instance of CloudData. Calls either read_fresco_file or read_ocra_file.
 
@@ -677,18 +702,20 @@ class CloudData:
         self.tcldpres = None
         self.tsnow = None
 
-        # Initialize:
-        #self.data_parity = True
-
         # Get cloud fields: 
-        if data_type == 'fresco-wide':
+        if data_type == 'fresco-wide' and no2_prod == 'PAL':
             self.get_fresco_cloud_fields(file_path)
-        elif data_type == 'o22cld':
+            # Fix snow/ice/coast flag issue in PAL_ files:
+            self.fix_snow()
+        elif data_type == 'o22cld' and no2_prod == 'PAL':
             self.get_o22cld_cloud_fields(file_path)
-            #self.check_parity()
-
-        # Fix snow/ice/coast flag issue:
-        self.fix_snow()
+            # Fix snow/ice/coast flag issue in PAL_ files:
+            self.fix_snow()
+        elif data_type == 'dlr-ocra' and no2_prod == 'OFFL':
+            # Initialize:
+            self.data_parity = True
+            self.get_ocra_cloud_fields(file_path)
+            self.check_parity()        
 
     def get_fresco_cloud_fields(self, file_path):
         """Reads and filters the fresco data in a s5p file
@@ -722,6 +749,55 @@ class CloudData:
         gscenep = fh.groups['PRODUCT']['SUPPORT_DATA']['DETAILED_RESULTS']['FRESCO']. \
                       variables['fresco_apparent_scene_pressure'][:]
         self.tscenep = gscenep.data[0, :, :]
+
+    def get_ocra_cloud_fields(self, file_path):
+        """Reads CLOUD_OFFL files with ROCINN-CAL cloud information"""
+        # Read data:
+        fd = Dataset(file_path)
+
+        # Cloud fraction:
+        tcldfrac = fd.groups['PRODUCT'].variables['cloud_fraction'][:]
+        cldfrac = tcldfrac.data[0, :, :]
+
+        # Get fill value:
+        fillval=(np.max(np.ma.getdata(tcldfrac)))
+        if ( fillval<1e35 or fillval==np.nan ):
+            print('this method of defining the fill value for dlr-ocra does not work. FIX!!!', flush=True)
+
+        # Cloud top height (m):
+        gcldhgt = fd.groups['PRODUCT'].variables['cloud_top_height'][:]
+        tcldhgt = np.ma.getdata(gcldhgt[0, :, :])
+            
+        # Define pressure array of zeros:
+        tcldpres = np.zeros(tcldhgt.shape)
+            
+        # Calculate pressure assuming dry atmosphere using external
+        # conversion code (height_pressure_converter.py). There's a cloud
+        # top pressure entry in the data file, but this is obtained using
+        # ECMWF pressure and might have errors. Diego (DLR cloud product PI
+        # recommended I use cloud altitude rather than pressure data):
+        hgtind = np.where((tcldhgt != fillval))
+        tcldpres[hgtind] = alt2pres(tcldhgt[hgtind])
+
+        # QA value:
+        cldqa = fd.groups['PRODUCT'].variables['qa_value'][0, :, :]
+
+        # Snow/ice flag (combined NISE and climatology, so misclassification
+        # issues in FRESCO cloud product addressed):
+        gsnow = fd.groups['PRODUCT']['SUPPORT_DATA']['INPUT_DATA']. \
+            variables['snow_ice_flag'][:]
+        self.tsnow = gsnow.data[0, :, :]
+
+        # Set clouds over snow/ice scenes to nan:
+        cldfrac = np.where(self.tsnow != 0, np.nan, cldfrac)
+        tcldpres = np.where(self.tsnow != 0, np.nan, tcldpres)
+
+        # Set poor quality cloud data to nan:
+        self.cldfrac = np.where(cldqa < 0.5, np.nan, cldfrac)
+        self.tcldpres = np.where(cldqa < 0.5, np.nan, tcldpres)
+        
+        # Close file:
+        fd.close()
 
     def get_o22cld_cloud_fields(self, file_path):
         """Reads, filters and preprocesses the data in a dlr-ocra file.
@@ -848,7 +924,8 @@ if __name__ == "__main__":
     parser.add_argument("--fresco_440", type=bool, default = False, help="Use FRESCO-S 440 nm cloud fraction")
     parser.add_argument("--pmin", default=180, type=int, help="Lower bound on cloud height. Defaults to 180.")
     parser.add_argument("--pmax", default=450, type=int, help="Upper bound on cloud height. Defaults to 450.")
-    parser.add_argument("--no2_prod", default = "PAL_", help="TROPOMI NO2 product name. Can be OFFL or PAL_")
+    parser.add_argument("--no2_prod", default = "PAL", help="TROPOMI NO2 product name. Can be OFFL or PAL")
+    parser.add_argument("--version", default = "v1", help="Version number to append to filename")
     args = parser.parse_args()
 
     if args.season:
@@ -889,8 +966,8 @@ if __name__ == "__main__":
     print('Found total of {} files: '.format(len(trop_files)))
     if args.cloud_product == "fresco-wide":
         cloud_files = trop_files
-    #elif args.cloud_product == "dlr-ocra":
-    #    cloud_files = get_ocra_file_list(args.trop_dir, date_range)
+    elif args.cloud_product == "dlr-ocra":
+        cloud_files = get_ocra_file_list(args.trop_dir, date_range)
     elif args.cloud_product == "o22cld":
         cloud_files = trop_files
     else:
@@ -923,11 +1000,11 @@ if __name__ == "__main__":
                         del [cloud_files[i]]
                         # Restart iteration:
                         i=0
-
+                        
     for trop_file, cloud_file in zip(trop_files, cloud_files):
-        trop_data = TropomiData(trop_file)
-        cloud_data = CloudData(cloud_file, fresco_440, data_type=args.cloud_product)
-        #if cloud_data.data_parity==False: continue
+        trop_data = TropomiData(trop_file, args.no2_prod)
+        cloud_data = CloudData(cloud_file, fresco_440, args.no2_prod, data_type=args.cloud_product)
+        if args.cloud_product == "dlr-ocra" and cloud_data.data_parity==False: continue
         trop_data.calc_geo_column()
         trop_data.cloud_filter_and_preprocess(cloud_data, cloud_threshold, args.pmax, args.pmin)
         grid_aggregator.initalise_grid()
@@ -945,11 +1022,11 @@ if __name__ == "__main__":
     # Define output file names:
     # Data file and plot file names if season is or isn't specified in the input arguments:
     if args.season is not None: 
-        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v2.nc'
-        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season[0:3] + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v2.ps'
+        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-' + args.version + '.nc'
+        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + args.season[0:3] + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-' + args.version + '.ps'
     else:
-        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v2.nc'
-        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-v2.ps'
+        out_data_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-' + args.version + '.nc'
+        out_plot_file = 'tropomi-ut-no2-' + str_cld_prod + '-' + args.cloud_threshold + '-' + args.grid_res + '-' + yrrange + '-' + str(args.pmin) + '-' + str(args.pmax) + 'hPa' + '-' + args.version + '.ps'
     # Complete data file path:
     out_data_file_path = path.join(args.out_dir, 'Data/' + out_data_file)
     #out_data_file = glob.glob(out_data_file_path)

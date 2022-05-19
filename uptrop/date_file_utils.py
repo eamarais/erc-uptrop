@@ -111,10 +111,12 @@ def get_tropomi_files_on_day(tomidir, date, product):
     # Converts the python date object to a set string representation of time
     # In this case, zero-padded year, month and a datestamp of the Sentinel format
     # See https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+    prod_file_name = product
+    if product=='PAL': prod_file_name = 'PAL_'
     year = date.strftime(r"%Y")
     month = date.strftime(r"%m")
     datestamp = date.strftime(r"%Y%m%dT")
-    tomi_glob_string = path.join(tomidir, year, month,'S5P_' + product + '_L2__NO2____'+ datestamp + '*')
+    tomi_glob_string = path.join(tomidir, 'NO2_' + product, year, month,'S5P_' + prod_file_name + '_L2__NO2____'+ datestamp + '*')
     tomi_files_on_day = glob.glob(tomi_glob_string)
     print('Found {} tropomi no2 files for {}: '.format(len(tomi_files_on_day), date))
     tomi_files_on_day = sorted(tomi_files_on_day)
