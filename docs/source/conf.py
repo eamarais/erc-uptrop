@@ -62,7 +62,7 @@ autodoc_member_order = 'groupwise'
 # a list of builtin themes.
 #
 #html_theme = 'alabaster'
-html_theme = 'latest'
+html_theme = 'master'
 
 html_theme_options = {
     'rightsidebar': False,
