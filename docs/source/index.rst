@@ -13,9 +13,10 @@ The python code was developed for the ERC Starting Grant project UpTrop (https:/
    GUide-to-Useful-Capabilities
    
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Example Usages of Uptrop:
    
+   notebooks/cloud_slice_ut_no2
    bootstrap
    cloud_slice_ut_no2
    compare_tropomi_pandora
