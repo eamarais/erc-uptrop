@@ -11,3 +11,9 @@ The python code was developed for the ERC Starting Grant project UpTrop (https:/
    About-Uptrop
    Getting-Started-with-Uptrop
    Guide-to-Useful-Capabilities
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Beginner tutorials:
+   
+   ../notebooks/cloud_slice_ut_no2
