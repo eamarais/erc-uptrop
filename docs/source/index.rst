@@ -16,4 +16,4 @@ The python code was developed for the ERC Starting Grant project UpTrop (https:/
    :maxdepth: 1
    :caption: Beginner tutorials:
    
-   ../notebooks/cloud_slice_ut_no2
+   notebooks/cloud_slice_ut_no2
