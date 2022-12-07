@@ -4,6 +4,9 @@ Here you will find all the relevant details of the functionality of the code use
 
 The python code was developed for the ERC Starting Grant project UpTrop (https://maraisresearchgroup.co.uk/uptrop.html) led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts. 
 
+Contents
+--------
+
 .. toctree::
    :maxdepth: 3
    :caption: Overview:
@@ -13,7 +16,7 @@ The python code was developed for the ERC Starting Grant project UpTrop (https:/
    Guide-to-Useful-Capabilities
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
    :caption: Beginner tutorials:
    
-   notebooks/cloud_slice_ut_no2
+   Calculate-cloud-sliced-ut-no2
