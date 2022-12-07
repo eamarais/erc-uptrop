@@ -20,3 +20,29 @@ Contents
    :caption: Beginner tutorials:
    
    Calculate-cloud-sliced-ut-no2
+
+.. toctree::
+   :maxdepth: 3
+   :caption: Basic Usage of GCPy:
+
+   About-GCPy
+   Getting-Started-with-GCPy
+   Guide-to-Useful-Capabilities
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Usage Details:
+
+   Plotting
+   Tabling
+   Regridding
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Example Scripts:
+
+   Six_panel
+   Single_panel
+   benchmark_plotting
+   plot_timeseries
+   bpch_to_nc
