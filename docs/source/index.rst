@@ -36,3 +36,4 @@ Contents
    :caption: How to ask for help:
    
    Get-help
+   Report-issue
