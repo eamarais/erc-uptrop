@@ -13,7 +13,7 @@ Contents
    Overview-of-Capabilities
    
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Beginner tutorials:
    
    Installation
