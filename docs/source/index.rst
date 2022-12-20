@@ -6,14 +6,14 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Overview:
    
    About-ERC-UpTrop
    Overview-of-Capabilities
    
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Beginner tutorials:
    
    Installation
