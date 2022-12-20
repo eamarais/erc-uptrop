@@ -17,8 +17,7 @@ Contents
    :caption: Beginner tutorials:
    
    Installation
-   Beginner-usage1
-   Beginner-usage2
+   Calculate-cloud-sliced-ut-no2
 
 .. toctree::
    :maxdepth: 3
