@@ -6,27 +6,27 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Overview:
    
    About-ERC-UpTrop
    Overview-of-Capabilities
    
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Beginner tutorials:
    
    Installation
    Calculate-cloud-sliced-ut-no2
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Intermediate tutorials:   
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Gallery:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: How to ask for help:
