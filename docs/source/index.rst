@@ -7,33 +7,33 @@ Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: Overview:
+   :caption: Overview
    
    About-ERC-UpTrop
    Overview-of-Capabilities
    
 .. toctree::
    :maxdepth: 1
-   :caption: Beginner tutorials:
+   :caption: Beginner tutorials
    
    Installation
    Calculate-cloud-sliced-ut-no2
 
 .. toctree::
    :maxdepth: 1
-   :caption: Intermediate tutorials:   
+   :caption: Intermediate tutorials   
    
-   Intermediate-usage-1
+   Intermediate-example-usage-1
 
 .. toctree::
    :maxdepth: 1
-   :caption: Gallery:
+   :caption: Gallery
    
    Gallery
 
 .. toctree::
    :maxdepth: 1
-   :caption: How to ask for help:
+   :caption: How to ask for help
    
    Get-help
    Report-issue
