@@ -22,11 +22,17 @@ Contents
 .. toctree::
    :maxdepth: 1
    :caption: Intermediate tutorials:   
+   
+   Intermediate-usage-1
 
 .. toctree::
    :maxdepth: 1
    :caption: Gallery:
+   
+   Gallery
 
 .. toctree::
    :maxdepth: 1
    :caption: How to ask for help:
+   
+   Get-help
