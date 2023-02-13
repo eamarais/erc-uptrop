@@ -1,6 +1,8 @@
 Welcome to UpTrop's documentation!
 ==================================
-Here you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020). The Python code was developed for the `ERC Starting Grant project UpTrop <https://maraisresearchgroup.co.uk/uptrop.html>`__ led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts and by research fellow Gongda Lu. 
+Software used to derive vertical profiles of mixing ratios of nitrogen dioxide (NO2) from the ESA TROPOMI space-based instrument using the cloud-slicing techniques. Details of the retrieval process are in the peer-reviewed open access Atmospheric Measurement Techniques paper by `Marais et al. (2021) <https://doi.org/10.5194/amt-14-2389-2021>`__. 
+
+The software is written in Python for the `ERC Starting Grant project UpTrop <https://maraisresearchgroup.co.uk/uptrop.html>`__ led by `Dr Eloise Marais <https://www.geog.ucl.ac.uk/people/academic-staff/eloise-marais>`__. Initial code development and documentation is by Eloise Marais, with first version code and documentation improvements by software engineer Dr John Roberts, and now taken over by UCL research fellow `Dr Gongda Lu <https://www.geog.ucl.ac.uk/people/research-staff/gongda-lu/dr-gongda-lu>`__. 
 
 Contents
 --------
