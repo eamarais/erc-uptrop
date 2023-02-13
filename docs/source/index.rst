@@ -1,6 +1,6 @@
-Welcome to UpTrop's documentation!
+Welcome to Uptrop's documentation!
 ==================================
-Here below you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020). The Python code was developed for the `ERC Starting Grant project UpTrop <https://maraisresearchgroup.co.uk/uptrop.html>`__ led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts and by research fellow Gongda Lu. 
+This site provides instructions for using Uptrop, the python software that applies the cloud-slicing retrieval technique to satellite observations to derive vertical mixing ratios of UV/visible active compounds in the global troposphere. We provide instructions below on downloading and using the software. 
 
 Contents
 --------
@@ -14,14 +14,14 @@ Contents
    
 .. toctree::
    :maxdepth: 1
-   :caption: Beginner tutorials
+   :caption: Getting Started
    
    Installation
    Calculate-cloud-sliced-ut-no2
 
 .. toctree::
    :maxdepth: 1
-   :caption: Intermediate tutorials
+   :caption: User Guide
    
    Intermediate-example-usage-1
 
