@@ -21,7 +21,7 @@ Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: Intermediate tutorials <test change 3>  
+   :caption: Intermediate tutorials
    
    Intermediate-example-usage-1
 
