@@ -1,6 +1,10 @@
-Welcome to UpTrop's documentation!
-==================================
-Here below you will find all the relevant details of the functionality of the code used to generate results described and discussed Marais et al. (2020). The Python code was developed for the `ERC Starting Grant project UpTrop <https://maraisresearchgroup.co.uk/uptrop.html>`__ led by Eloise Marais. Substantive code edits and improvements and documentation preparation are by software engineer John Roberts and by research fellow Gongda Lu. 
+Welcome to Documentation for Uptrop Software!
+=============================================
+Uptrop is python software to convert satellite observations of total atmospheric column densities of air pollutants to vertical profiles in the global troposphere using the cloud-slicing technique. 
+
+The software was developed using total column densities of nitrogen dioxide (NO\ :sub:`2`\)  from the ESA Sentinel-5P TROPOMI instrument to derive NO\ :sub:`2`\  mixing ratios in the global upper troposphere (8-12 km) at ~100 km spatial resolution. The software is now being updated to also retrieve NO\ :sub:`2`\  and ozone (O\ :sub:`3`\)  mixing ratios in five vertical layers throughout the troposphere. 
+
+This brief documentation provides details of relevant references, data products, sample output, guidance on installing and using the software, and how to ask for help or report bugs, issues and suggested code updates. 
 
 Contents
 --------
@@ -9,21 +13,15 @@ Contents
    :maxdepth: 1
    :caption: Overview
    
-   About-ERC-UpTrop
-   Overview-of-Capabilities
+   About
+   Capabilities
    
 .. toctree::
    :maxdepth: 1
-   :caption: Beginner tutorials
+   :caption: Getting Started
    
    Installation
-   Calculate-cloud-sliced-ut-no2
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Intermediate tutorials
-   
-   Intermediate-example-usage-1
+   Usage
 
 .. toctree::
    :maxdepth: 1
@@ -33,7 +31,6 @@ Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: How to ask for help
+   :caption: Help and Issues
    
-   Get-help
-   Report-issue
+   Approach
