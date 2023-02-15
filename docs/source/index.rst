@@ -10,14 +10,14 @@ Contents
 --------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Overview
    
    About
    Capabilities
    
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting Started
    
    Installation
