@@ -1,5 +1,5 @@
-What is Uptrop-Py?
-==================
+Overview of Capabilities
+========================
 
 Uptrop-Py is python coded software used to apply the so-called cloud-slicing technique to satellite observations of column densities of nitrogen dioxide (NO\ :sub:`2`) to retrieve vertical profiles of mixing ratios of NO\ :sub:`2` throughout the troposphere on a global scale. 
 
