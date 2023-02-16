@@ -13,8 +13,7 @@ Contents
    :maxdepth: 2
    :caption: Overview
    
-   About
-   Capabilities
+   Overview of capabilities
    
 .. toctree::
    :maxdepth: 2
