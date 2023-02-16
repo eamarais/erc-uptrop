@@ -13,24 +13,24 @@ Contents
    :maxdepth: 2
    :caption: Overview of Capabilities
    
-   Overview
+   Overview.rst
    
 .. toctree::
    :maxdepth: 2
    :caption: Getting Started
    
-   Installation
-   Usage
+   Installation.rst
+   Usage.rst
    
 .. toctree::
    :maxdepth: 1
    :caption: Help and Issues
    
-   Getting help and reporting issues
+   Get-help.rst
    
    
 .. toctree::
    :maxdepth: 1
    :caption: Gallery
    
-   Sample images for benchmarking
+   Gallery.rst
