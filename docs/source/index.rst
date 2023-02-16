@@ -11,9 +11,9 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :caption: Overview
+   :caption: Overview of Capabilities
    
-   Overview of capabilities
+   Overview
    
 .. toctree::
    :maxdepth: 2
