@@ -28,11 +28,11 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = 'Uptrop'
-copyright = '2020, Eloise Marais'
+copyright = '2023, Eloise Marais'
 author = 'Eloise Marais'
 
 # The full version, including alpha/beta/rc tags
-release = '1'
+release = '2.0.0-alpha'
 
 
 # -- General configuration ---------------------------------------------------
