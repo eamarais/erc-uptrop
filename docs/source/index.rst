@@ -22,15 +22,16 @@ Contents
    
    Installation
    Usage
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Gallery
    
-   Gallery
-
 .. toctree::
    :maxdepth: 1
    :caption: Help and Issues
    
-   Approach
+   Getting help and reporting issues
+   
+   
+.. toctree::
+   :maxdepth: 1
+   :caption: Gallery
+   
+   Sample images for benchmarking
