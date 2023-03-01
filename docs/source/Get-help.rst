@@ -5,6 +5,8 @@ GitHub is used to ask for help and reporting issues or bugs.
 
 To ask a question, report a bug, or make a suggestion, `open a new issue <https://github.com/eamarais/erc-uptrop/issues>`__. When you do, please include your name and institution and include all relevant information for replicating the bug or issue. 
 
-Get the latest news at `CNN`_.
+You can |location_link|.
 
-.. _CNN: http://cnn.com/
+.. |location_link| raw:: html
+
+   <a href="http://geoiptool.com" target="_blank">check your location here</a>
