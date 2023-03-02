@@ -44,6 +44,16 @@ The NetCDF file generated at the end of a successful cloud-slicing simulation ha
 
     // global attributes:
   }
+  
+The variables in the file include:
+
+.. option:: lon
+
+   Centre longitude values for the target grid (1 degree in the above example)
+   
+.. option:: lat
+
+   Centre latitude values for the target grid (1 degree in the above example)
 
 =============================
 Sample plots
