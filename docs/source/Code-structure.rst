@@ -5,7 +5,7 @@ Core code for cloud-slicing:
 
 .. option:: erc-uptrop/uptrop/cloud_slice_tropomi_no2.py
 
-  Module to read in TROPOMI data, call the cloud slicing routine, grid the data to seasonal means on the target grid, output data and sample plots.
+Module that reads in TROPOMI data, calls the cloud slicing routine, grids data, calculates seasonal means, outputs data and sample plots.
 
 
 erc-uptrop/uptrop/cloud_slice_tropomi_no2.py
