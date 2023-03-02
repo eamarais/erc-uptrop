@@ -33,7 +33,8 @@ The example below is from cloud-slicing TROPOMI NO2 in June-August 2019 at 450-1
 Log file
 =============================
 
-Also output to a log file with each cloud-slicing routine are diagnostics that track the maximum number of satellite pixels in the target grid, the number of satellite pixels removed in each data filtering step, the total number of successful cloud-slicing retrievals compared to the total number that could have been retrieved, and the percent of total TROPOMI pixels used for cloud slicing:
+The log file tracks the progress of the code and at the end of the simulation outputs metrics.
+These include the maximum number of satellite pixels in the target grid, the number of satellite pixels removed in each data filtering step, the total number of successful cloud-slicing retrievals compared to the total number that could have been retrieved, and the percent of total TROPOMI pixels used for cloud slicing:
 
 .. code-block:: text
 
