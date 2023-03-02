@@ -5,7 +5,9 @@ Instructions below assume python is being simulated from the command line using 
 
 Dependencies are listed in the environment.yml file that is downloaded with the source code.
 These include:
+
 .. code-block:: text
+
   Numpy, NetCDF4, Dateutil, Matplotlib, Basemap
 
 To cloud-slice TROPOMI NO2 to obtain seasonal mean NO2 mixing ratios for June-August 2019 at 180-320 hPa on a 1 degree x 1 degree global grid,
