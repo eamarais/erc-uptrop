@@ -14,6 +14,7 @@ Contents
    :caption: Overview of Capabilities
    
    Overview.rst
+   Developments-in-progress.rst
    
 .. toctree::
    :maxdepth: 2
