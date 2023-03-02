@@ -7,17 +7,14 @@ The example below is from cloud-slicing TROPOMI NO2 in June-August 2019 at 450-1
 
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-top.png
   :width: 340
-  :align: center
   :alt: Sample of plots generated with the python script
   
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-mid.png
   :width: 340
-  :align: center
   :alt: Sample of plots generated with the python script
   
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-bot.png
   :width: 340
-  :align: center
   :alt: Sample of plots generated with the python script
 
 | 
