@@ -14,6 +14,20 @@ The example below is from cloud-slicing TROPOMI NO2 in June-August 2019 at 450-1
 
 Also output to a log file with each cloud-slicing routine are diagnostics that track the maximum number of satellite pixels in the target grid, the number of satellite pixels removed in each data filtering step, the total number of successful cloud-slicing retrievals compared to the total number that could have been retrieved, and the percent of total TROPOMI pixels used for cloud slicing:
 
+.. code-block:: text
+
+  Max no. of data points in a gridsquare:  64.0
+  (1) Too few points:  280605
+  (2) Low cloud height range:  260019
+  (3) Low cloud height std dev:  2105
+  (4) Large error:  0
+  (5) Significantly less than zero:  15664
+  (6) Outlier (NO2 > 200 pptv):  0
+  (7) Non-uniform stratosphere:  133461
+  (8) Successful retrievals:  83516
+  (9) Total possible points:  775370
+  Mean % points retained:  2.141713715255334
+
 .. figure:: images/uptrop-logfile-output.png
   :class: with-border
   :width: 380
