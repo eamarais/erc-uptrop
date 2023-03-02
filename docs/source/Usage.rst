@@ -12,7 +12,7 @@ To cloud-slice TROPOMI NO2 to obtain seasonal mean NO2 mixing ratios for June-Au
 enter the following at the command line:
 
 .. code-block:: console
-   $ python cloud_slice_tropomi_no2.py --trop_dir="path-to-tropomi-data/" --out_dir="path-to-output-directory/" --cloud_product="fresco-wide" --no2_prod="OFFL" --cloud_threshold="07" --grid_res="1x1" --year="2019" --pmax="180" --pmin="450" --season="jja" > log_file
+  $ python cloud_slice_tropomi_no2.py --trop_dir="path-to-tropomi-data/" --out_dir="path-to-output-directory/" --cloud_product="fresco-wide" --no2_prod="OFFL" --cloud_threshold="07" --grid_res="1x1" --year="2019" --pmax="180" --pmin="450" --season="jja" > log_file
    
 All arguments are input as strings. 
 
