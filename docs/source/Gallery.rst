@@ -5,7 +5,45 @@ Gallery
 Data
 =============================
 
-Still to add.
+The NetCDF file generated at the end of a successful cloud-slicing simulation has the following contents:
+
+.. code-block:: text
+
+  netcdf file:/path/to/file/tropomi-ut-no2-fresco-07-1x1-jja-2019-v010101.nc {
+    dimensions:
+      lon = 361;
+      lat = 181;
+    variables:
+      float lon(lon=361);
+        :units = "degrees_east";
+        :long_name = "longiitude";
+
+      float nobs(lon=361, lat=181);
+        :units = "unitless";
+        :long_name = "Number of observations in each gridsquare used to obtain cloud-sliced UT NO2 mixing ratios";
+
+      float cld_top_p_ceil(lon=361, lat=181);
+        :units = "hPa";
+        :long_name = "Gridded mean ceiling of cloud top pressures used to cloud-slice TROPOMI NO2";
+
+      float cld_top_p_range(lon=361, lat=181);
+        :units = "hPa";
+        :long_name = "Gridded mean range in cloud top pressures used to cloud-slice TROPOMI NO2";
+
+      float utno2err(lon=361, lat=181);
+        :units = "pptv";
+        :long_name = "Standard error of the NO2 mixing ratios in the UT (180-450 hPa) obtained using cloud-slicing";
+
+      float utno2(lon=361, lat=181);
+        :units = "pptv";
+        :long_name = "NO2 mixing ratios in the UT (180-450 hPa) obtained using cloud-slicing";
+
+      float lat(lat=181);
+        :units = "degrees_north";
+        :long_name = "latitude";
+
+    // global attributes:
+  }
 
 =============================
 Sample plots
