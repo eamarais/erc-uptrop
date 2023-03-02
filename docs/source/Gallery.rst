@@ -45,7 +45,7 @@ The NetCDF file generated at the end of a successful cloud-slicing simulation ha
     // global attributes:
   }
   
-The variables output in the NetCDF file include:
+Variables output in the NetCDF file include:
 
 .. option:: lon
 
