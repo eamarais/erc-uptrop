@@ -4,7 +4,7 @@ Developments in Progress
 A new and improved version of the software is under development. It includes many updates that are categorised below.
 
 ============================
-Updates Impacting Output:
+Updates Impacting the Data:
 ============================
 
 * Change regression fit from reduced major axis to Theil, so that cloud-slicing regression fit is less impacted by non-uniformally distributed data leading to an overestimate in mixing ratios over remote locations.
