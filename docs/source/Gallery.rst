@@ -45,15 +45,38 @@ The NetCDF file generated at the end of a successful cloud-slicing simulation ha
     // global attributes:
   }
   
-The variables in the file include:
+The variables output in the NetCDF file include:
 
 .. option:: lon
 
-   Centre longitude values for the target grid (1 degree in the above example)
+   Centre longitude values for the target grid (1 degree in the above example) [1D]
    
 .. option:: lat
 
-   Centre latitude values for the target grid (1 degree in the above example)
+   Centre latitude values for the target grid (1 degree in the above example) [1D]
+   
+.. option:: nobs
+
+   The number of cloud-sliced NO2 data points in each gridbox [2D]
+   
+.. option:: utno2
+
+   Gridded mean cloud-sliced NO2 mixing ratios in pptv (seasonal means for a single year in the above example) [2D]
+   
+.. option:: utno2err
+
+   Gridded mean standard error on the cloud-sliced NO2 mixing ratios in pptv [2D]
+   
+.. option:: cld_top_p_range
+
+   Gridded mean cloud top pressure range in hPa [2D]
+   Useful if comparing cloud-sliced NO2 to in situ or model output,as ensures data cover consistent altitude ranges.
+
+.. option:: cld_top_p_ceil
+
+   Gridded mean cloud top pressure ceiling in hPa [2D]
+   Useful if comparing cloud-sliced NO2 to in situ or model output,as ensures data cover consistent altitude ranges.
+
 
 =============================
 Sample plots
