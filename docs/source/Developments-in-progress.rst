@@ -7,6 +7,10 @@ A new and improved version of the software is under development. It includes man
 Updates Impacting the Data:
 ============================
 
+##############
+Key references
+##############
+
 * Change regression fit from reduced major axis to Theil, so that cloud-slicing regression fit is less impacted by non-uniformally distributed data leading to an overestimate in mixing ratios over remote locations.
 
 * No longer bias correct tropospheric columns of NO\ :sub:`2`, as this bias correction was due to application of the reduced major axis regression fit to non-uniformally distributed data.
