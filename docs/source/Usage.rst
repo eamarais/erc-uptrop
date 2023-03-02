@@ -3,13 +3,10 @@ Usage
 
 Instructions below assume python is being simulated from the command line using a conda virtual environment and python version 3.9.10.
 
-Dependencies are listed in the environment.yml file that is downloaded with the source code. 
+Dependencies are listed in the environment.yml file that is downloaded with the source code.
 These include:
-   Numpy,
-   NetCDF4,
-   Dateutil,
-   Matplotlib,
-   Basemap
+.. code-block:: text
+   Numpy, NetCDF4, Dateutil, Matplotlib, Basemap
 
 To cloud-slice TROPOMI NO2 to obtain seasonal mean NO2 mixing ratios for June-August 2019 at 180-320 hPa on a 1 degree x 1 degree global grid,
 enter the following at the command line:
