@@ -6,17 +6,14 @@ Plots output with uptrop using cartopy include three panels of global maps showi
 The example below is from cloud-slicing TROPOMI NO2 in June-August 2019 at 450-180 hPa (~8-12 km):
 
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-top.png
-  :class: with-border
   :width: 340
   :alt: Sample of plots generated with the python script
   
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-mid.png
-  :class: with-border
   :width: 340
   :alt: Sample of plots generated with the python script
   
 .. figure:: images/cloudslice-tropomi-no2-sample-plot-bot.png
-  :class: with-border
   :width: 340
   :alt: Sample of plots generated with the python script
 
