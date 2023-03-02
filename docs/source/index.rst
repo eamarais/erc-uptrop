@@ -19,6 +19,7 @@ Contents
    :maxdepth: 2
    :caption: Getting Started
    
+   Code-structure.rst
    Installation.rst
    Usage.rst
    
