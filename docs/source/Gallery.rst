@@ -27,8 +27,12 @@ Also output to a log file with each cloud-slicing routine are diagnostics that t
   (8) Successful retrievals:  83516
   (9) Total possible points:  775370
   Mean % points retained:  2.141713715255334
-
-.. figure:: images/uptrop-logfile-output.png
-  :class: with-border
-  :width: 380
-  :alt: Sample of end of cloud-slicing log file
+  
+The printout above indicates that the gid with the most cloud-sliced NO2 retrievals has 64 data points,
+that, of all valid clusters of satellite pixels within the pressure range of interest, 280,605 have too few coincident 
+points, 260,019 have a cloud height range that is less than required, 2,105 have a cloud height stnadrd deviation
+that is less than required, 0 have too large a cloud-sliced NO2 error, 15,664 have cloud-sliced NO2 that is 
+statistically significantly less than zero, that 0 are outliers, and that for 133,461 the overlying stratospheric
+NO2 is not uniform. Also included in the printout is that there were 83,516 successful retrievals out of a total of
+775,370, and that of all satellite pixels 2.14% are good quality, fall within the cloud pressure range of interest over
+optically thick clouds.
