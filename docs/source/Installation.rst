@@ -62,8 +62,8 @@ To do so, type:
    $ git checkout feature/my-git-updates
    
 Instead of :file:`feature/my-git-updates`, you may choose a name that reflects
-the nature of your updates (e.g. :file:`feature/fix_bug`, :file:`feature/add_compound` etc.)  If
-you now type:
+the nature of your updates (e.g. :file:`feature/fix_bug`, :file:`feature/add_compound` etc.) 
+If you now type:
 
 .. code-block:: console
 
