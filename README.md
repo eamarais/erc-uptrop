@@ -38,7 +38,7 @@ See https://pages.github.io/erc-uptrop/docs/build/html/index.html?#scripts for d
 
 Documentation
 -------------
-Documentation is hosted at https://maraisresearchgroup.co.uk/erc-uptrop/build/html/index.html
+Documentation is hosted at https://erc-uptrop.readthedocs.io/en/latest/
 
 Sources and citations
 ---------------------
