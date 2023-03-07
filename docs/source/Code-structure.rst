@@ -1,7 +1,11 @@
 Code Structure
 ================
 
-Core code for cloud-slicing:
+===========
+Core Code:
+===========
+
+Used for cloud-slicing satellite observations of total column densities of NO2:
 
 .. option:: ./erc-uptrop/uptrop/cloud_slice_tropomi_no2.py
 
@@ -27,7 +31,11 @@ The white-yellow-green-orange-red colorbar from the `GCPy Python package <https:
 
 Constants and conversion factors used for cloud-slicing. 
 
-Additional code used by `Marais et al. (2021) <https://amt.copernicus.org/articles/14/2389/2021/>`__ to assess the TROPOMI NO2 columns and cloud products:
+===============
+Additional Code:
+===============
+
+Used by `Marais et al. (2021) <https://amt.copernicus.org/articles/14/2389/2021/>`__ to assess the TROPOMI NO2 columns and cloud products:
 
 .. option:: ./erc-uptrop/uptrop/fresco_cld_error.py
 
