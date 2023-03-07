@@ -1,4 +1,4 @@
-Developments in Progress
+Code Updates in Progress
 ===========================
 
 A new and improved version of the software is under development. It includes many updates that are categorised below.
