@@ -2,7 +2,7 @@ Code Structure
 ================
 
 ===========
-Core Code:
+Core Code
 ===========
 
 Used for cloud-slicing satellite observations of total column densities of NO2:
@@ -32,7 +32,7 @@ The white-yellow-green-orange-red colorbar from the `GCPy Python package <https:
 Constants and conversion factors used for cloud-slicing. 
 
 ===============
-Additional Code:
+Additional Code
 ===============
 
 Used by `Marais et al. (2021) <https://amt.copernicus.org/articles/14/2389/2021/>`__ to assess the TROPOMI NO2 columns and cloud products:
