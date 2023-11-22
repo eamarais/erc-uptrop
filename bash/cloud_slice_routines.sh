@@ -64,3 +64,9 @@ for i in "${!START_DATES[@]}"; do
         run_python_script "o3" "OFFL" "${START_DATES[$i]}" "${END_DATES[$i]}" "${PMIN_VALUES[$j]}" "${PMAX_VALUES[$j]}"
     done
 done
+
+# Deactivate the virtual environment:
+conda deactivate
+
+# Exit normally
+exit 0
