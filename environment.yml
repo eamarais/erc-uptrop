@@ -1,7 +1,11 @@
-name: uptrop_env
+name: uptrop
+channels:
+  - defaults
+  - conda-forge
 dependencies:
-  - Numpy
-  - NetCDF4
-  - Dateutil
-  - Matplotlib
-  - Basemap
+  - python=3.9.10
+  - numpy
+  - pandas
+  - matplotlib
+  - netcdf4
+  - cartopy

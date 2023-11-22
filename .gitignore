@@ -1,0 +1,13 @@
+# Ignore all files except those with the specified extensions
+*
+!*/
+!*.py
+!*.yml
+!*.sh
+!*.md
+!*.rst
+!.gitignore
+!LICENSE
+
+# Ignore Python compiled bytecode directories
+**/__pycache__/
