@@ -1,21 +1,22 @@
 Installation
-==================
+============
 
-To download the latest stable version of the cloud-slicing uptrop-py code, type:
+To download the latest stable version of the cloud-slicing Uptrop code, type:
 
 .. code-block:: console
 
   $ git clone https://github.com/eamarais/erc-uptrop.git
 
-This command clones the source code to a folder called erc-uptrop
+This command clones the source code to a folder called erc-uptrop.
 
-To download GEOS-Chem Classic source code into a folder named something other than :file:`erc-uptrop`, supply the name of the folder at the end of the :command:`git clone` command. For example:
+To download source code into a folder named something other than ``erc-uptrop/``,
+supply the name of the folder at the end of the :command:`git clone` command. For example:
 
 .. code-block:: console
 
   $ git clone https://github.com/eamarais/erc-uptrop.git my-code-dir
 
-This will download the source code into :file:`my-code-dir` instead of :file:`erc-uptrop`.
+This will download the source code into ``my-code-dir`` instead of ``erc-uptrop/``.
 
 Once the :command:`git clone` process starts, you should see output similar to this:
 
@@ -39,7 +40,7 @@ and you will see output similar to this:
 
 .. code-block:: text
 
-   docs/  environment.yml  LICENSE  README.md  tests/  uptrop/
+   bash/ docs/  environment.yml  LICENSE  README.md  tests/  uptrop/
 
 Navigate into the :file:`erc-uptrop` folder and confirm that the code is in the main branch:
 
@@ -77,5 +78,3 @@ You will see that we are checked out onto the branch that you just created.
 
    * feature/my-git-updates
    main
-
-
