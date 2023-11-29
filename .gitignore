@@ -2,7 +2,7 @@
 *
 !*/
 !*.py
-.yml
+!*.ymal
 !*.sh
 !*.md
 !*.rst
