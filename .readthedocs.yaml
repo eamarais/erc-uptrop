@@ -16,6 +16,10 @@ build:
 # Build documentation in the "docs/" directory with Sphinx
 # Fail on all warnings to avoid broken references, 
 # formatting issues, missing images, etc.
+# This ensures high standards for your documentation but can be strict.
+# If you find that minor warnings are causing too many build failures,
+# you might reconsider whether to keep this setting enabled,
+# especially during periods of heavy documentation development.
 sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: true
@@ -24,7 +28,6 @@ sphinx:
 formats:
    - pdf
    - epub
-
 
 # Python requirements are required for building documentation on Read the Docs.
 # While the .readthedocs.yaml template lists this step as optional,

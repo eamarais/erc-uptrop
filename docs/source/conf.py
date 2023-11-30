@@ -64,9 +64,9 @@ autodoc_member_order = 'groupwise'
 #html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
 
-html_theme_options = {
-    'rightsidebar': False,
-}
+#html_theme_options = {
+#    'rightsidebar': False,
+#}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
