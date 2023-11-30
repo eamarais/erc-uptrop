@@ -25,9 +25,11 @@ sphinx:
   fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
+# Currently building ePub will lead to an error with 
 formats:
    - pdf
-#   - epub
+   - html
+   - epub
 
 # Python requirements are required for building documentation on Read the Docs.
 # While the .readthedocs.yaml template lists this step as optional,
