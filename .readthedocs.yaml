@@ -28,7 +28,7 @@ sphinx:
 formats:
    - htmlzip
    - pdf
-   - epub
+#- epub
 
 # Python requirements are required for building documentation on Read the Docs.
 # While the .readthedocs.yaml template lists this step as optional,
