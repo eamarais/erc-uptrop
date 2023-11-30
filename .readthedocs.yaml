@@ -1,31 +1,35 @@
-# An initial test of using the configuration file
 # Read the Docs configuration file for Sphinx projects
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
 
 # Required
 version: 2
 
-# Set the OS, Python version and other tools you might need
+# Set the OS and Python version on the virtual machine
+# that ReadtheDocs will use to build your documentation
+# These settings do not need frequent updates and are
+# independent of the Python version required by your software
 build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
 
 # Build documentation in the "docs/" directory with Sphinx
+# Fail on all warnings to avoid broken references, 
+# formatting issues, missing images, etc.
 sphinx:
   configuration: docs/source/conf.py
-  # You can configure Sphinx to use a different builder, for instance use the dirhtml builder for simpler URLs
-  # builder: "dirhtml"
-  # Fail on all warnings to avoid broken references
-  # fail_on_warning: true
+  fail_on_warning: true
 
 # Optionally build your docs in additional formats such as PDF and ePub
-# formats:
-#   - pdf
-#   - epub
+formats:
+   - pdf
+   - epub
 
-# Optional but recommended, declare the Python requirements required
-# to build your documentation
+
+# Python requirements are required for building documentation on Read the Docs.
+# While the .readthedocs.yaml template lists this step as optional,
+# omitting it can lead to build failures, especially if specific packages like 'sphinx_rtd_theme' are needed.
+# Including a requirements file ensures that all dependencies are installed.
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
    install:
