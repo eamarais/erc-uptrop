@@ -24,11 +24,10 @@ sphinx:
   configuration: docs/source/conf.py
   fail_on_warning: true
 
-# Optionally build your docs in additional formats such as PDF and ePub
-# Currently building ePub will lead to an error with 
+# Optionally build your docs in additional formats such as html, PDF and ePub
 formats:
+   - htmlzip
    - pdf
-   - html
    - epub
 
 # Python requirements are required for building documentation on Read the Docs.
