@@ -1,5 +1,5 @@
-Usage
-==================
+Command Line Interface Usage
+============================
 
 Instructions below assume python is being simulated from the command line using a conda virtual environment and python version 3.9.10.
 
